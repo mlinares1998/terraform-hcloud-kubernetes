@@ -1,5 +1,11 @@
 locals {
   allow_scheduling_on_control_plane = ((local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
+  
+  # Enables Kubernetes Discovery Service if version is lower than v1.32.0
+  kubernetes_discovery_service_enabled = can(regex(
+    "^v(?:0\\.[0-9]+\\.[0-9]+|1\\.(?:[0-9]|[12][0-9]|3[01])\\.[0-9]+)$",
+    var.kubernetes_version,
+  ))
 
   # Kubernetes Manifests for Talos
   talos_inline_manifests = concat(
@@ -266,8 +272,8 @@ locals {
         discovery = {
           enabled = true,
           registries = {
-            kubernetes = { disabled = false }
-            service    = { disabled = true }
+            kubernetes = { disabled = !local.kubernetes_discovery_service_enabled }
+            service    = { disabled = local.kubernetes_discovery_service_enabled }
           }
         }
         etcd = {
@@ -392,8 +398,8 @@ locals {
         discovery = {
           enabled = true,
           registries = {
-            kubernetes = { disabled = false }
-            service    = { disabled = true }
+            kubernetes = { disabled = !local.kubernetes_discovery_service_enabled }
+            service    = { disabled = local.kubernetes_discovery_service_enabled }
           }
         }
       }
