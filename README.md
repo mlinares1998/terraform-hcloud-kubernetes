@@ -700,7 +700,7 @@ talos_kubernetes_discovery_service_enabled = false
 talos_siderolabs_discovery_service_enabled = true
 ```
 
-> :no_entry_sign: Enabling **both** discovery services at the same time is not supported and will trigger a validation error.
+> :no_entry_sign: Enabling **both** discovery services at the same time is not supported.
 
 #### :rocket: Upgrading to Kubernetes 1.32
 
