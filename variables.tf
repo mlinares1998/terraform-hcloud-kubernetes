@@ -669,7 +669,7 @@ variable "talos_registries" {
   EOF
 }
 
-variable "talos_service_log_destinations" {
+variable "talos_logging_destinations" {
   description = "List of objects defining remote destinations for Talos service logs."
   type = list(object({
     endpoint  = string
@@ -824,7 +824,7 @@ variable "talos_ccm_enabled" {
 }
 variable "talos_ccm_version" {
   type        = string
-  default     = "v1.9.0" # https://github.com/siderolabs/talos-cloud-controller-manager
+  default     = "v1.9.1" # https://github.com/siderolabs/talos-cloud-controller-manager
   description = "Specifies the version of the Talos Cloud Controller Manager (CCM) to use. This version controls cloud-specific integration features in the Talos operating system."
 }
 
@@ -889,7 +889,7 @@ variable "hcloud_ccm_helm_chart" {
 
 variable "hcloud_ccm_helm_version" {
   type        = string
-  default     = "1.23.0"
+  default     = "1.24.0"
   description = "Version of the Hcloud CCM Helm chart to deploy."
 }
 
@@ -1020,7 +1020,7 @@ variable "cilium_helm_chart" {
 
 variable "cilium_helm_version" {
   type        = string
-  default     = "1.17.2"
+  default     = "1.17.3"
   description = "Version of the Cilium Helm chart to deploy."
 }
 
@@ -1136,7 +1136,7 @@ variable "cert_manager_helm_chart" {
 
 variable "cert_manager_helm_version" {
   type        = string
-  default     = "v1.17.1"
+  default     = "v1.17.2"
   description = "Version of the Cert Manager Helm chart to deploy."
 }
 
@@ -1168,7 +1168,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.12.1"
+  default     = "4.12.2"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
@@ -1432,6 +1432,6 @@ variable "prometheus_operator_crds_enabled" {
 }
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.81.0" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.82.0" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }

@@ -238,7 +238,7 @@ locals {
           servers = var.talos_time_servers
         }
         logging = {
-          destinations = var.talos_service_log_destinations
+          destinations = var.talos_logging_destinations
         }
       }
       cluster = {
@@ -382,7 +382,7 @@ locals {
           servers = var.talos_time_servers
         }
         logging = {
-          destinations = var.talos_service_log_destinations
+          destinations = var.talos_logging_destinations
         }
       }
       cluster = {
@@ -489,7 +489,7 @@ locals {
           servers = var.talos_time_servers
         }
         logging = {
-          destinations = var.talos_service_log_destinations
+          destinations = var.talos_logging_destinations
         }
       }
       cluster = {
