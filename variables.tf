@@ -509,6 +509,18 @@ variable "talos_image_extensions" {
   description = "Specifies Talos image extensions for additional functionality on top of the default Talos Linux capabilities. See: https://github.com/siderolabs/extensions"
 }
 
+variable "talos_kubernetes_discovery_service_enabled" {
+  description = "Enable or disable Kubernetes-based Talos discovery service. Deprecated as of Kubernetes v1.32, where the AuthorizeNodeWithSelectors feature gate is enabled by default."
+  type        = bool
+  default     = false
+}
+
+variable "talos_siderolabs_discovery_service_enabled" {
+  description = "Enable or disable Sidero Labs public Talos discovery service."
+  type        = bool
+  default     = true
+}
+
 variable "talos_kubelet_extra_mounts" {
   type = list(object({
     source      = string

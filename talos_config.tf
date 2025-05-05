@@ -272,8 +272,8 @@ locals {
         discovery = {
           enabled = true,
           registries = {
-            kubernetes = { disabled = !local.kubernetes_discovery_service_enabled }
-            service    = { disabled = local.kubernetes_discovery_service_enabled }
+            kubernetes = { disabled = !var.talos_kubernetes_discovery_service_enabled }
+            service    = { disabled = !var.talos_siderolabs_discovery_service_enabled }
           }
         }
         etcd = {
@@ -398,8 +398,8 @@ locals {
         discovery = {
           enabled = true,
           registries = {
-            kubernetes = { disabled = !local.kubernetes_discovery_service_enabled }
-            service    = { disabled = local.kubernetes_discovery_service_enabled }
+            kubernetes = { disabled = !var.talos_kubernetes_discovery_service_enabled }
+            service    = { disabled = !var.talos_siderolabs_discovery_service_enabled }
           }
         }
       }

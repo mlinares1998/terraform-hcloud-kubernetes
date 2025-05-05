@@ -674,6 +674,41 @@ talos_backup_schedule = "0 * * * *"
 To recover from a snapshot, please refer to the Talos Disaster Recovery section in the [Documentation](https://www.talos.dev/latest/advanced/disaster-recovery/#recovery).
 </details>
 
+<!-- Talos Discovery Service -->
+<details>
+<summary><b>Talos Node Discovery Service</b></summary>
+
+Talos supports two node discovery mechanisms:
+
+- **SideroLabs Discovery Service** (default): A public, external registry that functions even when Kubernetes is unavailable.
+- **Kubernetes Registry**: Uses Kubernetes Node metadata stored in etcd.
+
+> :warning: **Important:** As of Kubernetes **v1.32**, the Kubernetes registry is **no longer compatible by default** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata.  
+> Attempting to use Kubernetes-based discovery with Kubernetes ≥ v1.32 **will result in broken discovery behavior** (e.g., `talosctl get members` may fail or show incomplete data).
+
+#### :white_check_mark: Recommended configuration (v1.32+)
+
+Starting with **module version `v2.0.0`**, Kubernetes-based discovery is **disabled by default**, and you should rely on the Sidero Labs discovery service instead.
+
+#### :hammer_and_wrench: Example Configuration
+
+```hcl
+# Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
+talos_kubernetes_discovery_service_enabled = false
+
+# Enable the external SideroLabs discovery service (default)
+talos_siderolabs_discovery_service_enabled = true
+```
+
+> :no_entry_sign: Enabling **both** discovery services at the same time is not supported and will trigger a validation error.
+
+#### :rocket: Upgrading to Kubernetes 1.32
+
+If you are upgrading from Kubernetes v1.31 to v1.32 or later, ensure you **disable the Kubernetes registry** to avoid issues with node discovery.
+
+For more details, refer to the [official Talos discovery guide](https://www.talos.dev/v1.9/talos-guides/discovery/).
+</details>
+
 <!-- Talos Bootstrap Manifests -->
 <details>
 <summary><b>Talos Bootstrap Manifests</b></summary>
