@@ -373,11 +373,39 @@ hcloud_csi_storage_class_encryption_enabled = true
 # Optionally, specify your own encryption key
 hcloud_csi_storage_class_encryption_key = "passphrase"
 
+# Define PVs reclaim policy
+hcloud_csi_storage_class_reclaim_policy = "Retain"
+
 # Define additional StorageClass parameters
 hcloud_csi_storage_class_extra_parameters = {
   "csi.storage.k8s.io/fstype" = "xfs"
   "fsFormatOption"            = "-i nrext64=1"
 }
+```
+
+**Defining additional StorageClasses**
+
+You can define custom StorageClasses in addition to the default one (`hcloud-volumes`) using the `hcloud_csi_additional_storage_classes` variable:
+
+```hcl
+hcloud_csi_additional_storage_classes = [
+  {
+    name                = "hcloud-volumes-ext4"   # Name of the StorageClass
+    defaultStorageClass = false                   # Whether this StorageClass should be marked as the default (default: false)
+    reclaimPolicy       = "Delete"                # Reclaim policy for persistent volumes using this class (default: "Delete")
+
+    # Extra parameters passed to the CSI driver, such as volume format
+    extraParameters = {                         
+      "csi.storage.k8s.io/fstype" = "ext4"
+    }
+  },
+  {
+    name            = "hcloud-volumes-xfs"
+    extraParameters = {
+      "csi.storage.k8s.io/fstype" = "xfs"
+    }
+  }
+]
 ```
 
 **:warning: Warning:** Due to the immutable nature of StorageClasses in Kubernetes, the default StorageClass settings cannot be modified after the initial cluster provisioning. Attempting to do so will result in the following error:
