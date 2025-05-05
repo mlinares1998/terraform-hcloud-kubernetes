@@ -724,6 +724,7 @@ Before delegating lifecycle control to other tools, you must **first remove the 
 ```hcl
 # Core Component Configuration
 cilium_enabled                     = true  # Enabled by default
+talos_backup_s3_enabled            = true  # Enabled by default
 talos_ccm_enabled                  = true  # Enabled by default
 talos_coredns_enabled              = true  # Enabled by default
 hcloud_ccm_enabled                 = true  # Enabled by default

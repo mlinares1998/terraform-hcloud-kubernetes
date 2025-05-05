@@ -1,5 +1,4 @@
 locals {
-  talos_backup_s3_enabled  = var.talos_backup_s3_hcloud_url != null ? true : var.talos_backup_s3_endpoint != null ? true : false
   talos_backup_s3_hcloud   = var.talos_backup_s3_hcloud_url != null ? regex("^(?:https?://)?(?P<bucket>[^.]+)\\.(?P<region>[^.]+)\\.your-objectstorage\\.com\\.?$", var.talos_backup_s3_hcloud_url) : {}
   talos_backup_s3_bucket   = var.talos_backup_s3_hcloud_url != null ? local.talos_backup_s3_hcloud.bucket : var.talos_backup_s3_bucket
   talos_backup_s3_region   = var.talos_backup_s3_hcloud_url != null ? local.talos_backup_s3_hcloud.region : var.talos_backup_s3_region
@@ -97,7 +96,7 @@ locals {
     }
   }
 
-  talos_backup_manifest = local.talos_backup_s3_enabled ? {
+  talos_backup_manifest = var.talos_backup_s3_enabled ? {
     name     = "talos-backup"
     contents = <<-EOF
       ${yamlencode(local.talos_backup_service_account)}

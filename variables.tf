@@ -701,6 +701,12 @@ variable "talos_backup_version" {
   description = "Specifies the version of Talos Backup to be used in generated machine configurations."
 }
 
+variable "talos_backup_s3_enabled" {
+  type        = bool
+  default     = true
+  description = "Enable Talos etcd S3 backup cronjob."
+}
+
 variable "talos_backup_s3_hcloud_url" {
   type        = string
   default     = null
