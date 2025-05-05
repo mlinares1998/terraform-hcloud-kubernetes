@@ -680,7 +680,7 @@ To recover from a snapshot, please refer to the Talos Disaster Recovery section 
 
 Talos supports two node discovery mechanisms:
 
-- **SideroLabs Discovery Service** (default): A public, external registry that functions even when Kubernetes is unavailable.
+- **Sidero Labs Discovery Service** (default): A public, external registry that functions even when Kubernetes is unavailable.
 - **Kubernetes Registry**: Uses Kubernetes Node metadata stored in etcd.
 
 > :warning: **Important:** As of Kubernetes **v1.32**, the Kubernetes registry is **no longer compatible by default** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata.  
@@ -696,7 +696,7 @@ Starting with **module version `v2.0.0`**, Kubernetes-based discovery is **disab
 # Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
 talos_kubernetes_discovery_service_enabled = false
 
-# Enable the external SideroLabs discovery service (default)
+# Enable the external Sidero Labs discovery service (default)
 talos_siderolabs_discovery_service_enabled = true
 ```
 
