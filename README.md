@@ -676,21 +676,18 @@ To recover from a snapshot, please refer to the Talos Disaster Recovery section 
 
 <!-- Talos Discovery Service -->
 <details>
-<summary><b>Talos Node Discovery Service</b></summary>
+<summary><b>Talos Discovery Service</b></summary>
 
 Talos supports two node discovery mechanisms:
 
-- **Sidero Labs Discovery Service** (default): A public, external registry that functions even when Kubernetes is unavailable.
-- **Kubernetes Registry**: Uses Kubernetes Node metadata stored in etcd.
+- **Discovery Service Registry** (default): A public, external registry operated by Sidero Labs that works even when Kubernetes is unavailable. Nodes must have outbound access to TCP port 443 to communicate with it.  
+- **Kubernetes Registry**: Relies on Kubernetes Node metadata stored in etcd.
 
-> :warning: **Important:** As of Kubernetes **v1.32**, the Kubernetes registry is **no longer compatible by default** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata.  
-> Attempting to use Kubernetes-based discovery with Kubernetes ≥ v1.32 **will result in broken discovery behavior** (e.g., `talosctl get members` may fail or show incomplete data).
+This module uses the discovery service to perform additional health checks during Talos upgrades, Kubernetes upgrades, and Kubernetes manifest synchronization. If no discovery mechanism is enabled, these additional checks will be skipped.
 
-#### :white_check_mark: Recommended configuration (v1.32+)
+> :warning: **Important:** Kubernetes-based discovery is **incompatible by default** with Kubernetes **v1.32+** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata. This can cause broken discovery behavior, such as failing or incomplete results from `talosctl health` or `talosctl get members`.
 
-Starting with **module version `v2.0.0`**, Kubernetes-based discovery is **disabled by default**, and you should rely on the Sidero Labs discovery service instead.
-
-#### :hammer_and_wrench: Example Configuration
+##### Example Configuration
 
 ```hcl
 # Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
@@ -700,13 +697,7 @@ talos_kubernetes_discovery_service_enabled = false
 talos_siderolabs_discovery_service_enabled = true
 ```
 
-> :no_entry_sign: Enabling **both** discovery services at the same time is not supported.
-
-#### :rocket: Upgrading to Kubernetes 1.32
-
-If you are upgrading from Kubernetes v1.31 to v1.32 or later, ensure you **disable the Kubernetes registry** to avoid issues with node discovery.
-
-For more details, refer to the [official Talos discovery guide](https://www.talos.dev/v1.9/talos-guides/discovery/).
+For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
 </details>
 
 <!-- Talos Bootstrap Manifests -->

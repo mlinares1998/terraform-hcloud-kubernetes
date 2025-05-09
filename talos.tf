@@ -44,6 +44,9 @@ locals {
   kube_prism_host = "127.0.0.1"
   kube_prism_port = 7445
 
+  # Cluster Health
+  talos_healthcheck_enabled = var.cluster_healthcheck_enabled && local.talos_discovery_enabled
+
   # Cluster Status
   cluster_initialized = length(data.hcloud_certificates.state.certificates) > 0
 }
@@ -83,11 +86,11 @@ resource "terraform_data" "upgrade_control_plane" {
 
       if ${local.cluster_initialized}; then
         echo "Start upgrading control plane nodes"
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         set -- ${join(" ", local.control_plane_private_ipv4_list)}
         for host in "$@"; do
           talosctl --talosconfig "$talosconfig_tmp" upgrade -n "$host" --preserve --image '${local.talos_installer_image_url}'
-          ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n "$host"
+          ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n "$host"
         done
         echo "Control plane nodes upgraded successfully"
       else
@@ -123,11 +126,11 @@ resource "terraform_data" "upgrade_worker" {
 
       if ${local.cluster_initialized}; then
         echo "Start upgrading worker nodes"
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         set -- ${join(" ", local.worker_private_ipv4_list)}
         for host in "$@"; do
           talosctl --talosconfig "$talosconfig_tmp" upgrade -n "$host" --preserve --image '${local.talos_installer_image_url}'
-          ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+          ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         done
         echo "Worker nodes upgraded successfully"
       else
@@ -160,9 +163,9 @@ resource "terraform_data" "upgrade_kubernetes" {
 
       if ${local.cluster_initialized}; then
         echo "Start upgrading Kubernetes"
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         talosctl --talosconfig "$talosconfig_tmp" upgrade-k8s -n '${local.talos_primary_node_private_ipv4}' --endpoint '${local.kube_api_url_external}' --to '${var.kubernetes_version}'
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         echo "Kubernetes upgraded successfully"
       else
         echo "Cluster not initialized, skipping Kubernetes upgrade"
@@ -251,9 +254,9 @@ resource "terraform_data" "synchronize_manifests" {
 
       if ${local.cluster_initialized}; then
         echo "Start synchronizing manifests"
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         talosctl --talosconfig "$talosconfig_tmp" upgrade-k8s -n '${local.talos_primary_node_private_ipv4}' --endpoint '${local.kube_api_url_external}' --to '${var.kubernetes_version}'
-        ${var.cluster_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig_tmp" health --server -n '${local.talos_primary_node_private_ipv4}'
         echo "Manifests synchronized successfully"
       else
         echo "Cluster not initialized, skipping manifest synchronization"

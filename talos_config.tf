@@ -130,6 +130,17 @@ locals {
     ]
   )
 
+  # Talos Discovery
+  talos_discovery_enabled = var.talos_discovery_kubernetes_enabled || var.talos_discovery_service_enabled
+
+  talos_discovery = {
+    enabled = local.talos_discovery_enabled
+    registries = {
+      kubernetes = { disabled = !var.talos_discovery_kubernetes_enabled }
+      service    = { disabled = !var.talos_discovery_service_enabled }
+    }
+  }
+
   # Control Plane Config
   control_plane_talos_config_patch = {
     for node in hcloud_server.control_plane : node.name => {
@@ -269,13 +280,7 @@ locals {
             "bind-address"   = "0.0.0.0"
           }
         }
-        discovery = {
-          enabled = true,
-          registries = {
-            kubernetes = { disabled = !var.talos_kubernetes_discovery_service_enabled }
-            service    = { disabled = !var.talos_siderolabs_discovery_service_enabled }
-          }
-        }
+        discovery = local.talos_discovery
         etcd = {
           advertisedSubnets = [hcloud_network_subnet.control_plane.ip_range]
           extraArgs = {
@@ -395,13 +400,7 @@ locals {
         proxy = {
           disabled = true
         }
-        discovery = {
-          enabled = true,
-          registries = {
-            kubernetes = { disabled = !var.talos_kubernetes_discovery_service_enabled }
-            service    = { disabled = !var.talos_siderolabs_discovery_service_enabled }
-          }
-        }
+        discovery = local.talos_discovery
       }
     }
   }
@@ -502,13 +501,7 @@ locals {
         proxy = {
           disabled = true
         }
-        discovery = {
-          enabled = true,
-          registries = {
-            kubernetes = { disabled = false }
-            service    = { disabled = true }
-          }
-        }
+        discovery = local.talos_discovery
       }
     }
   }

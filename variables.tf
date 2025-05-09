@@ -509,16 +509,16 @@ variable "talos_image_extensions" {
   description = "Specifies Talos image extensions for additional functionality on top of the default Talos Linux capabilities. See: https://github.com/siderolabs/extensions"
 }
 
-variable "talos_kubernetes_discovery_service_enabled" {
-  description = "Enable or disable Kubernetes-based Talos discovery service. Deprecated as of Kubernetes v1.32, where the AuthorizeNodeWithSelectors feature gate is enabled by default."
+variable "talos_discovery_kubernetes_enabled" {
   type        = bool
   default     = false
+  description = "Enable or disable Kubernetes-based Talos discovery service. Deprecated as of Kubernetes v1.32, where the AuthorizeNodeWithSelectors feature gate is enabled by default."
 }
 
-variable "talos_siderolabs_discovery_service_enabled" {
-  description = "Enable or disable Sidero Labs public Talos discovery service."
+variable "talos_discovery_service_enabled" {
   type        = bool
   default     = true
+  description = "Enable or disable Sidero Labs public Talos discovery service."
 }
 
 variable "talos_kubelet_extra_mounts" {
@@ -1432,6 +1432,6 @@ variable "prometheus_operator_crds_enabled" {
 }
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.82.0" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.82.1" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }
