@@ -700,6 +700,62 @@ talos_siderolabs_discovery_service_enabled = true
 For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
 </details>
 
+<!-- Talos Configuration Patches -->
+<details>
+<summary><b>Talos Configuration Patches</b></summary>
+
+In this module you can declare [Talos Configuration Patches](https://www.talos.dev/v1.9/talos-guides/configuration/patching/) via three map variables:
+
+- **control_plane_config_patches**: patches applied to control‐plane nodes.
+- **worker_config_patches**: patches applied to worker nodes.
+- **cluster_autoscaler_config_patches**: patches applied to cluster‐autoscaler nodes.
+
+For all three:
+
+- **Map key** = the Kubernetes object’s `metadata.name`.
+- **Map value** = the full Kubernetes‑style object, where the `spec` block contains exactly the inner YAML you wish to inject.
+
+##### Example
+
+```hcl
+# Control plane patches
+control_plane_config_patches = {
+  tailscale = {
+    apiVersion = "v1alpha1"
+    kind       = "ExtensionServiceConfig"
+    spec = {
+      environment = [
+        "TS_AUTHKEY=test",
+        "TS_ROUTES=test",
+      ]
+    }
+  }
+}
+
+# Worker node patches
+worker_config_patches = {
+  nut-client = {
+    apiVersion = "v1alpha1"
+    kind       = "ExtensionServiceConfig"
+    spec = {
+      configFiles = [{
+        content   = "MONITOR upsmonHost 1 remote username password"
+        mountPath = "/usr/local/etc/nut/upsmon.conf"
+      }]
+      environment = ["NUT_UPS=test"]
+    }
+  }
+}
+
+# Cluster‑autoscaler node patches
+cluster_autoscaler_config_patches = {}
+```
+
+> [!NOTE]
+> The **key** of each map entry becomes the metadata.name of the patch object; everything under **spec** must match exactly the YAML you want Talos to apply.
+> For full details on Configuration Patches syntax and behavior, see the [Talos guide](https://www.talos.dev/v1.9/talos-guides/configuration/patching/).
+</details>
+
 <!-- Talos Bootstrap Manifests -->
 <details>
 <summary><b>Talos Bootstrap Manifests</b></summary>
