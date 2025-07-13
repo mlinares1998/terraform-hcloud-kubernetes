@@ -48,14 +48,16 @@ data "helm_template" "cert_manager" {
   version      = var.cert_manager_helm_version
   kube_version = var.kubernetes_version
 
-  set {
-    name  = "crds.enabled"
-    value = true
-  }
-  set {
-    name  = "startupapicheck.enabled"
-    value = false
-  }
+  set = [
+    {
+      name  = "crds.enabled"
+      value = true
+    },
+    {
+      name  = "startupapicheck.enabled"
+      value = false
+    }
+  ]
 
   values = [
     yamlencode(
