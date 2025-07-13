@@ -674,32 +674,6 @@ talos_backup_schedule = "0 * * * *"
 To recover from a snapshot, please refer to the Talos Disaster Recovery section in the [Documentation](https://www.talos.dev/latest/advanced/disaster-recovery/#recovery).
 </details>
 
-<!-- Talos Discovery Service -->
-<details>
-<summary><b>Talos Discovery Service</b></summary>
-
-Talos supports two node discovery mechanisms:
-
-- **Discovery Service Registry** (default): A public, external registry operated by Sidero Labs that works even when Kubernetes is unavailable. Nodes must have outbound access to TCP port 443 to communicate with it.  
-- **Kubernetes Registry**: Relies on Kubernetes Node metadata stored in etcd.
-
-This module uses the discovery service to perform additional health checks during Talos upgrades, Kubernetes upgrades, and Kubernetes manifest synchronization. If no discovery mechanism is enabled, these additional checks will be skipped.
-
-> :warning: **Important:** Kubernetes-based discovery is **incompatible by default** with Kubernetes **v1.32+** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata. This can cause broken discovery behavior, such as failing or incomplete results from `talosctl health` or `talosctl get members`.
-
-##### Example Configuration
-
-```hcl
-# Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
-talos_kubernetes_discovery_service_enabled = false
-
-# Enable the external Sidero Labs discovery service (default)
-talos_siderolabs_discovery_service_enabled = true
-```
-
-For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
-</details>
-
 <!-- Talos Configuration Patches -->
 <details>
 <summary><b>Talos Configuration Patches</b></summary>
@@ -762,7 +736,7 @@ cluster_autoscaler_config_patches = {}
 
 ### Toggle Component Deployment in Bootstrap Manifests
 
-During the cluster provisioning phase, each component manifest is applied using Talos's bootstrap manifests feature. However, this also means that the manifests are **re-applied** every time `terraform apply` is run, as part of the [automated Kubernetes upgrade process](https://www.talos.dev/v1.8/kubernetes-guides/upgrading-kubernetes/#automated-kubernetes-upgrade) triggered by the module.
+During the cluster provisioning phase, each component manifest is applied using Talos's bootstrap manifests feature. However, this also means that the manifests are **re-applied** every time `terraform apply` is run, as part of the [automated Kubernetes upgrade process](https://www.talos.dev/latest/kubernetes-guides/upgrading-kubernetes/#automated-kubernetes-upgrade) triggered by the module.
 
 This behavior can cause issues if you want to use GitOps tools like **FluxCD** or **ArgoCD** to manage the lifecycle of these components. Since Talos manages the application lifecycle, any changes made by FluxCD or ArgoCD (e.g., annotations or labels) may be overwritten or removed during upgrades, leading to conflicts.
 
@@ -805,7 +779,7 @@ cluster_autoscaler_nodepools = [
 ]
 ```
 
-> **Note:** Disabling a component **does not delete** its deployed resources. This is explicitly stated in the [Talos documentation](https://www.talos.dev/v1.8/kubernetes-guides/upgrading-kubernetes/#automated-kubernetes-upgrade).
+> **Note:** Disabling a component **does not delete** its deployed resources. This is explicitly stated in the [Talos documentation](https://www.talos.dev/latest/kubernetes-guides/upgrading-kubernetes/#automated-kubernetes-upgrade).
 
 After removing the component from the bootstrap manifests, you can either delete the existing resources manually before reapplying, or allow FluxCD/ArgoCD to take over their reconciliation and ongoing management.
 
@@ -836,6 +810,32 @@ talos_extra_inline_manifests = [
 ]
 ```
 
+</details>
+
+<!-- Talos Discovery Service -->
+<details>
+<summary><b>Talos Discovery Service</b></summary>
+
+Talos supports two node discovery mechanisms:
+
+- **Discovery Service Registry** (default): A public, external registry operated by Sidero Labs that works even when Kubernetes is unavailable. Nodes must have outbound access to TCP port 443 to communicate with it.  
+- **Kubernetes Registry**: Relies on Kubernetes Node metadata stored in etcd.
+
+This module uses the discovery service to perform additional health checks during Talos upgrades, Kubernetes upgrades, and Kubernetes manifest synchronization. If no discovery mechanism is enabled, these additional checks will be skipped.
+
+> :warning: **Important:** Kubernetes-based discovery is **incompatible by default** with Kubernetes **v1.32+** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata. This can cause broken discovery behavior, such as failing or incomplete results from `talosctl health` or `talosctl get members`.
+
+##### Example Configuration
+
+```hcl
+# Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
+talos_kubernetes_discovery_service_enabled = false
+
+# Enable the external Sidero Labs discovery service (default)
+talos_siderolabs_discovery_service_enabled = true
+```
+
+For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
 </details>
 
 <!-- Lifecycle -->

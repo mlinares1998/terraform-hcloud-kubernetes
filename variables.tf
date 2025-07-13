@@ -822,6 +822,7 @@ variable "talos_ccm_enabled" {
   default     = true
   description = "Enables the Talos Cloud Controller Manager (CCM) deployment."
 }
+
 variable "talos_ccm_version" {
   type        = string
   default     = "v1.9.1" # https://github.com/siderolabs/talos-cloud-controller-manager
@@ -875,6 +876,7 @@ variable "hcloud_ccm_enabled" {
   default     = true
   description = "Enables the Hetzner Cloud Controller Manager (CCM)."
 }
+
 variable "hcloud_ccm_helm_repository" {
   type        = string
   default     = "https://charts.hetzner.cloud"
@@ -1006,6 +1008,7 @@ variable "cilium_enabled" {
   default     = true
   description = "Enables the Cilium CNI deployment."
 }
+
 variable "cilium_helm_repository" {
   type        = string
   default     = "https://helm.cilium.io"
@@ -1430,6 +1433,7 @@ variable "prometheus_operator_crds_enabled" {
   default     = true
   description = "Enables the Prometheus Operator Custom Resource Definitions (CRDs) deployment."
 }
+
 variable "prometheus_operator_crds_version" {
   type        = string
   default     = "v0.82.1" # https://github.com/prometheus-operator/prometheus-operator
