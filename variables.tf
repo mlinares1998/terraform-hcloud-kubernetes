@@ -961,7 +961,7 @@ variable "hcloud_csi_storage_class_extra_parameters" {
 
 variable "hcloud_csi_additional_storage_classes" {
   description = "Additional user defined Hcloud CSI storage classes"
-  type        = list(object({
+  type = list(object({
     name                = string
     defaultStorageClass = optional(bool, false)
     reclaimPolicy       = optional(string, "Delete")
