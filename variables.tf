@@ -825,7 +825,7 @@ variable "talos_ccm_enabled" {
 
 variable "talos_ccm_version" {
   type        = string
-  default     = "v1.9.1" # https://github.com/siderolabs/talos-cloud-controller-manager
+  default     = "v1.10.1" # https://github.com/siderolabs/talos-cloud-controller-manager
   description = "Specifies the version of the Talos Cloud Controller Manager (CCM) to use. This version controls cloud-specific integration features in the Talos operating system."
 }
 
