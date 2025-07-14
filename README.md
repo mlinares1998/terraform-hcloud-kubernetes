@@ -848,7 +848,7 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 ### :white_check_mark: Version Compatibility Matrix
 | Hcloud K8s |  K8s  | Talos | Talos CCM | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Mgr. | Auto-scaler |
 | :--------: | :---: | :---: | :-------: | :--------: | :--------: | :-------: | :----: | :-----------: | :-------: | :---------: |
-|  (**2**)   | 1.32  |  1.9  |    1.9    |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |   1.17    |    9.45     |
+|  (**2**)   | 1.33  |  1.10 |    1.10   |    1.26    |    2.16    |   1.8.2   |  1.17.5|     4.12.4    |   1.18.2  |    9.48     |
 |   **1**    | 1.31  |  1.8  |    1.8    |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |   1.15    |    9.38     |
 |   **0**    | 1.30  |  1.7  |    1.6    |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |   1.14    |    9.37     |
 
@@ -871,7 +871,7 @@ In this module, upgrades are conducted with care and conservatism. You will cons
 
 <!-- Roadmap -->
 ## :compass: Roadmap
-* [ ] **Upgrade to Talos 1.9 and Kubernetes 1.32**<br>
+* [X] **Upgrade to Talos 1.10 and Kubernetes 1.33**<br>
       Once all components have compatible versions, the upgrade can be performed.
 * [x] **Upgrade to Talos 1.8 and Kubernetes 1.31**<br>
       Once all components have compatible versions, the upgrade can be performed.

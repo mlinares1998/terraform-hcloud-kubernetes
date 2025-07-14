@@ -493,7 +493,7 @@ variable "cluster_autoscaler_config_patches" {
 # Talos
 variable "talos_version" {
   type        = string
-  default     = "v1.8.4"
+  default     = "v1.10.5"
   description = "Specifies the version of Talos to be used in generated machine configurations."
 }
 
@@ -697,7 +697,7 @@ variable "talos_extra_remote_manifests" {
 # Talos Backup
 variable "talos_backup_version" {
   type        = string
-  default     = "v0.1.0-beta.2-1-g9ccc125"
+  default     = "v0.1.0-beta.3-1-g3022fec"
   description = "Specifies the version of Talos Backup to be used in generated machine configurations."
 }
 
@@ -773,7 +773,7 @@ variable "talos_backup_schedule" {
 # Kubernetes
 variable "kubernetes_version" {
   type        = string
-  default     = "v1.31.4"
+  default     = "v1.33.2"
   description = "Specifies the Kubernetes version to deploy."
 }
 
