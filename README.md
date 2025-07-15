@@ -829,10 +829,10 @@ This module uses the discovery service to perform additional health checks durin
 
 ```hcl
 # Disable Kubernetes-based discovery (deprecated in Kubernetes >= 1.32)
-talos_kubernetes_discovery_service_enabled = false
+talos_discovery_kubernetes_enabled = false
 
 # Enable the external Sidero Labs discovery service (default)
-talos_siderolabs_discovery_service_enabled = true
+talos_discovery_service_enabled = true
 ```
 
 For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
