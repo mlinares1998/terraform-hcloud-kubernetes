@@ -1055,6 +1055,12 @@ variable "hcloud_csi_additional_storage_classes" {
   default = []
 }
 
+variable "hcloud_csi_volume_extra_labels" {
+  type        = map(string)
+  default     = {}
+  description = "Specifies default labels to apply to all newly created volumes. The value must be a map in the format key: value."
+}
+
 # Longhorn
 variable "longhorn_helm_repository" {
   type        = string
