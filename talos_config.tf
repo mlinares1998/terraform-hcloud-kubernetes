@@ -7,6 +7,14 @@ locals {
     var.kubernetes_version,
   ))
 
+  talos_oidc_configuration = var.oidc_enabled ? {
+    "oidc-issuer-url"     = var.oidc_issuer_url
+    "oidc-client-id"      = var.oidc_client_id
+    "oidc-username-claim" = var.oidc_username_claim
+    "oidc-groups-claim"   = var.oidc_groups_claim
+    "oidc-groups-prefix"  = var.oidc_groups_prefix
+  } : {}
+
   # Kubernetes Manifests for Talos
   talos_inline_manifests = concat(
     [local.hcloud_secret_manifest],
@@ -19,7 +27,9 @@ locals {
     local.cert_manager_manifest != null ? [local.cert_manager_manifest] : [],
     local.ingress_nginx_manifest != null ? [local.ingress_nginx_manifest] : [],
     local.cluster_autoscaler_manifest != null ? [local.cluster_autoscaler_manifest] : [],
-    var.talos_extra_inline_manifests != null ? var.talos_extra_inline_manifests : []
+    var.talos_extra_inline_manifests != null ? var.talos_extra_inline_manifests : [],
+    local.rbac_manifest != null ? [local.rbac_manifest] : [],
+    local.oidc_manifest != null ? [local.oidc_manifest] : []
   )
   talos_manifests = concat(
     var.talos_ccm_enabled ? ["https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/${var.talos_ccm_version}/docs/deploy/cloud-controller-manager-daemonset.yml"] : [],
@@ -271,6 +281,7 @@ locals {
           certSANs         = local.certificate_san,
           extraArgs = merge(
             { "enable-aggregator-routing" = true },
+            local.talos_oidc_configuration,
             var.kube_api_extra_args
           )
         }
