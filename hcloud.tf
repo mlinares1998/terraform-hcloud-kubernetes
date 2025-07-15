@@ -122,6 +122,7 @@ data "helm_template" "hcloud_csi" {
             operator = "Exists"
           }
         ]
+        volumeExtraLabels = var.hcloud_csi_volume_extra_labels
       }
       storageClasses = concat(local.hcloud_csi_default_storage_class, var.hcloud_csi_additional_storage_classes)
     }),

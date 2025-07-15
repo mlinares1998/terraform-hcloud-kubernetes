@@ -381,6 +381,14 @@ hcloud_csi_storage_class_extra_parameters = {
   "csi.storage.k8s.io/fstype" = "xfs"
   "fsFormatOption"            = "-i nrext64=1"
 }
+
+# Add default labels to all newly created volumes
+hcloud_csi_volume_extra_labels = {
+  "environment" = "production"
+  "team"        = "platform"
+  "backup"      = "enabled"
+}
+
 ```
 
 **Defining additional StorageClasses**
