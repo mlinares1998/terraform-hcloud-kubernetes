@@ -1130,6 +1130,39 @@ variable "cilium_encryption_enabled" {
   description = "Enables transparent network encryption using Cilium within the Kubernetes cluster. When enabled, this feature provides added security for network traffic."
 }
 
+variable "cilium_encryption_type" {
+  type        = string
+  default     = "wireguard"
+  description = "Type of encryption to use for Cilium network encryption. Options: 'wireguard' or 'ipsec'."
+
+  validation {
+    condition     = contains(["wireguard", "ipsec"], var.cilium_encryption_type)
+    error_message = "Encryption type must be either 'wireguard' or 'ipsec'."
+  }
+}
+
+variable "cilium_ipsec_key_size" {
+  type        = number
+  default     = 256
+  description = "AES key size in bits for IPSec encryption (96, 128, or 256). Only used when cilium_encryption_type is 'ipsec'."
+
+  validation {
+    condition     = contains([96, 128, 256], var.cilium_ipsec_key_size)
+    error_message = "IPSec key size must be 96, 128 or 256 bits."
+  }
+}
+
+variable "cilium_ipsec_key_id" {
+  type        = number
+  default     = 1
+  description = "IPSec key ID (1-15, increment manually for rotation). Only used when cilium_encryption_type is 'ipsec'."
+
+  validation {
+    condition     = var.cilium_ipsec_key_id >= 1 && var.cilium_ipsec_key_id <= 15
+    error_message = "The IPSec key_id must be between 1 and 15."
+  }
+}
+
 variable "cilium_egress_gateway_enabled" {
   type        = bool
   default     = false
