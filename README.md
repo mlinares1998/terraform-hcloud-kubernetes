@@ -126,7 +126,7 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 
 **Firewall Protection:** This module uses [Hetzner Cloud Firewalls](https://docs.hetzner.com/cloud/firewalls/) to manage external access to nodes. For internal pod-to-pod communication, support for Kubernetes Network Policies is provided through [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
 
-**Encryption in Transit:** In this module, all pod network traffic is encrypted by default using [WireGuard via Cilium CNI](https://cilium.io/use-cases/transparent-encryption/). It includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
+**Encryption in Transit:** In this module, all pod network traffic is encrypted by default using [WireGuard (Default) or IPSec via Cilium CNI](https://cilium.io/use-cases/transparent-encryption/). It includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
 
 **Encryption at Rest:** In this module, the [STATE](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) and [EPHEMERAL](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) partitions are encrypted by default with [Talos Disk Encryption](https://www.talos.dev/latest/talos-guides/configuration/disk-encryption/) using LUKS2. Each node is secured with individual encryption keys derived from its unique `nodeID`.
 
@@ -428,6 +428,47 @@ If you still need to modify the StorageClass, you must delete the existing one m
 kubectl delete storageclass hcloud-volumes 
 storageclass.storage.k8s.io "hcloud-volumes" deleted
 ```
+
+</details>
+
+<!-- Cilium Advanced Configuration -->
+<details>
+<summary><b>Cilium Advanced Configuration</b></summary>
+
+### Cilium Transparent Encryption
+
+This module enables [Cilium Transparent Encryption](https://cilium.io/use-cases/transparent-encryption/) feature by default.  
+
+All pod network traffic is encrypted using WireGuard (Default) or IPSec protocols, includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
+
+:bulb: Although WireGuard is the default option, Hetzner Cloud VMs supports AES-NI instruction set, making IPSec encryption more CPU-efficient compared to WireGuard. Consider enabling IPSec for CPU savings through hardware acceleration.
+
+IPSec mode supports RFC4106 AES-GCM encryption with 96, 128 and 256 bits key sizes.
+
+
+**:warning: IPSec encryption has the following limitations:**
+
+- No transparent encryption when chaining Cilium with other CNI plugins
+- Host Policies not supported with IPSec
+- Incompatible with BPF Host Routing (automatically disabled on switch)
+- IPv6-only clusters not supported
+- Maximum 65,535 nodes per cluster/clustermesh
+- Single CPU core limitation per IPSec tunnel may affect high-throughput scenarios
+
+*Source: [Cilium Documentation](https://docs.cilium.io/en/stable/security/network/encryption-ipsec/#limitations)*
+
+Example `kubernetes.tf` configuration:
+
+```hcl
+cilium_encryption_enabled = true        # Default true
+cilium_encryption_type    = "wireguard" # wireguard (Default) | ipsec 
+cilium_ipsec_key_size     = 256         # IPSec AES key size (Default 256)
+cilium_ipsec_key_id       = 1           # IPSec key Id (dDefault 1)
+```
+
+#### IPSec Key Rotation
+
+Keys automatically rotate when `cilium_ipsec_key_id` is incremented (1-15 range, resets to 0 after 15).
 
 </details>
 
