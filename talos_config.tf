@@ -523,29 +523,11 @@ data "talos_machine_configuration" "control_plane" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   docs               = false
   examples           = false
-  config_patches = [
-    join(
-      "\n",
-      flatten([
-        "---",
-        yamlencode(local.control_plane_talos_config_patch[each.key]),
-        [
-          for name, patch in var.control_plane_config_patches :
-          join("\n", [
-            "---",
-            yamlencode(merge(
-              {
-                apiVersion = patch.apiVersion
-                kind       = patch.kind
-                name       = name
-              },
-              patch.spec
-            ))
-          ])
-        ]
-      ])
-    )
-  ]
+
+  config_patches = concat(
+    [yamlencode(local.control_plane_talos_config_patch[each.key])],
+    [for patch in var.control_plane_config_patches : yamlencode(patch)]
+  )
 }
 
 data "talos_machine_configuration" "worker" {
@@ -559,29 +541,11 @@ data "talos_machine_configuration" "worker" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   docs               = false
   examples           = false
-  config_patches = [
-    join(
-      "\n",
-      flatten([
-        "---",
-        yamlencode(local.worker_talos_config_patch[each.key]),
-        [
-          for name, patch in var.worker_config_patches :
-          join("\n", [
-            "---",
-            yamlencode(merge(
-              {
-                apiVersion = patch.apiVersion
-                kind       = patch.kind
-                name       = name
-              },
-              patch.spec
-            ))
-          ])
-        ]
-      ])
-    )
-  ]
+
+  config_patches = concat(
+    [yamlencode(local.worker_talos_config_patch[each.key])],
+    [for patch in var.worker_config_patches : yamlencode(patch)]
+  )
 }
 
 data "talos_machine_configuration" "cluster_autoscaler" {
@@ -595,27 +559,9 @@ data "talos_machine_configuration" "cluster_autoscaler" {
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   docs               = false
   examples           = false
-  config_patches = [
-    join(
-      "\n",
-      flatten([
-        "---",
-        yamlencode(local.autoscaler_nodepool_talos_config_patch[each.key]),
-        [
-          for name, patch in var.cluster_autoscaler_config_patches :
-          join("\n", [
-            "---",
-            yamlencode(merge(
-              {
-                apiVersion = patch.apiVersion
-                kind       = patch.kind
-                name       = name
-              },
-              patch.spec
-            ))
-          ])
-        ]
-      ])
-    )
-  ]
+
+  config_patches = concat(
+    [yamlencode(local.autoscaler_nodepool_talos_config_patch[each.key])],
+    [for patch in var.cluster_autoscaler_config_patches : yamlencode(patch)]
+  )
 }

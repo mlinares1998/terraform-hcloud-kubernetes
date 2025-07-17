@@ -62,6 +62,15 @@ data "helm_template" "cert_manager" {
   values = [
     yamlencode(
       merge(
+        {
+          config = {
+            featureGates = {
+              # Disable the use of Exact PathType in Ingress resources, to work around a bug in ingress-nginx
+              # https://github.com/kubernetes/ingress-nginx/issues/11176
+              ACMEHTTP01IngressPathTypeExact = !var.ingress_nginx_enabled
+            }
+          }
+        },
         local.cert_manager_values,
         {
           webhook = merge(

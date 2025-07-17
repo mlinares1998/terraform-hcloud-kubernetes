@@ -323,8 +323,8 @@ variable "control_plane_nodepools" {
 
 variable "control_plane_config_patches" {
   type        = any
-  default     = {}
-  description = "Map of configuration patches applied to the Control Plane nodes."
+  default     = []
+  description = "List of configuration patches applied to the Control Plane nodes."
 }
 
 
@@ -401,8 +401,8 @@ variable "worker_nodepools" {
 
 variable "worker_config_patches" {
   type        = any
-  default     = {}
-  description = "Map of configuration patches applied to the Worker nodes."
+  default     = []
+  description = "List of configuration patches applied to the Worker nodes."
 }
 
 
@@ -485,8 +485,42 @@ variable "cluster_autoscaler_nodepools" {
 
 variable "cluster_autoscaler_config_patches" {
   type        = any
+  default     = []
+  description = "List of configuration patches applied to the Cluster Autoscaler nodes."
+}
+
+
+# Packer
+variable "packer_amd64_builder" {
+  type = object({
+    server_type     = optional(string, "cpx11")
+    server_location = optional(string, "fsn1")
+  })
   default     = {}
-  description = "Map of configuration patches applied to the Cluster Autoscaler nodes."
+  description = "Configuration for the server used when building the Talos AMD64 image with Packer."
+
+  validation {
+    condition = contains([
+      "fsn1", "nbg1", "hel1", "ash", "hil", "sin"
+    ], var.packer_amd64_builder.server_location)
+    error_message = "The server_location must be one of: 'fsn1' (Falkenstein), 'nbg1' (Nuremberg), 'hel1' (Helsinki), 'ash' (Ashburn), 'hil' (Hillsboro), 'sin' (Singapore)."
+  }
+}
+
+variable "packer_arm64_builder" {
+  type = object({
+    server_type     = optional(string, "cax11")
+    server_location = optional(string, "fsn1")
+  })
+  default     = {}
+  description = "Configuration for the server used when building the Talos ARM64 image with Packer."
+
+  validation {
+    condition = contains([
+      "fsn1", "nbg1", "hel1", "ash", "hil", "sin"
+    ], var.packer_arm64_builder.server_location)
+    error_message = "The server_location must be one of: 'fsn1' (Falkenstein), 'nbg1' (Nuremberg), 'hel1' (Helsinki), 'ash' (Ashburn), 'hil' (Hillsboro), 'sin' (Singapore)."
+  }
 }
 
 
@@ -693,6 +727,7 @@ variable "talos_extra_remote_manifests" {
   description = "List of remote URLs pointing to Kubernetes manifests to be appended to the Talos machine configuration during bootstrap."
   default     = null
 }
+
 
 # Talos Backup
 variable "talos_backup_version" {
@@ -1114,7 +1149,7 @@ variable "cilium_helm_chart" {
 
 variable "cilium_helm_version" {
   type        = string
-  default     = "1.17.5"
+  default     = "1.17.6"
   description = "Version of the Cilium Helm chart to deploy."
 }
 
@@ -1295,7 +1330,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.12.4"
+  default     = "4.13.0"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
