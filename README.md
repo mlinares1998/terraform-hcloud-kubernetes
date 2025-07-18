@@ -377,10 +377,11 @@ IPSec mode supports RFC4106 AES-GCM encryption with 128, 192 and 256 bits key si
 Example `kubernetes.tf` configuration:
 
 ```hcl
-cilium_encryption_enabled = true        # Default true
-cilium_encryption_type    = "wireguard" # wireguard (Default) | ipsec 
-cilium_ipsec_key_size     = 256         # IPSec AES key size (Default 256)
-cilium_ipsec_key_id       = 1           # IPSec key Id (dDefault 1)
+cilium_encryption_enabled = true                # Default true
+cilium_encryption_type    = "wireguard"         # wireguard (Default) | ipsec
+cilium_ipsec_algorithm    = "rfc4106(gcm(aes))" # IPSec AES key algorithm (Default rfc4106(gcm(aes)))
+cilium_ipsec_key_size     = 256                 # IPSec AES key size (Default 256)
+cilium_ipsec_key_id       = 1                   # IPSec key ID (Default 1)
 ```
 
 #### IPSec Key Rotation
