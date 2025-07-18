@@ -3,9 +3,9 @@ locals {
   cilium_ipsec_enabled = var.cilium_encryption_enabled && var.cilium_encryption_type == "ipsec"
 
   # Key configuration when IPSec is enabled
-  cilium_key_config = local.cilium_ipsec_enabled ? {
-    next_id = var.cilium_ipsec_key_id >= 15 ? 0 : var.cilium_ipsec_key_id + 1
-    format  = "${var.cilium_ipsec_key_id}+ rfc4106(gcm(aes)) ${random_bytes.cilium_ipsec_key[0].hex} 128"
+  cilium_ipsec_key_config = local.cilium_ipsec_enabled ? {
+    next_id = var.cilium_ipsec_key_id % 15 + 1
+    format  = "${var.cilium_ipsec_key_id}+ ${var.cilium_ipsec_algorithm} ${random_bytes.cilium_ipsec_key[0].hex} 128"
   } : null
 
   # Kubernetes Secret manifest
@@ -20,13 +20,13 @@ locals {
 
       annotations = {
         "cilium.io/key-id"        = tostring(var.cilium_ipsec_key_id)
-        "cilium.io/key-algorithm" = "rfc4106(gcm(aes))"
+        "cilium.io/key-algorithm" = var.cilium_ipsec_algorithm
         "cilium.io/key-size"      = tostring(var.cilium_ipsec_key_size)
       }
     }
 
     data = {
-      keys = base64encode(local.cilium_key_config.format)
+      keys = base64encode(local.cilium_ipsec_key_config.format)
     }
   } : null
 }

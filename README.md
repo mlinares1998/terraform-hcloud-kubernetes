@@ -347,6 +347,46 @@ cluster_autoscaler_helm_values = {
   }
 }
 ```
+
+<!-- Cilium Advanced Configuration -->
+<details>
+<summary><b>Cilium Advanced Configuration</b></summary>
+
+### Cilium Transparent Encryption
+
+This module enables [Cilium Transparent Encryption](https://cilium.io/use-cases/transparent-encryption/) feature by default.  
+
+All pod network traffic is encrypted using WireGuard (Default) or IPSec protocols, includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
+
+:bulb: Although WireGuard is the default option, Hetzner Cloud VMs supports AES-NI instruction set, making IPSec encryption more CPU-efficient compared to WireGuard. Consider enabling IPSec for CPU savings through hardware acceleration.
+
+IPSec mode supports RFC4106 AES-GCM encryption with 128, 192 and 256 bits key sizes.
+
+
+**:warning: IPSec encryption has the following limitations:**
+
+- No transparent encryption when chaining Cilium with other CNI plugins
+- Host Policies not supported with IPSec
+- Incompatible with BPF Host Routing (automatically disabled on switch)
+- IPv6-only clusters not supported
+- Maximum 65,535 nodes per cluster/clustermesh
+- Single CPU core limitation per IPSec tunnel may affect high-throughput scenarios
+
+*Source: [Cilium Documentation](https://docs.cilium.io/en/stable/security/network/encryption-ipsec/#limitations)*
+
+Example `kubernetes.tf` configuration:
+
+```hcl
+cilium_encryption_enabled = true        # Default true
+cilium_encryption_type    = "wireguard" # wireguard (Default) | ipsec 
+cilium_ipsec_key_size     = 256         # IPSec AES key size (Default 256)
+cilium_ipsec_key_id       = 1           # IPSec key Id (dDefault 1)
+```
+
+#### IPSec Key Rotation
+
+Keys automatically rotate when `cilium_ipsec_key_id` is incremented (1-15 range, resets to 0 after 15).
+
 </details>
 
 <!-- CSI Driver Storage Class -->

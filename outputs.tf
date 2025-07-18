@@ -76,8 +76,8 @@ output "cilium_encryption_info" {
     encryption_enabled = var.cilium_encryption_enabled
     ipsec = {
       current_key_id = var.cilium_ipsec_key_id
-      next_key_id    = local.cilium_key_config["next_id"]
-      algorithm      = local.cilium_ipsec_keys_manifest.metadata.annotations["cilium.io/key-algorithm"]
+      next_key_id    = local.cilium_ipsec_key_config["next_id"]
+      algorithm      = var.cilium_ipsec_algorithm
       key_size_bits  = var.cilium_ipsec_key_size
       secret_name    = local.cilium_ipsec_keys_manifest.metadata["name"]
       namespace      = local.cilium_ipsec_keys_manifest.metadata["namespace"]
