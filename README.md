@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://avatars.githubusercontent.com/u/182015181" alt="logo" width="200" height="auto" />
+  <img src="https://avatars.githubusercontent.com/u/182015181" alt="logo" width="225" height="auto" />
   <h1>Hcloud Kubernetes</h1>
 
   <p>
@@ -43,7 +43,7 @@
 
 <!-- About the Project -->
 ## :star2: About the Project
-Hcloud Kubernetes is a Terraform module for deploying a fully declarative, managed Kubernetes cluster on Hetzner Cloud. It utilizes Talos, a secure, immutable, and minimal operating system specifically designed for Kubernetes, featuring a streamlined architecture with just 12 binaries and managed entirely through an API.
+Hcloud Kubernetes is a Terraform module for deploying a fully declarative, managed Kubernetes cluster on Hetzner Cloud. It utilizes Talos, a secure, immutable, and minimal operating system specifically designed for Kubernetes, featuring a streamlined architecture with only a handful of binaries and shared libraries. Just enough to run containerd and a small set of system services.
 
 This project is committed to production-grade configuration and lifecycle management, ensuring all components are set up for high availability. It includes a curated selection of widely used and officially recognized Kubernetes components. If you encounter any issues, suboptimal settings, or missing elements, please file an [issue](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/issues) to help us improve this project.
 
@@ -347,16 +347,18 @@ cluster_autoscaler_helm_values = {
   }
 }
 ```
+</details>
+
 
 <!-- Cilium Advanced Configuration -->
 <details>
 <summary><b>Cilium Advanced Configuration</b></summary>
 
-### Cilium Transparent Encryption
+#### Cilium Transparent Encryption
 
 This module enables [Cilium Transparent Encryption](https://cilium.io/use-cases/transparent-encryption/) feature by default.  
 
-All pod network traffic is encrypted using WireGuard (Default) or IPSec protocols, includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
+All pod network traffic is encrypted using WireGuard (Default) or  protocols, includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
 
 :bulb: Although WireGuard is the default option, Hetzner Cloud VMs supports AES-NI instruction set, making IPSec encryption more CPU-efficient compared to WireGuard. Consider enabling IPSec for CPU savings through hardware acceleration.
 
@@ -384,9 +386,9 @@ cilium_ipsec_key_size     = 256                 # IPSec AES key size (Default 25
 cilium_ipsec_key_id       = 1                   # IPSec key ID (Default 1)
 ```
 
-#### IPSec Key Rotation
+##### IPSec Key Rotation
 
-Keys automatically rotate when `cilium_ipsec_key_id` is incremented (1-15 range, resets to 0 after 15).
+Keys automatically rotate when `cilium_ipsec_key_id` is incremented (1-15 range, resets to 1 after 15).
 
 </details>
 
@@ -1120,7 +1122,7 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 |   **1**    | 1.31  |  1.8  |    1.8    |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |   1.15    |    9.38     |
 |   **0**    | 1.30  |  1.7  |    1.6    |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |   1.14    |    9.37     |
 
-In this module, upgrades are conducted with care and conservatism. You will consistently receive the most tested and compatible releases of all components, avoiding the latest untested or incompatible releases that could disrupt your cluster.
+In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components, avoiding the latest untested or incompatible releases that could disrupt your cluster.
 
 > [!WARNING]
 > Do not change any software versions in this project on your own. Each component is tailored to ensure compatibility with new Kubernetes releases. This project specifies versions that are supported and have been thoroughly tested to work together.

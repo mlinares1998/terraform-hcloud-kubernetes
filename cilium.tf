@@ -85,11 +85,10 @@ data "helm_template" "cilium" {
       name  = "bpf.masquerade"
       value = true
     },
-    # Netkit requires kernel >= 6.8
-    #   {
-    #     name  = "bpf.datapathMode"
-    #     value = "netkit"
-    #   },
+    {
+      name  = "bpf.datapathMode"
+      value = "netkit"
+    },
     {
       name  = "loadBalancer.acceleration"
       value = "native"
