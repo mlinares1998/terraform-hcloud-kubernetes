@@ -87,7 +87,7 @@ data "helm_template" "cilium" {
     },
     {
       name  = "bpf.datapathMode"
-      value = "netkit"
+      value = var.cilium_bpf_datapath_mode
     },
     {
       name  = "loadBalancer.acceleration"

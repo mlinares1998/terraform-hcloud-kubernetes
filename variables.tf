@@ -1204,6 +1204,16 @@ variable "cilium_ipsec_key_id" {
   }
 }
 
+variable "cilium_bpf_datapath_mode" {
+  type        = string
+  default     = "veth"
+  description = "Mode for Pod devices for the core datapath. Allowed values: veth, netkit, netkit-l2. Warning: Netkit is still in beta and should not be used together with IPsec encryption!"
+  validation {
+    condition     = contains(["veth", "netkit", "netkit-l2"], var.cilium_bpf_datapath_mode)
+    error_message = "cilium_bpf_datapath_mode must be one of: veth, netkit, netkit-l2."
+  }
+}
+
 variable "cilium_egress_gateway_enabled" {
   type        = bool
   default     = false
