@@ -16,32 +16,6 @@ locals {
       }
     })
   }
-  hcloud_csi_storage_class_encryption_key_manifest = var.hcloud_csi_enabled ? var.hcloud_csi_storage_class_encryption_enabled ? {
-    apiVersion = "v1"
-    kind       = "Secret"
-    type       = "Opaque"
-    metadata = {
-      name      = "hcloud-csi-secret"
-      namespace = "kube-system"
-    }
-    data = {
-      encryption-passphrase = var.hcloud_csi_storage_class_encryption_key != null ? base64encode(var.hcloud_csi_storage_class_encryption_key) : base64encode(random_bytes.hcloud_csi_encryption_key[0].hex)
-    }
-  } : null : null
-  hcloud_csi_default_storage_class = [
-    {
-      name                = "hcloud-volumes"
-      defaultStorageClass = true
-      reclaimPolicy       = var.hcloud_csi_storage_class_reclaim_policy
-      extraParameters = merge(
-        var.hcloud_csi_storage_class_encryption_enabled ? {
-          "csi.storage.k8s.io/node-publish-secret-name"      = "hcloud-csi-secret"
-          "csi.storage.k8s.io/node-publish-secret-namespace" = "kube-system"
-        } : {},
-        var.hcloud_csi_storage_class_extra_parameters
-      )
-    }
-  ]
 }
 
 # Hcloud CCM
@@ -81,8 +55,43 @@ locals {
 
 # Hcloud CSI
 resource "random_bytes" "hcloud_csi_encryption_key" {
-  count  = var.hcloud_csi_enabled ? var.hcloud_csi_storage_class_encryption_enabled ? var.hcloud_csi_storage_class_encryption_key == null ? 1 : 0 : 0 : 0
+  count  = var.hcloud_csi_enabled ? 1 : 0
   length = 32
+}
+
+locals {
+  hcloud_csi_secret_manifest = {
+    apiVersion = "v1"
+    kind       = "Secret"
+    type       = "Opaque"
+    metadata = {
+      name      = "hcloud-csi-secret"
+      namespace = "kube-system"
+    }
+    data = {
+      encryption-passphrase = (
+        var.hcloud_csi_encryption_passphrase != null ?
+        base64encode(var.hcloud_csi_encryption_passphrase) :
+        base64encode(random_bytes.hcloud_csi_encryption_key[0].hex)
+      )
+    }
+  }
+
+  hcloud_csi_storage_classes = [
+    for class in var.hcloud_csi_storage_classes : {
+      name                = class.name
+      reclaimPolicy       = class.reclaimPolicy
+      defaultStorageClass = class.defaultStorageClass
+
+      extraParameters = merge(
+        class.encrypted ? {
+          "csi.storage.k8s.io/node-publish-secret-name"      = "hcloud-csi-secret"
+          "csi.storage.k8s.io/node-publish-secret-namespace" = "kube-system"
+        } : {},
+        class.extraParameters
+      )
+    }
+  ]
 }
 
 data "helm_template" "hcloud_csi" {
@@ -124,7 +133,7 @@ data "helm_template" "hcloud_csi" {
         ]
         volumeExtraLabels = var.hcloud_csi_volume_extra_labels
       }
-      storageClasses = concat(local.hcloud_csi_default_storage_class, var.hcloud_csi_additional_storage_classes)
+      storageClasses = local.hcloud_csi_storage_classes
     }),
     yamlencode(var.hcloud_csi_helm_values)
   ]
@@ -134,9 +143,9 @@ locals {
   hcloud_csi_manifest = var.hcloud_csi_enabled ? {
     name     = "hcloud-csi"
     contents = <<-EOF
-      ${data.helm_template.hcloud_csi[0].manifest}
+      ${yamlencode(local.hcloud_csi_secret_manifest)}
       ---
-      ${var.hcloud_csi_storage_class_encryption_enabled ? yamlencode(local.hcloud_csi_storage_class_encryption_key_manifest) : yamlencode({})}
+      ${data.helm_template.hcloud_csi[0].manifest}
     EOF
   } : null
 }

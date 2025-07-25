@@ -1053,41 +1053,30 @@ variable "hcloud_csi_enabled" {
   description = "Enables the Hetzner Container Storage Interface (CSI)."
 }
 
-variable "hcloud_csi_storage_class_encryption_enabled" {
-  type        = bool
-  default     = false
-  description = "Enable Hcloud CSI default storage class LUKS encryption."
-}
-
-variable "hcloud_csi_storage_class_encryption_key" {
+variable "hcloud_csi_encryption_passphrase" {
   type        = string
   default     = null
-  description = "User defined Hcloud CSI default storage class LUKS encryption key."
+  description = "Passphrase for encrypting volumes created by the Hcloud CSI driver. If not provided, a random passphrase will be generated. The passphrase must be 8-512 characters long and contain only printable 7-bit ASCII characters."
   sensitive   = true
+
+  validation {
+    condition     = var.hcloud_csi_encryption_passphrase == null || can(regex("^[ -~]{8,512}$", var.hcloud_csi_encryption_passphrase))
+    error_message = "The passphrase must be 8-512 characters long and contain only printable 7-bit ASCII characters (character codes 32-126)."
+  }
 }
 
-variable "hcloud_csi_storage_class_reclaim_policy" {
-  type        = string
-  default     = "Delete"
-  description = "Hcloud CSI default storage class reclaim policy."
-  sensitive   = true
-}
-
-variable "hcloud_csi_storage_class_extra_parameters" {
-  type        = map(string)
-  default     = {}
-  description = "Hcloud CSI default storage class extra parameters."
-}
-
-variable "hcloud_csi_additional_storage_classes" {
-  description = "Additional user defined Hcloud CSI storage classes"
+variable "hcloud_csi_storage_classes" {
+  description = "User defined Hcloud CSI storage classes"
   type = list(object({
     name                = string
-    defaultStorageClass = optional(bool, false)
+    encrypted           = bool
     reclaimPolicy       = optional(string, "Delete")
+    defaultStorageClass = optional(bool, false)
     extraParameters     = optional(map(string), {})
   }))
-  default = []
+  default = [
+    { name = "hcloud-volumes", encrypted = false, defaultStorageClass = true }
+  ]
 }
 
 variable "hcloud_csi_volume_extra_labels" {
@@ -1095,6 +1084,7 @@ variable "hcloud_csi_volume_extra_labels" {
   default     = {}
   description = "Specifies default labels to apply to all newly created volumes. The value must be a map in the format key: value."
 }
+
 
 # Longhorn
 variable "longhorn_helm_repository" {
@@ -1125,6 +1115,12 @@ variable "longhorn_enabled" {
   type        = bool
   default     = false
   description = "Enable or disable Longhorn integration"
+}
+
+variable "longhorn_default_storage_class" {
+  type        = bool
+  default     = false
+  description = "Set Longhorn as the default storage class."
 }
 
 
