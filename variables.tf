@@ -864,7 +864,7 @@ variable "talos_ccm_version" {
   description = "Specifies the version of the Talos Cloud Controller Manager (CCM) to use. This version controls cloud-specific integration features in the Talos operating system."
 }
 
-# Talos OIDC Configuration
+# Kubernetes OIDC Configuration
 variable "oidc_enabled" {
   description = "Enable OIDC authentication for Kubernetes API server"
   type        = bool

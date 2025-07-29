@@ -1,7 +1,7 @@
 locals {
   allow_scheduling_on_control_plane = ((local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
 
-  talos_oidc_configuration = var.oidc_enabled ? {
+  kube_oidc_configuration = var.oidc_enabled ? {
     "oidc-issuer-url"     = var.oidc_issuer_url
     "oidc-client-id"      = var.oidc_client_id
     "oidc-username-claim" = var.oidc_username_claim
@@ -275,7 +275,7 @@ locals {
           certSANs         = local.certificate_san,
           extraArgs = merge(
             { "enable-aggregator-routing" = true },
-            local.talos_oidc_configuration,
+            local.kube_oidc_configuration,
             var.kube_api_extra_args
           )
         }
