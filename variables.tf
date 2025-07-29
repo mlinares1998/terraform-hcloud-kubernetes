@@ -912,21 +912,30 @@ variable "oidc_groups_prefix" {
 }
 
 variable "oidc_group_mappings" {
-  description = "Map OIDC groups to Kubernetes roles and cluster roles"
-  type = map(object({
+  description = "List of OIDC groups mapped to Kubernetes roles and cluster roles"
+  type = list(object({
+    group         = string
     cluster_roles = optional(list(string), [])
     roles = optional(list(object({
       name      = string
       namespace = string
     })), [])
   }))
-  default = {}
+  default = []
+
+  validation {
+    condition = length(var.oidc_group_mappings) == length(distinct([
+      for mapping in var.oidc_group_mappings : mapping.group
+    ]))
+    error_message = "OIDC group names must be unique. Duplicate group names found."
+  }
 }
 
 # Kubernetes RBAC
 variable "rbac_roles" {
-  description = "Custom Kubernetes roles to create"
-  type = map(object({
+  description = "List of custom Kubernetes roles to create"
+  type = list(object({
+    name      = string
     namespace = string
     rules = list(object({
       api_groups = list(string)
@@ -934,21 +943,35 @@ variable "rbac_roles" {
       verbs      = list(string)
     }))
   }))
-  default = {}
+  default = []
+
+  validation {
+    condition = length(var.rbac_roles) == length(distinct([
+      for role in var.rbac_roles : role.name
+    ]))
+    error_message = "RBAC role names must be unique. Duplicate role names found."
+  }
 }
 
 variable "rbac_cluster_roles" {
-  description = "Custom Kubernetes cluster roles to create"
-  type = map(object({
+  description = "List of custom Kubernetes cluster roles to create"
+  type = list(object({
+    name = string
     rules = list(object({
       api_groups = list(string)
       resources  = list(string)
       verbs      = list(string)
     }))
   }))
-  default = {}
-}
+  default = []
 
+  validation {
+    condition = length(var.rbac_cluster_roles) == length(distinct([
+      for role in var.rbac_cluster_roles : role.name
+    ]))
+    error_message = "RBAC cluster role names must be unique. Duplicate cluster role names found."
+  }
+}
 
 # Hetzner Cloud
 variable "hcloud_token" {

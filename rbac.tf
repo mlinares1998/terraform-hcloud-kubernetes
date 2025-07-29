@@ -2,27 +2,27 @@ locals {
   # Generate Kubernetes RBAC manifests
   rbac_manifests = concat(
     # Kubernetes namespaced roles
-    [for role_name, role_config in var.rbac_roles : yamlencode({
+    [for role in var.rbac_roles : yamlencode({
       apiVersion = "rbac.authorization.k8s.io/v1"
       kind       = "Role"
       metadata = {
-        name      = role_name
-        namespace = role_config.namespace
+        name      = role.name
+        namespace = role.namespace
       }
-      rules = [for rule in role_config.rules : {
+      rules = [for rule in role.rules : {
         apiGroups = rule.api_groups
         resources = rule.resources
         verbs     = rule.verbs
       }]
     })],
     # Kubernetes cluster roles 
-    [for role_name, role_config in var.rbac_cluster_roles : yamlencode({
+    [for role in var.rbac_cluster_roles : yamlencode({
       apiVersion = "rbac.authorization.k8s.io/v1"
       kind       = "ClusterRole"
       metadata = {
-        name = role_name
+        name = role.name
       }
-      rules = [for rule in role_config.rules : {
+      rules = [for rule in role.rules : {
         apiGroups = rule.api_groups
         resources = rule.resources
         verbs     = rule.verbs
