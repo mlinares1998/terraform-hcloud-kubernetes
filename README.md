@@ -971,7 +971,7 @@ oidc_group_mappings = [                                  # List of OIDC group ma
 
 #### Client Configuration with kubelogin
 
-Once OIDC is configured on your cluster, you'll need to configure your local kubectl to authenticate using OIDC tokens. This requires the [kubelogin](https://github.com/int128/kubelogin) plugin.
+Once OIDC is configured in your cluster, you'll need to configure your local kubectl to authenticate using OIDC tokens. This requires the [kubelogin](https://github.com/int128/kubelogin) plugin.
 
 ##### Install kubelogin
 
@@ -995,7 +995,7 @@ kubectl oidc-login setup \
   --oidc-issuer-url=https://your-oidc-provider.com \
   --oidc-client-id=your-client-id \
   --oidc-client-secret=your-client-secret \           
-  --oidc-extra-scope=openid,email,profile             # Change the scopes according to your IDP
+  --oidc-extra-scope=openid,email,profile             # Add or change the scopes according to your IDP
 ```
 
 This will open your browser for authentication. After successful login, you should see a JWT token in your terminal that looks like:
@@ -1042,7 +1042,7 @@ users:
         - --oidc-client-secret=your-client-secret
         - --oidc-extra-scope=groups
         - --oidc-extra-scope=email
-        - --oidc-extra-scope=name
+        - --oidc-extra-scope=name                           # Add or change the scopes according to your IDP
 ```
 
 Update your context to use the new OIDC user:
