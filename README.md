@@ -53,22 +53,18 @@ This project is committed to production-grade configuration and lifecycle manage
 <!-- Features -->
 ### :sparkles: Features
 
-This setup includes several features for a seamless, best-practice Kubernetes deployment on Hetzner Cloud:
-- **Fully Declarative & Immutable:** Utilize Talos Linux for a completely declarative and immutable Kubernetes setup on Hetzner Cloud.
-- **Cross-Architecture:** Supports both AMD64 and ARM64 architectures, with integrated image upload to Hetzner Cloud.
-- **High Availability:** Configured for production-grade high availability for all components, ensuring consistent and reliable system performance.
-- **Distributed Storage:** Implements Longhorn for cloud-native block storage with snapshotting and automatic replica rebuilding.
-- **Autoscaling:** Includes Cluster Autoscaler to dynamically adjust node counts based on workload demands, optimizing resource allocation.
-- **Plug-and-Play Kubernetes:** Equipped with an optional Ingress Controller and Cert Manager, facilitating rapid workload deployment.
-- **Geo-Redundant Ingress:** Supports high availability and massive scalability through geo-redundant Load Balancer pools.
-- **Dual-Stack Support:** Employs Load Balancers with Proxy Protocol to efficiently route both IPv4 and IPv6 traffic to the Ingress Controller.
-- **Enhanced Security:** Built with security as a priority, incorporating firewalls and encryption by default to protect your infrastructure.
-- **Automated Backups:** Leverages Talos Backup with support for S3-compatible storage solutions like Hetzner's Object Storage.
+This setup offers a production-ready, best-practice Kubernetes deployment on Hetzner Cloud featuring:
+- **Immutable and Declarative:** Uses Talos Linux for a completely declarative, immutable Kubernetes cluster.
+- **Cross-Architecture:** Supports AMD64 and ARM64 with automated image uploads to Hetzner Cloud.
+- **High Availability:** Production-grade high availability across all components for consistent, reliable performance.
+- **Autoscaling:** Supports automatic scaling of nodes and pods to handle dynamic workload demands.
+- **Plug-and-Play:** Optional Ingress Controller and Cert Manager for rapid workload deployment.
+- **Dual-Stack Support:** Load Balancers with native IPv4 and IPv6 for efficient traffic routing.
+- **Enhanced Security:** Security-focused by design, with perimeter firewalls and encryption in transit and at rest.
 
 <!-- Components -->
 ### :package: Components
-This project includes commonly used and essential Kubernetes software, optimized for seamless integration with Hetzner Cloud.
-
+This project bundles essential Kubernetes components, preconfigured for seamless operation on Hetzner Cloud:
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=talos.dev&sz=32" width="16" height="16">
     <b><a href="https://github.com/siderolabs/talos-cloud-controller-manager">Talos Cloud Controller Manager (CCM)</a></b>
@@ -88,12 +84,12 @@ This project includes commonly used and essential Kubernetes software, optimized
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=hetzner.com&sz=32" width="16" height="16">
     <b><a href="https://github.com/hetznercloud/csi-driver">Hcloud Container Storage Interface (CSI)</a></b>
   </summary>
-  Manages persistent storage in Kubernetes clusters using Hetzner Cloud Volumes, ensuring seamless storage integration and management.
+  Provides persistent storage for Kubernetes using Hetzner Cloud Volumes, supporting encryption and dynamic provisioning.
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=longhorn.io&sz=32" width="16" height="16">
     <b><a href="https://longhorn.io">Longhorn</a></b>
   </summary>
-  Delivers distributed block storage for Kubernetes, facilitating high availability and easy management of persistent volumes with features like snapshotting and automatic replica rebuilding.
+  Distributed block storage for Kubernetes, providing high availability, snapshots, and automatic replica rebuilding for easy persistent volume management.
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cilium.io&sz=32" width="16" height="16">
     <b><a href="https://cilium.io">Cilium Container Network Interface (CNI)</a></b>
@@ -1073,12 +1069,13 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 > Before upgrading to the next major version of this module, ensure you are on the latest release of the current major version. Do not skip any major release upgrades.
 
 ### :white_check_mark: Version Compatibility Matrix
-| Hcloud K8s |  K8s  | Talos | Talos CCM | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Mgr. | Auto-scaler |
-| :--------: | :---: | :---: | :-------: | :--------: | :--------: | :-------: | :----: | :-----------: | :-------: | :---------: |
-|  **(3)**   | 1.33  | 1.10  |   1.10    |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |   1.18    |    9.47     |
-|   **2**    | 1.32  |  1.9  |    1.9    |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |   1.17    |    9.45     |
-|   **1**    | 1.31  |  1.8  |    1.8    |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |   1.15    |    9.38     |
+| Hcloud K8s |  K8s   | Talos  | Talos CCM | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Mgr. | Auto-scaler |
+| :--------: | :----: | :----: | :-------: | :--------: | :--------: | :-------: | :----: | :-----------: | :-------: | :---------: |
+|  **(4)**   | (1.34) | (1.11) |  (1.11)   |     ?      |     ?      |     ?     |   ?    |       ?       |     ?     |      ?      |
+|  **(3)**   |  1.33  |  1.10  |   1.10    |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |   1.18    |    9.47     |
+|   **2**    |  1.32  |  1.9   |    1.9    |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |   1.17    |    9.45     |
 <!--
+|   **1**    | 1.31  |  1.8  |    1.8    |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |   1.15    |    9.38     |
 |   **0**    | 1.30  |  1.7  |    1.6    |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |   1.14    |    9.37     |
 -->
 
@@ -1089,7 +1086,7 @@ In this module, upgrades are conducted with care. You will consistently receive 
 
 <!--
 - Talos/K8s: https://github.com/siderolabs/talos/blob/release-1.6/pkg/machinery/constants/constants.go
-- HCCM: https://github.com/hetznercloud/hcloud-cloud-controller-manager/tree/main?tab=readme-ov-file#versioning-policy
+- HCCM: https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/becfd60814cd868ca972492298f17b8e7e11c8ed/docs/reference/version-policy.md
 - HCSI: https://github.com/hetznercloud/csi-driver/blob/main/docs/kubernetes/README.md#versioning-policy
 - Longhorn: https://longhorn.io/docs/1.7.2/best-practices/#kubernetes-version
 - Cilium: https://github.com/cilium/cilium/blob/v1.15/Documentation/network/kubernetes/requirements.rst#kubernetes-version
