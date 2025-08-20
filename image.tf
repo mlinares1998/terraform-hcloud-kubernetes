@@ -85,26 +85,6 @@ data "talos_image_factory_urls" "arm64" {
   architecture  = "arm64"
 }
 
-data "hcloud_image" "amd64" {
-  count = local.amd64_image_required ? 1 : 0
-
-  with_selector     = local.image_label_selector
-  with_architecture = "x86"
-  most_recent       = true
-
-  depends_on = [terraform_data.amd64_image]
-}
-
-data "hcloud_image" "arm64" {
-  count = local.arm64_image_required ? 1 : 0
-
-  with_selector     = local.image_label_selector
-  with_architecture = "arm"
-  most_recent       = true
-
-  depends_on = [terraform_data.arm64_image]
-}
-
 data "hcloud_images" "amd64" {
   count = local.amd64_image_required ? 1 : 0
 
@@ -198,4 +178,24 @@ resource "terraform_data" "arm64_image" {
   }
 
   depends_on = [terraform_data.packer_init]
+}
+
+data "hcloud_image" "amd64" {
+  count = local.amd64_image_required ? 1 : 0
+
+  with_selector     = local.image_label_selector
+  with_architecture = "x86"
+  most_recent       = true
+
+  depends_on = [terraform_data.amd64_image]
+}
+
+data "hcloud_image" "arm64" {
+  count = local.arm64_image_required ? 1 : 0
+
+  with_selector     = local.image_label_selector
+  with_architecture = "arm"
+  most_recent       = true
+
+  depends_on = [terraform_data.arm64_image]
 }

@@ -26,7 +26,7 @@ locals {
           "^(?P<key>[^=:]+)=?(?P<value>[^=:]*?):(?P<effect>.+)$",
           taint
         )],
-        local.allow_scheduling_on_control_plane ? [] : [
+        local.talos_allow_scheduling_on_control_planes ? [] : [
           { key = "node-role.kubernetes.io/control-plane", value = "", effect = "NoSchedule" }
         ]
       ),

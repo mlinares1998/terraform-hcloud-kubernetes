@@ -42,7 +42,6 @@ resource "random_bytes" "cilium_ipsec_key" {
   }
 }
 
-
 data "helm_template" "cilium" {
   name      = "cilium"
   namespace = "kube-system"

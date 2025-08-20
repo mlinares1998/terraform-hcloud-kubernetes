@@ -6,10 +6,25 @@
   "separateMinorPatch": true,
   "packageRules": [
     {
-      "matchUpdateTypes": [
+      "description": "Wait 3 days before raising PRs for patch updates",
+      "updateTypes": [
         "patch"
       ],
-      "automerge": true
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Wait 7 days before raising PRs for minor updates",
+      "updateTypes": [
+        "minor"
+      ],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Wait 14 days before raising PRs for major updates",
+      "updateTypes": [
+        "major"
+      ],
+      "minimumReleaseAge": "14 days"
     }
   ],
   "customManagers": [

@@ -1,5 +1,5 @@
 locals {
-  allow_scheduling_on_control_plane = ((local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
+  talos_allow_scheduling_on_control_planes = ((local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
 
   kube_oidc_configuration = var.oidc_enabled ? {
     "oidc-issuer-url"     = var.oidc_issuer_url
@@ -80,7 +80,7 @@ locals {
   talos_public_interface_enabled = var.talos_public_ipv4_enabled || var.talos_public_ipv6_enabled
 
   # Extra Host Entries
-  extra_host_entries = concat(
+  talos_extra_host_entries = concat(
     var.kube_api_hostname != null ? [
       {
         ip      = local.kube_api_private_ipv4
@@ -91,7 +91,7 @@ locals {
   )
 
   # Disk Encryption Configuration
-  systemDiskEncryption = merge(
+  talos_system_disk_encryption = merge(
     var.talos_state_partition_encryption_enabled ? {
       state = {
         provider = "luks2"
@@ -154,7 +154,7 @@ locals {
           extraKernelArgs = var.talos_extra_kernel_args
         }
         nodeLabels = merge(
-          local.allow_scheduling_on_control_plane ? { "node.kubernetes.io/exclude-from-external-load-balancers" = { "$patch" = "delete" } } : {},
+          local.talos_allow_scheduling_on_control_planes ? { "node.kubernetes.io/exclude-from-external-load-balancers" = { "$patch" = "delete" } } : {},
           local.control_plane_nodepools_map[node.labels.nodepool].labels
         )
         nodeAnnotations = local.control_plane_nodepools_map[node.labels.nodepool].annotations
@@ -191,7 +191,7 @@ locals {
             }]
           )
           nameservers      = local.talos_nameservers
-          extraHostEntries = local.extra_host_entries
+          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
@@ -237,7 +237,7 @@ locals {
           var.talos_sysctls_extra_args
         )
         registries           = var.talos_registries
-        systemDiskEncryption = local.systemDiskEncryption
+        systemDiskEncryption = local.talos_system_disk_encryption
         features = {
           kubernetesTalosAPIAccess = {
             enabled = true,
@@ -257,7 +257,7 @@ locals {
         }
       }
       cluster = {
-        allowSchedulingOnControlPlanes = local.allow_scheduling_on_control_plane
+        allowSchedulingOnControlPlanes = local.talos_allow_scheduling_on_control_planes
         network = {
           dnsDomain      = var.cluster_domain
           podSubnets     = [local.pod_ipv4_cidr]
@@ -323,7 +323,6 @@ locals {
         network = {
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
-
               interface = "eth0"
               dhcp      = true
               dhcpOptions = {
@@ -338,7 +337,7 @@ locals {
             }]
           )
           nameservers      = local.talos_nameservers
-          extraHostEntries = local.extra_host_entries
+          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
@@ -384,7 +383,7 @@ locals {
           var.talos_sysctls_extra_args
         )
         registries           = var.talos_registries
-        systemDiskEncryption = local.systemDiskEncryption
+        systemDiskEncryption = local.talos_system_disk_encryption
         features = {
           hostDNS = local.talos_host_dns
         }
@@ -424,7 +423,6 @@ locals {
         network = {
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
-
               interface = "eth0"
               dhcp      = true
               dhcpOptions = {
@@ -439,7 +437,7 @@ locals {
             }]
           )
           nameservers      = local.talos_nameservers
-          extraHostEntries = local.extra_host_entries
+          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
@@ -485,7 +483,7 @@ locals {
           var.talos_sysctls_extra_args
         )
         registries           = var.talos_registries
-        systemDiskEncryption = local.systemDiskEncryption
+        systemDiskEncryption = local.talos_system_disk_encryption
         features = {
           hostDNS = local.talos_host_dns
         }

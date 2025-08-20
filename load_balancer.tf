@@ -169,7 +169,7 @@ locals {
       target_label_selector = length(lp.target_label_selector) > 0 ? lp.target_label_selector : concat(
         [
           for np in concat(
-            local.allow_scheduling_on_control_plane ? local.control_plane_nodepools : [],
+            local.talos_allow_scheduling_on_control_planes ? local.control_plane_nodepools : [],
             local.worker_nodepools
           ) : "cluster=${var.cluster_name},nodepool=${np.labels.nodepool}"
           if(lp.local_traffic ? np.location == lp.location : true) &&
