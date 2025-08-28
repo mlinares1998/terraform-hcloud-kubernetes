@@ -60,7 +60,7 @@ resource "random_bytes" "hcloud_csi_encryption_key" {
 }
 
 locals {
-  hcloud_csi_secret_manifest = {
+  hcloud_csi_secret_manifest = var.hcloud_csi_enabled ? {
     apiVersion = "v1"
     kind       = "Secret"
     type       = "Opaque"
@@ -75,7 +75,7 @@ locals {
         base64encode(random_bytes.hcloud_csi_encryption_key[0].hex)
       )
     }
-  }
+  } : null
 
   hcloud_csi_storage_classes = [
     for class in var.hcloud_csi_storage_classes : {
