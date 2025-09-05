@@ -1,16 +1,20 @@
 locals {
   cluster_autoscaler_enabled = length(local.cluster_autoscaler_nodepools) > 0
 
-  cluster_autoscaler_nodepools_manifest = local.cluster_autoscaler_enabled ? {
+  cluster_autoscaler_release_name       = "cluster-autoscaler"
+  cluster_autoscaler_cloud_provider     = "hetzner"
+  cluster_autoscaler_config_secret_name = "${local.cluster_autoscaler_release_name}-${local.cluster_autoscaler_cloud_provider}-config"
+
+  cluster_autoscaler_cluster_config_manifest = local.cluster_autoscaler_enabled ? {
     apiVersion = "v1"
     kind       = "Secret"
     type       = "Opaque"
     metadata = {
-      name      = "hcloud-cluster-autoscaler"
+      name      = local.cluster_autoscaler_config_secret_name
       namespace = "kube-system"
     }
     data = {
-      nodepools = base64encode(jsonencode(
+      cluster-config = base64encode(jsonencode(
         {
           imagesForArch = {
             arm64 = local.image_label_selector,
@@ -32,7 +36,7 @@ locals {
 data "helm_template" "cluster_autoscaler" {
   count = local.cluster_autoscaler_enabled ? 1 : 0
 
-  name      = "cluster-autoscaler"
+  name      = local.cluster_autoscaler_release_name
   namespace = "kube-system"
 
   repository   = var.cluster_autoscaler_helm_repository
@@ -43,7 +47,7 @@ data "helm_template" "cluster_autoscaler" {
   set = [
     {
       name  = "cloudProvider"
-      value = "hetzner"
+      value = local.cluster_autoscaler_cloud_provider
     },
     {
       name  = "extraEnvSecrets.HCLOUD_TOKEN.name"
@@ -55,7 +59,7 @@ data "helm_template" "cluster_autoscaler" {
     },
     {
       name  = "extraEnv.HCLOUD_CLUSTER_CONFIG_FILE"
-      value = "/data/autoscaler/hcloud/nodepools"
+      value = "/config/cluster-config"
     },
     {
       name  = "extraEnv.HCLOUD_SERVER_CREATION_TIMEOUT"
@@ -63,11 +67,7 @@ data "helm_template" "cluster_autoscaler" {
     },
     {
       name  = "extraEnv.HCLOUD_FIREWALL"
-      value = hcloud_firewall.this.id
-    },
-    {
       name  = "extraEnv.HCLOUD_SSH_KEY"
-      value = hcloud_ssh_key.this.id
     },
     {
       name  = "extraEnv.HCLOUD_PUBLIC_IPV4"
@@ -97,8 +97,8 @@ data "helm_template" "cluster_autoscaler" {
           whenUnsatisfiable = local.control_plane_sum > 2 ? "DoNotSchedule" : "ScheduleAnyway"
           labelSelector = {
             matchLabels = {
-              "app.kubernetes.io/instance" = "cluster-autoscaler"
-              "app.kubernetes.io/name"     = "hetzner-cluster-autoscaler"
+              "app.kubernetes.io/instance" = local.cluster_autoscaler_release_name
+              "app.kubernetes.io/name"     = "${local.cluster_autoscaler_cloud_provider}-${var.cluster_autoscaler_helm_chart}"
             }
           }
         }
@@ -121,15 +121,9 @@ data "helm_template" "cluster_autoscaler" {
         }
       ]
       extraVolumeSecrets = {
-        "hcloud-nodepools" = {
-          name      = "hcloud-cluster-autoscaler"
-          mountPath = "/data/autoscaler/hcloud"
-          items = [
-            {
-              key  = "nodepools"
-              path = "nodepools"
-            }
-          ]
+        "${local.cluster_autoscaler_config_secret_name}" = {
+          name      = local.cluster_autoscaler_config_secret_name
+          mountPath = "/config"
         }
       }
     }),
@@ -148,7 +142,7 @@ locals {
     contents = <<-EOF
       ${data.helm_template.cluster_autoscaler[0].manifest}
       ---
-      ${yamlencode(local.cluster_autoscaler_nodepools_manifest)}
+      ${yamlencode(local.cluster_autoscaler_cluster_config_manifest)}
     EOF
   } : null
 }

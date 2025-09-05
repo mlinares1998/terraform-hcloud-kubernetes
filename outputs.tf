@@ -1,76 +1,76 @@
 output "talosconfig" {
-  description = "Configuration data for Talos OS"
+  description = "Raw Talos OS configuration file used for cluster access and management."
   value       = local.talosconfig
   sensitive   = true
 }
 
 output "kubeconfig" {
-  description = "Kubeconfig data used for cluster authentication"
+  description = "Raw kubeconfig file for authenticating with the Kubernetes cluster."
   value       = local.kubeconfig
   sensitive   = true
 }
 
 output "kubeconfig_data" {
-  description = "Structured kubeconfig data to supply to other providers"
+  description = "Structured kubeconfig data, suitable for use with other Terraform providers or tools."
   value       = local.kubeconfig_data
   sensitive   = true
 }
 
 output "talosconfig_data" {
-  description = "Structured talosconfig data to supply to other providers"
+  description = "Structured Talos configuration data, suitable for use with other Terraform providers or tools."
   value       = local.talosconfig_data
   sensitive   = true
 }
 
 output "talos_client_configuration" {
-  description = "Talos client configuration details"
+  description = "Detailed configuration data for the Talos client."
   value       = data.talos_client_configuration.this
 }
 
 output "talos_machine_configurations_control_plane" {
-  description = "Talos machine configurations for control plane nodes"
+  description = "Talos machine configurations for all control plane nodes."
   value       = data.talos_machine_configuration.control_plane
   sensitive   = true
 }
 
 output "talos_machine_configurations_worker" {
-  description = "Talos machine configurations for worker nodes"
+  description = "Talos machine configurations for all worker nodes."
   value       = data.talos_machine_configuration.worker
   sensitive   = true
 }
 
 output "control_plane_private_ipv4_list" {
-  description = "Private IPv4 addresses of all control plane nodes"
+  description = "List of private IPv4 addresses assigned to control plane nodes."
   value       = local.control_plane_private_ipv4_list
 }
 
 output "control_plane_public_ipv4_list" {
-  description = "Public IPv4 addresses of all control plane nodes"
+  description = "List of public IPv4 addresses assigned to control plane nodes."
   value       = local.control_plane_public_ipv4_list
 }
 
 output "control_plane_public_ipv6_list" {
-  description = "Public IPv6 addresses of all control plane nodes"
+  description = "List of public IPv6 addresses assigned to control plane nodes."
   value       = local.control_plane_public_ipv6_list
 }
 
 output "worker_private_ipv4_list" {
-  description = "Private IPv4 addresses of all worker nodes"
+  description = "List of private IPv4 addresses assigned to worker nodes."
   value       = local.worker_private_ipv4_list
 }
 
 output "worker_public_ipv4_list" {
-  description = "Public IPv4 addresses of all worker nodes"
+  description = "List of public IPv4 addresses assigned to worker nodes."
   value       = local.worker_public_ipv4_list
 }
 
 output "worker_public_ipv6_list" {
-  description = "Public IPv6 addresses of all worker nodes"
+  description = "List of public IPv6 addresses assigned to worker nodes."
   value       = local.worker_public_ipv6_list
 }
 
 output "cilium_encryption_info" {
-  description = "Information about Cilium traffic encryption"
+  description = "Cilium traffic encryption settings, including current state and IPsec details if enabled."
   value = {
     encryption_enabled = var.cilium_encryption_enabled
     encryption_type    = var.cilium_encryption_type

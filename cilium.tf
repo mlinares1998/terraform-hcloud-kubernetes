@@ -151,6 +151,8 @@ data "helm_template" "cilium" {
         ui      = { enabled = var.cilium_hubble_ui_enabled }
       }
       operator = {
+        nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
+        tolerations  = [{ operator = "Exists" }]
         prometheus = {
           enabled = true
           serviceMonitor = {

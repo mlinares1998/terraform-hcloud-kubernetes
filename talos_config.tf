@@ -163,6 +163,7 @@ locals {
         }
         certSANs = local.certificate_san
         network = {
+          hostname = node.name
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
               interface = "eth0"
@@ -321,6 +322,7 @@ locals {
         nodeAnnotations = local.worker_nodepools_map[node.labels.nodepool].annotations
         certSANs        = local.certificate_san
         network = {
+          hostname = node.name
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
               interface = "eth0"
@@ -508,6 +510,72 @@ locals {
       }
     }
   }
+}
+
+locals {
+  talos_init_config = {
+    machine = {
+      install = {
+        image           = local.talos_installer_image_url
+        extraKernelArgs = var.talos_extra_kernel_args
+      }
+      network = {
+        interfaces = concat(
+          local.talos_public_interface_enabled ? [{
+            interface = "eth0"
+            dhcp      = true
+            dhcpOptions = {
+              ipv4 = var.talos_public_ipv4_enabled
+              ipv6 = false
+            }
+          }] : [],
+          [{
+            interface = local.talos_public_interface_enabled ? "eth1" : "eth0"
+            dhcp      = true
+            routes    = local.talos_extra_routes
+          }]
+        )
+        nameservers = local.talos_nameservers
+      }
+      kernel = {
+        modules = var.talos_kernel_modules
+      }
+      registries           = var.talos_registries
+      systemDiskEncryption = local.talos_system_disk_encryption
+      time = {
+        servers = var.talos_time_servers
+      }
+      logging = {
+        destinations = var.talos_logging_destinations
+      }
+    }
+  }
+}
+
+data "talos_machine_configuration" "control_plane_init" {
+  talos_version      = var.talos_version
+  cluster_name       = var.cluster_name
+  cluster_endpoint   = "https://localhost:6443"
+  kubernetes_version = var.kubernetes_version
+  machine_type       = "controlplane"
+  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  docs               = false
+  examples           = false
+
+  config_patches = [yamlencode(local.talos_init_config)]
+}
+
+data "talos_machine_configuration" "worker_init" {
+  talos_version      = var.talos_version
+  cluster_name       = var.cluster_name
+  cluster_endpoint   = "https://localhost:6443"
+  kubernetes_version = var.kubernetes_version
+  machine_type       = "worker"
+  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  docs               = false
+  examples           = false
+
+  config_patches = [yamlencode(local.talos_init_config)]
 }
 
 data "talos_machine_configuration" "control_plane" {

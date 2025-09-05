@@ -421,7 +421,7 @@ variable "cluster_autoscaler_helm_chart" {
 
 variable "cluster_autoscaler_helm_version" {
   type        = string
-  default     = "9.48.0"
+  default     = "9.50.1"
   description = "Version of the Cluster Autoscaler Helm chart to deploy."
 }
 
@@ -527,7 +527,7 @@ variable "packer_arm64_builder" {
 # Talos
 variable "talos_version" {
   type        = string
-  default     = "v1.10.5"
+  default     = "v1.10.7"
   description = "Specifies the version of Talos to be used in generated machine configurations."
 }
 
@@ -808,7 +808,7 @@ variable "talos_backup_schedule" {
 # Kubernetes
 variable "kubernetes_version" {
   type        = string
-  default     = "v1.33.2"
+  default     = "v1.33.4"
   description = "Specifies the Kubernetes version to deploy."
 }
 
@@ -1098,7 +1098,8 @@ variable "hcloud_csi_storage_classes" {
     extraParameters     = optional(map(string), {})
   }))
   default = [
-    { name = "hcloud-volumes", encrypted = false, defaultStorageClass = true }
+    { name = "hcloud-volumes-encrypted", encrypted = true, defaultStorageClass = true },
+    { name = "hcloud-volumes", encrypted = false, defaultStorageClass = false }
   ]
 }
 
@@ -1365,7 +1366,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.13.1"
+  default     = "4.13.2"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
@@ -1629,6 +1630,6 @@ variable "prometheus_operator_crds_enabled" {
 
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.84.1" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.85.0" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }
