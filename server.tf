@@ -28,7 +28,6 @@ resource "hcloud_server" "control_plane" {
   shutdown_before_deletion = true
   delete_protection        = var.cluster_delete_protection
   rebuild_protection       = var.cluster_delete_protection
-  user_data                = data.talos_machine_configuration.control_plane_init.machine_configuration
 
   labels = merge(
     each.value.labels,
@@ -95,7 +94,6 @@ resource "hcloud_server" "worker" {
   shutdown_before_deletion = true
   delete_protection        = var.cluster_delete_protection
   rebuild_protection       = var.cluster_delete_protection
-  user_data                = data.talos_machine_configuration.worker_init.machine_configuration
 
   labels = merge(
     each.value.labels,

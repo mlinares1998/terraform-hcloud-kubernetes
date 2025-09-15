@@ -222,7 +222,7 @@ locals {
           )
           extraMounts = local.talos_kubelet_extra_mounts
           nodeIP = {
-            validSubnets = [local.node_ipv4_cidr]
+            validSubnets = [local.network_node_ipv4_cidr]
           }
         }
         kernel = {
@@ -261,8 +261,8 @@ locals {
         allowSchedulingOnControlPlanes = local.talos_allow_scheduling_on_control_planes
         network = {
           dnsDomain      = var.cluster_domain
-          podSubnets     = [local.pod_ipv4_cidr]
-          serviceSubnets = [local.service_ipv4_cidr]
+          podSubnets     = [local.network_pod_ipv4_cidr]
+          serviceSubnets = [local.network_service_ipv4_cidr]
           cni            = { name = "none" }
         }
         coreDNS = {
@@ -369,7 +369,7 @@ locals {
           )
           extraMounts = local.talos_kubelet_extra_mounts
           nodeIP = {
-            validSubnets = [local.node_ipv4_cidr]
+            validSubnets = [local.network_node_ipv4_cidr]
           }
         }
         kernel = {
@@ -399,8 +399,8 @@ locals {
       cluster = {
         network = {
           dnsDomain      = var.cluster_domain
-          podSubnets     = [local.pod_ipv4_cidr]
-          serviceSubnets = [local.service_ipv4_cidr]
+          podSubnets     = [local.network_pod_ipv4_cidr]
+          serviceSubnets = [local.network_service_ipv4_cidr]
           cni            = { name = "none" }
         }
         proxy = {
@@ -469,7 +469,7 @@ locals {
           )
           extraMounts = local.talos_kubelet_extra_mounts
           nodeIP = {
-            validSubnets = [local.node_ipv4_cidr]
+            validSubnets = [local.network_node_ipv4_cidr]
           }
         }
         kernel = {
@@ -499,8 +499,8 @@ locals {
       cluster = {
         network = {
           dnsDomain      = var.cluster_domain
-          podSubnets     = [local.pod_ipv4_cidr]
-          serviceSubnets = [local.service_ipv4_cidr]
+          podSubnets     = [local.network_pod_ipv4_cidr]
+          serviceSubnets = [local.network_service_ipv4_cidr]
           cni            = { name = "none" }
         }
         proxy = {
@@ -510,72 +510,6 @@ locals {
       }
     }
   }
-}
-
-locals {
-  talos_init_config = {
-    machine = {
-      install = {
-        image           = local.talos_installer_image_url
-        extraKernelArgs = var.talos_extra_kernel_args
-      }
-      network = {
-        interfaces = concat(
-          local.talos_public_interface_enabled ? [{
-            interface = "eth0"
-            dhcp      = true
-            dhcpOptions = {
-              ipv4 = var.talos_public_ipv4_enabled
-              ipv6 = false
-            }
-          }] : [],
-          [{
-            interface = local.talos_public_interface_enabled ? "eth1" : "eth0"
-            dhcp      = true
-            routes    = local.talos_extra_routes
-          }]
-        )
-        nameservers = local.talos_nameservers
-      }
-      kernel = {
-        modules = var.talos_kernel_modules
-      }
-      registries           = var.talos_registries
-      systemDiskEncryption = local.talos_system_disk_encryption
-      time = {
-        servers = var.talos_time_servers
-      }
-      logging = {
-        destinations = var.talos_logging_destinations
-      }
-    }
-  }
-}
-
-data "talos_machine_configuration" "control_plane_init" {
-  talos_version      = var.talos_version
-  cluster_name       = var.cluster_name
-  cluster_endpoint   = "https://localhost:6443"
-  kubernetes_version = var.kubernetes_version
-  machine_type       = "controlplane"
-  machine_secrets    = talos_machine_secrets.this.machine_secrets
-  docs               = false
-  examples           = false
-
-  config_patches = [yamlencode(local.talos_init_config)]
-}
-
-data "talos_machine_configuration" "worker_init" {
-  talos_version      = var.talos_version
-  cluster_name       = var.cluster_name
-  cluster_endpoint   = "https://localhost:6443"
-  kubernetes_version = var.kubernetes_version
-  machine_type       = "worker"
-  machine_secrets    = talos_machine_secrets.this.machine_secrets
-  docs               = false
-  examples           = false
-
-  config_patches = [yamlencode(local.talos_init_config)]
 }
 
 data "talos_machine_configuration" "control_plane" {

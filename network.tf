@@ -15,20 +15,20 @@ locals {
   network_zone = local.location_to_zone[local.control_plane_nodepools[0].location]
 
   # Network ranges
-  network_ipv4_cidr   = length(data.hcloud_network.this) > 0 ? data.hcloud_network.this[0].ip_range : var.network_ipv4_cidr
-  node_ipv4_cidr      = coalesce(var.network_node_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 3, 2))
-  service_ipv4_cidr   = coalesce(var.network_service_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 3, 3))
-  pod_ipv4_cidr       = coalesce(var.network_pod_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 1, 1))
-  native_routing_cidr = coalesce(var.network_native_routing_cidr, local.network_ipv4_cidr)
+  network_ipv4_cidr                = length(data.hcloud_network.this) > 0 ? data.hcloud_network.this[0].ip_range : var.network_ipv4_cidr
+  network_node_ipv4_cidr           = coalesce(var.network_node_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 3, 2))
+  network_service_ipv4_cidr        = coalesce(var.network_service_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 3, 3))
+  network_pod_ipv4_cidr            = coalesce(var.network_pod_ipv4_cidr, cidrsubnet(local.network_ipv4_cidr, 1, 1))
+  network_native_routing_ipv4_cidr = coalesce(var.network_native_routing_ipv4_cidr, local.network_ipv4_cidr)
 
-  node_ipv4_cidr_skip_first_subnet = cidrhost(local.network_ipv4_cidr, 0) == cidrhost(local.node_ipv4_cidr, 0)
-  network_ipv4_gateway             = cidrhost(local.network_ipv4_cidr, 1)
+  network_node_ipv4_cidr_skip_first_subnet = cidrhost(local.network_ipv4_cidr, 0) == cidrhost(local.network_node_ipv4_cidr, 0)
+  network_ipv4_gateway                     = cidrhost(local.network_ipv4_cidr, 1)
 
   # Subnet mask sizes
   network_pod_ipv4_subnet_mask_size = 24
   network_node_ipv4_subnet_mask_size = coalesce(
     var.network_node_ipv4_subnet_mask_size,
-    32 - (local.network_pod_ipv4_subnet_mask_size - split("/", local.pod_ipv4_cidr)[1])
+    32 - (local.network_pod_ipv4_subnet_mask_size - split("/", local.network_pod_ipv4_cidr)[1])
   )
 
   # Lists for control plane nodes
@@ -72,9 +72,9 @@ resource "hcloud_network_subnet" "control_plane" {
   network_zone = local.network_zone
 
   ip_range = cidrsubnet(
-    local.node_ipv4_cidr,
-    local.network_node_ipv4_subnet_mask_size - split("/", local.node_ipv4_cidr)[1],
-    0 + (local.node_ipv4_cidr_skip_first_subnet ? 1 : 0)
+    local.network_node_ipv4_cidr,
+    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
+    0 + (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0)
   )
 }
 
@@ -84,9 +84,9 @@ resource "hcloud_network_subnet" "load_balancer" {
   network_zone = local.network_zone
 
   ip_range = cidrsubnet(
-    local.node_ipv4_cidr,
-    local.network_node_ipv4_subnet_mask_size - split("/", local.node_ipv4_cidr)[1],
-    1 + (local.node_ipv4_cidr_skip_first_subnet ? 1 : 0)
+    local.network_node_ipv4_cidr,
+    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
+    1 + (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0)
   )
 }
 
@@ -98,9 +98,9 @@ resource "hcloud_network_subnet" "worker" {
   network_zone = local.network_zone
 
   ip_range = cidrsubnet(
-    local.node_ipv4_cidr,
-    local.network_node_ipv4_subnet_mask_size - split("/", local.node_ipv4_cidr)[1],
-    2 + (local.node_ipv4_cidr_skip_first_subnet ? 1 : 0) + index(local.worker_nodepools, each.value)
+    local.network_node_ipv4_cidr,
+    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
+    2 + (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0) + index(local.worker_nodepools, each.value)
   )
 }
 
@@ -110,9 +110,9 @@ resource "hcloud_network_subnet" "autoscaler" {
   network_zone = local.network_zone
 
   ip_range = cidrsubnet(
-    local.node_ipv4_cidr,
-    local.network_node_ipv4_subnet_mask_size - split("/", local.node_ipv4_cidr)[1],
-    pow(2, local.network_node_ipv4_subnet_mask_size - split("/", local.node_ipv4_cidr)[1]) - 1
+    local.network_node_ipv4_cidr,
+    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
+    pow(2, local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1]) - 1
   )
 
   depends_on = [

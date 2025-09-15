@@ -36,16 +36,14 @@ data "helm_template" "ingress_nginx" {
   version      = var.ingress_nginx_helm_version
   kube_version = var.kubernetes_version
 
-  set = [
-    {
-      name  = "controller.admissionWebhooks.certManager.enabled"
-      value = true
-    }
-  ]
-
   values = [
     yamlencode({
       controller = {
+        admissionWebhooks = {
+          certManager = {
+            enabled = true
+          }
+        }
         kind         = var.ingress_nginx_kind
         replicaCount = local.ingress_nginx_replicas
         topologySpreadConstraints = [
@@ -76,7 +74,7 @@ data "helm_template" "ingress_nginx" {
           local.ingress_nginx_service_type == "NodePort" ?
           {
             nodePorts = {
-              http  = local.ingress_nginx_service_node_port_http,
+              http  = local.ingress_nginx_service_node_port_http
               https = local.ingress_nginx_service_node_port_https
             }
           } : {},
@@ -104,7 +102,7 @@ data "helm_template" "ingress_nginx" {
             proxy-real-ip-cidr = (
               var.ingress_nginx_service_external_traffic_policy == "Local" ?
               hcloud_network_subnet.load_balancer.ip_range :
-              local.node_ipv4_cidr
+              local.network_node_ipv4_cidr
             )
             compute-full-forwarded-for = true
             use-proxy-protocol         = true

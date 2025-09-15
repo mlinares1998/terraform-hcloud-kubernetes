@@ -48,21 +48,12 @@ data "helm_template" "cert_manager" {
   version      = var.cert_manager_helm_version
   kube_version = var.kubernetes_version
 
-  set = [
-    {
-      name  = "crds.enabled"
-      value = true
-    },
-    {
-      name  = "startupapicheck.enabled"
-      value = false
-    }
-  ]
-
   values = [
     yamlencode(
       merge(
         {
+          crds            = { enabled = true }
+          startupapicheck = { enabled = false }
           config = {
             featureGates = {
               # Disable the use of Exact PathType in Ingress resources, to work around a bug in ingress-nginx
@@ -90,7 +81,7 @@ data "helm_template" "cert_manager" {
                 }
               ]
             }
-          ),
+          )
           cainjector = merge(
             local.cert_manager_values,
             {

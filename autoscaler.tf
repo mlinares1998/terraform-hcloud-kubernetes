@@ -44,48 +44,10 @@ data "helm_template" "cluster_autoscaler" {
   version      = var.cluster_autoscaler_helm_version
   kube_version = var.kubernetes_version
 
-  set = [
-    {
-      name  = "cloudProvider"
-      value = local.cluster_autoscaler_cloud_provider
-    },
-    {
-      name  = "extraEnvSecrets.HCLOUD_TOKEN.name"
-      value = "hcloud"
-    },
-    {
-      name  = "extraEnvSecrets.HCLOUD_TOKEN.key"
-      value = "token"
-    },
-    {
-      name  = "extraEnv.HCLOUD_CLUSTER_CONFIG_FILE"
-      value = "/config/cluster-config"
-    },
-    {
-      name  = "extraEnv.HCLOUD_SERVER_CREATION_TIMEOUT"
-      value = 10
-    },
-    {
-      name  = "extraEnv.HCLOUD_FIREWALL"
-      name  = "extraEnv.HCLOUD_SSH_KEY"
-    },
-    {
-      name  = "extraEnv.HCLOUD_PUBLIC_IPV4"
-      value = var.talos_public_ipv4_enabled
-    },
-    {
-      name  = "extraEnv.HCLOUD_PUBLIC_IPV6"
-      value = var.talos_public_ipv6_enabled
-    },
-    {
-      name  = "extraEnv.HCLOUD_NETWORK"
-      value = hcloud_network_subnet.autoscaler.network_id
-    }
-  ]
-
   values = [
     yamlencode({
-      replicaCount = local.control_plane_sum > 1 ? 2 : 1
+      cloudProvider = local.cluster_autoscaler_cloud_provider
+      replicaCount  = local.control_plane_sum > 1 ? 2 : 1
       podDisruptionBudget = {
         maxUnavailable = null
         minAvailable   = local.control_plane_sum > 1 ? 1 : 0
@@ -102,7 +64,7 @@ data "helm_template" "cluster_autoscaler" {
             }
           }
         }
-      ],
+      ]
       nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
       tolerations = [
         {
@@ -113,13 +75,28 @@ data "helm_template" "cluster_autoscaler" {
       ]
       autoscalingGroups = [
         for np in local.cluster_autoscaler_nodepools : {
-          name         = "${var.cluster_name}-${np.name}",
-          minSize      = np.min,
-          maxSize      = np.max,
-          instanceType = np.server_type,
+          name         = "${var.cluster_name}-${np.name}"
+          minSize      = np.min
+          maxSize      = np.max
+          instanceType = np.server_type
           region       = np.location
         }
       ]
+      extraEnv = {
+        HCLOUD_CLUSTER_CONFIG_FILE     = "/config/cluster-config"
+        HCLOUD_SERVER_CREATION_TIMEOUT = "10"
+        HCLOUD_FIREWALL                = tostring(hcloud_firewall.this.id)
+        HCLOUD_SSH_KEY                 = tostring(hcloud_ssh_key.this.id)
+        HCLOUD_PUBLIC_IPV4             = tostring(var.talos_public_ipv4_enabled)
+        HCLOUD_PUBLIC_IPV6             = tostring(var.talos_public_ipv6_enabled)
+        HCLOUD_NETWORK                 = tostring(hcloud_network_subnet.autoscaler.network_id)
+      }
+      extraEnvSecrets = {
+        HCLOUD_TOKEN = {
+          name = "hcloud"
+          key  = "token"
+        }
+      }
       extraVolumeSecrets = {
         "${local.cluster_autoscaler_config_secret_name}" = {
           name      = local.cluster_autoscaler_config_secret_name

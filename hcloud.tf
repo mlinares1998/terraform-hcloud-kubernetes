@@ -34,12 +34,14 @@ data "helm_template" "hcloud_ccm" {
       nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
       networking = {
         enabled     = true
-        clusterCIDR = local.pod_ipv4_cidr
+        clusterCIDR = local.network_pod_ipv4_cidr
       }
       env = {
+        HCLOUD_LOAD_BALANCERS_ENABLED                 = { value = tostring(var.hcloud_ccm_load_balancers_enabled) }
         HCLOUD_LOAD_BALANCERS_USE_PRIVATE_IP          = { value = "true" }
         HCLOUD_LOAD_BALANCERS_DISABLE_PRIVATE_INGRESS = { value = "true" }
         HCLOUD_LOAD_BALANCERS_LOCATION                = { value = local.hcloud_load_balancer_location }
+        HCLOUD_NETWORK_ROUTES_ENABLED                 = { value = tostring(var.hcloud_ccm_network_routes_enabled) }
       }
     }),
     yamlencode(var.hcloud_ccm_helm_values)

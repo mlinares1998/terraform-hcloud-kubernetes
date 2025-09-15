@@ -266,7 +266,7 @@ For integrating Talos nodes with an internal network, configure a default route 
 talos_extra_routes = ["10.0.0.0/8"]
 
 # Optionally, disable NAT for your globally routed CIDR
-network_native_routing_cidr = "10.0.0.0/8"
+network_native_routing_ipv4_cidr = "10.0.0.0/8"
 
 # Optionally, use an existing Network
 hcloud_network_id = 123456789
@@ -1017,14 +1017,14 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 > Before upgrading to the next major version of this module, ensure you are on the latest release of the current major version. Do not skip any major release upgrades.
 
 ### :white_check_mark: Version Compatibility Matrix
-| Hcloud K8s |  K8s   | Talos  | Talos CCM | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Mgr. | Auto-scaler |
-| :--------: | :----: | :----: | :-------: | :--------: | :--------: | :-------: | :----: | :-----------: | :-------: | :---------: |
-|  **(4)**   | (1.34) | (1.11) |  (1.11)   |     ?      |     ?      |     ?     |   ?    |       ?       |     ?     |      ?      |
-|   **3**    |  1.33  |  1.10  |   1.10    |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |   1.18    |    9.47     |
-|   **2**    |  1.32  |  1.9   |    1.9    |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |   1.17    |    9.45     |
+| Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
+| :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
+|  **(4)**   |    1.34    | 1.11  |     ?      |     ?      |     ?     |   ?    |       ?       |      ?       |      ?      |
+|   **3**    |    1.33    | 1.11  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
+|   **2**    |    1.32    |  1.9  |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |     1.17     |    9.45     |
 <!--
-|   **1**    | 1.31  |  1.8  |    1.8    |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |   1.15    |    9.38     |
-|   **0**    | 1.30  |  1.7  |    1.6    |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |   1.14    |    9.37     |
+|   **1**    |    1.31    |  1.8  |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |     1.15     |    9.38     |
+|   **0**    |    1.30    |  1.7  |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |     1.14     |    9.37     |
 -->
 
 In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components, avoiding the latest untested or incompatible releases that could disrupt your cluster.

@@ -102,7 +102,12 @@ data "hcloud_images" "arm64" {
 }
 
 resource "terraform_data" "packer_init" {
-  triggers_replace = ["${sha1(file("${path.module}/packer/requirements.pkr.hcl"))}"]
+  triggers_replace = [
+    "${sha1(file("${path.module}/packer/requirements.pkr.hcl"))}",
+    var.cluster_name,
+    var.talos_version,
+    local.talos_schematic_id
+  ]
 
   provisioner "local-exec" {
     when        = create

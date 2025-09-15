@@ -105,31 +105,31 @@ variable "network_ipv4_cidr" {
 variable "network_node_ipv4_cidr" {
   type        = string
   default     = null # 10.0.64.0/19 when network_ipv4_cidr is 10.0.0.0/16
-  description = "Specifies the Node CIDR used for allocating IP addresses to both Control Plane and Worker nodes within the cluster. If not explicitly provided, a default subnet is dynamically calculated from the specified network_ipv4_cidr."
+  description = "Specifies the Node IPv4 CIDR used for allocating IP addresses to both Control Plane and Worker nodes within the cluster. If not explicitly provided, a default subnet is dynamically calculated from the specified network_ipv4_cidr."
 }
 
 variable "network_node_ipv4_subnet_mask_size" {
   type        = number
   default     = null # /25 when network_pod_ipv4_cidr is 10.0.128.0/17
-  description = "Specifies the subnet mask size used for node pools within the cluster. This setting determines the network segmentation precision, with a smaller mask size allowing more IP addresses per subnet. If not explicitly provided, an optimal default size is dynamically calculated from the network_pod_ipv4_cidr."
+  description = "Specifies the IPv4 subnet mask size used for node pools within the cluster. This setting determines the network segmentation precision, with a smaller mask size allowing more IP addresses per subnet. If not explicitly provided, an optimal default size is dynamically calculated from the network_pod_ipv4_cidr."
 }
 
 variable "network_service_ipv4_cidr" {
   type        = string
   default     = null # 10.0.96.0/19 when network_ipv4_cidr is 10.0.0.0/16
-  description = "Specifies the Service CIDR block used for allocating ClusterIPs to services within the cluster. If not provided, a default subnet is dynamically calculated from the specified network_ipv4_cidr."
+  description = "Specifies the Service IPv4 CIDR block used for allocating ClusterIPs to services within the cluster. If not provided, a default subnet is dynamically calculated from the specified network_ipv4_cidr."
 }
 
 variable "network_pod_ipv4_cidr" {
   type        = string
   default     = null # 10.0.128.0/17 when network_ipv4_cidr is 10.0.0.0/16
-  description = "Defines the Pod CIDR block allocated for use by pods within the cluster. This CIDR block is essential for internal pod communications. If a specific subnet is not provided, a default is dynamically calculated from the network_ipv4_cidr."
+  description = "Defines the Pod IPv4 CIDR block allocated for use by pods within the cluster. This CIDR block is essential for internal pod communications. If a specific subnet is not provided, a default is dynamically calculated from the network_ipv4_cidr."
 }
 
-variable "network_native_routing_cidr" {
+variable "network_native_routing_ipv4_cidr" {
   type        = string
   default     = null
-  description = "Specifies the CIDR block that the CNI assumes will be routed natively by the underlying network infrastructure without the need for SNAT."
+  description = "Specifies the IPv4 CIDR block that the CNI assumes will be routed natively by the underlying network infrastructure without the need for SNAT."
 }
 
 
@@ -527,7 +527,7 @@ variable "packer_arm64_builder" {
 # Talos
 variable "talos_version" {
   type        = string
-  default     = "v1.10.7"
+  default     = "v1.11.1"
   description = "Specifies the version of Talos to be used in generated machine configurations."
 }
 
@@ -1044,6 +1044,18 @@ variable "hcloud_ccm_helm_values" {
   description = "Custom Helm values for the Hcloud CCM chart deployment. These values will merge with and will override the default values provided by the Hcloud CCM Helm chart."
 }
 
+variable "hcloud_ccm_load_balancers_enabled" {
+  type        = bool
+  default     = true
+  description = "Enable or disable Hetzner Cloud CCM Service Controller"
+}
+
+variable "hcloud_ccm_network_routes_enabled" {
+  type        = bool
+  default     = true
+  description = "Enable or disable Hetzner Cloud CCM Route Controller"
+}
+
 
 # Hetzner Cloud Container Storage Interface (CSI)
 variable "hcloud_csi_helm_repository" {
@@ -1221,6 +1233,16 @@ variable "cilium_ipsec_key_id" {
   validation {
     condition     = var.cilium_ipsec_key_id >= 1 && var.cilium_ipsec_key_id <= 15 && floor(var.cilium_ipsec_key_id) == var.cilium_ipsec_key_id
     error_message = "The IPSec key_id must be between 1 and 15."
+  }
+}
+
+variable "cilium_routing_mode" {
+  type        = string
+  description = "Cilium routing mode (e.g., 'native', 'tunnel', etc.)"
+  default     = "native"
+  validation {
+    condition     = contains(["", "native", "tunnel"], var.cilium_routing_mode)
+    error_message = "cilium_routing_mode must be one of: empty string, native, or tunnel."
   }
 }
 
