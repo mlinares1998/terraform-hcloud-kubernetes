@@ -1,5 +1,5 @@
-name: Bug Report
-description: Something is not working
+name: 🐛 Bug Report
+description: Report a problem with the Hetzner Kubernetes Terraform module
 labels: [bug]
 
 body:

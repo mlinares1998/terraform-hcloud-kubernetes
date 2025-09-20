@@ -106,7 +106,9 @@ resource "terraform_data" "packer_init" {
     "${sha1(file("${path.module}/packer/requirements.pkr.hcl"))}",
     var.cluster_name,
     var.talos_version,
-    local.talos_schematic_id
+    local.talos_schematic_id,
+    local.amd64_image_required,
+    local.arm64_image_required
   ]
 
   provisioner "local-exec" {

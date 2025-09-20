@@ -7,21 +7,21 @@
   "packageRules": [
     {
       "description": "Wait 3 days before raising PRs for patch updates",
-      "updateTypes": [
+      "matchUpdateTypes": [
         "patch"
       ],
       "minimumReleaseAge": "3 days"
     },
     {
       "description": "Wait 7 days before raising PRs for minor updates",
-      "updateTypes": [
+      "matchUpdateTypes": [
         "minor"
       ],
       "minimumReleaseAge": "7 days"
     },
     {
       "description": "Wait 14 days before raising PRs for major updates",
-      "updateTypes": [
+      "matchUpdateTypes": [
         "major"
       ],
       "minimumReleaseAge": "14 days"
