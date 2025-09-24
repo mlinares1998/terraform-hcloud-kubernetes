@@ -111,11 +111,16 @@ data "helm_template" "hcloud_csi" {
     yamlencode({
       controller = {
         replicaCount = local.control_plane_sum > 1 ? 2 : 1
+        podDisruptionBudget = {
+          create         = true
+          minAvailable   = null
+          maxUnavailable = "1"
+        }
         topologySpreadConstraints = [
           {
             topologyKey       = "kubernetes.io/hostname"
             maxSkew           = 1
-            whenUnsatisfiable = local.control_plane_sum > 2 ? "DoNotSchedule" : "ScheduleAnyway"
+            whenUnsatisfiable = "DoNotSchedule"
             labelSelector = {
               matchLabels = {
                 "app.kubernetes.io/name"      = "hcloud-csi"
@@ -123,6 +128,7 @@ data "helm_template" "hcloud_csi" {
                 "app.kubernetes.io/component" = "controller"
               }
             }
+            matchLabelKeys = ["pod-template-hash"]
           }
         ]
         nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }

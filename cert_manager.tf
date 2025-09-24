@@ -10,20 +10,22 @@ locals {
   cert_manager_values = {
     replicaCount = local.control_plane_sum > 1 ? 2 : 1
     podDisruptionBudget = {
-      enabled      = local.control_plane_sum > 1
-      minAvailable = local.control_plane_sum > 1 ? 1 : 0
+      enabled        = true
+      minAvailable   = null
+      maxUnavailable = 1
     }
     topologySpreadConstraints = [
       {
         topologyKey       = "kubernetes.io/hostname"
         maxSkew           = 1
-        whenUnsatisfiable = local.control_plane_sum > 2 ? "DoNotSchedule" : "ScheduleAnyway"
+        whenUnsatisfiable = "DoNotSchedule"
         labelSelector = {
           matchLabels = {
             "app.kubernetes.io/instance"  = "cert-manager"
             "app.kubernetes.io/component" = "controller"
           }
         }
+        matchLabelKeys = ["pod-template-hash"]
       }
     ],
     nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
@@ -68,17 +70,18 @@ data "helm_template" "cert_manager" {
             local.cert_manager_values,
             {
               topologySpreadConstraints = [
-                {
-                  topologyKey       = local.cert_manager_values.topologySpreadConstraints[0].topologyKey
-                  maxSkew           = local.cert_manager_values.topologySpreadConstraints[0].maxSkew
-                  whenUnsatisfiable = local.cert_manager_values.topologySpreadConstraints[0].whenUnsatisfiable
-                  labelSelector = {
-                    matchLabels = {
-                      "app.kubernetes.io/instance"  = "cert-manager"
-                      "app.kubernetes.io/component" = "webhook"
+                for constraint in local.cert_manager_values.topologySpreadConstraints :
+                merge(
+                  constraint,
+                  {
+                    labelSelector = {
+                      matchLabels = {
+                        "app.kubernetes.io/instance"  = "cert-manager"
+                        "app.kubernetes.io/component" = "webhook"
+                      }
                     }
                   }
-                }
+                )
               ]
             }
           )
@@ -86,17 +89,18 @@ data "helm_template" "cert_manager" {
             local.cert_manager_values,
             {
               topologySpreadConstraints = [
-                {
-                  topologyKey       = local.cert_manager_values.topologySpreadConstraints[0].topologyKey
-                  maxSkew           = local.cert_manager_values.topologySpreadConstraints[0].maxSkew
-                  whenUnsatisfiable = local.cert_manager_values.topologySpreadConstraints[0].whenUnsatisfiable
-                  labelSelector = {
-                    matchLabels = {
-                      "app.kubernetes.io/instance"  = "cert-manager"
-                      "app.kubernetes.io/component" = "cainjector"
+                for constraint in local.cert_manager_values.topologySpreadConstraints :
+                merge(
+                  constraint,
+                  {
+                    labelSelector = {
+                      matchLabels = {
+                        "app.kubernetes.io/instance"  = "cert-manager"
+                        "app.kubernetes.io/component" = "cainjector"
+                      }
                     }
                   }
-                }
+                )
               ]
             }
           )

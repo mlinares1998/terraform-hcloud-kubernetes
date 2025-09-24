@@ -2,15 +2,7 @@ name: 🐛 Bug Report
 description: Report a problem with the Hetzner Kubernetes Terraform module
 labels: [bug]
 
-body:
-  - type: checkboxes
-    id: confirmations
-    attributes:
-      label: Confirmation
-      options:
-        - label: I searched existing issues and discussions, and I checked the internet for similar problems
-          required: true
-  
+body:  
   - type: textarea
     id: description
     attributes:
@@ -53,3 +45,11 @@ body:
       label: Relevant Output
       description: terraform plan/apply errors, logs, or stack traces
       render: shell
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I checked existing issues, discussions, and the web for similar problems
+          required: true

@@ -112,8 +112,25 @@ data "helm_template" "cilium" {
       }
       operator = {
         nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
-        tolerations  = [{ operator = "Exists" }]
         replicas     = local.control_plane_sum > 1 ? 2 : 1
+        podDisruptionBudget = {
+          enabled        = true
+          minAvailable   = null
+          maxUnavailable = 1
+        }
+        topologySpreadConstraints = [
+          {
+            topologyKey       = "kubernetes.io/hostname"
+            maxSkew           = 1
+            whenUnsatisfiable = "DoNotSchedule"
+            labelSelector = {
+              matchLabels = {
+                "app.kubernetes.io/name" = "cilium-operator"
+              }
+            }
+            matchLabelKeys = ["pod-template-hash"]
+          }
+        ]
         prometheus = {
           enabled = true
           serviceMonitor = {

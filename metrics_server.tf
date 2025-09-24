@@ -30,24 +30,34 @@ data "helm_template" "metrics_server" {
     yamlencode({
       replicas = local.metrics_server_replicas
       podDisruptionBudget = {
-        enabled      = local.metrics_server_node_sum > 1
-        minAvailable = local.metrics_server_node_sum > 1 ? 1 : 0
+        enabled        = true
+        minAvailable   = null
+        maxUnavailable = 1
       }
       topologySpreadConstraints = [
         {
-          topologyKey = "kubernetes.io/hostname"
-          maxSkew     = 1
-          whenUnsatisfiable = (
-            local.metrics_server_node_sum > local.metrics_server_replicas ?
-            "DoNotSchedule" :
-            "ScheduleAnyway"
-          )
+          topologyKey       = "kubernetes.io/hostname"
+          maxSkew           = 1
+          whenUnsatisfiable = "DoNotSchedule"
           labelSelector = {
             matchLabels = {
               "app.kubernetes.io/instance" = "metrics-server"
               "app.kubernetes.io/name"     = "metrics-server"
             }
           }
+          matchLabelKeys = ["pod-template-hash"]
+        },
+        {
+          topologyKey       = "topology.kubernetes.io/zone"
+          maxSkew           = 1
+          whenUnsatisfiable = "ScheduleAnyway"
+          labelSelector = {
+            matchLabels = {
+              "app.kubernetes.io/instance" = "metrics-server"
+              "app.kubernetes.io/name"     = "metrics-server"
+            }
+          }
+          matchLabelKeys = ["pod-template-hash"]
         }
       ]
       nodeSelector = local.metrics_server_schedule_on_control_plane ? {

@@ -9,7 +9,7 @@ locals {
 
   ingress_nginx_replicas = coalesce(
     var.ingress_nginx_replicas,
-    local.worker_sum < 4 ? 2 : 3
+    local.worker_sum < 3 ? 2 : 3
   )
 
   ingress_nginx_service_load_balancer_required = (
@@ -44,17 +44,15 @@ data "helm_template" "ingress_nginx" {
             enabled = true
           }
         }
-        kind         = var.ingress_nginx_kind
-        replicaCount = local.ingress_nginx_replicas
-        topologySpreadConstraints = [
+        kind           = var.ingress_nginx_kind
+        replicaCount   = local.ingress_nginx_replicas
+        minAvailable   = null
+        maxUnavailable = 1
+        topologySpreadConstraints = var.ingress_nginx_kind == "Deployment" ? [
           {
-            topologyKey = "kubernetes.io/hostname"
-            maxSkew     = 1
-            whenUnsatisfiable = (
-              local.worker_sum > local.ingress_nginx_replicas ?
-              "DoNotSchedule" :
-              "ScheduleAnyway"
-            )
+            topologyKey       = "kubernetes.io/hostname"
+            maxSkew           = 1
+            whenUnsatisfiable = local.worker_sum > 1 ? "DoNotSchedule" : "ScheduleAnyway"
             labelSelector = {
               matchLabels = {
                 "app.kubernetes.io/instance"  = "ingress-nginx"
@@ -62,8 +60,22 @@ data "helm_template" "ingress_nginx" {
                 "app.kubernetes.io/component" = "controller"
               }
             }
+            matchLabelKeys = ["pod-template-hash"]
+          },
+          {
+            topologyKey       = "topology.kubernetes.io/zone"
+            maxSkew           = 1
+            whenUnsatisfiable = "ScheduleAnyway"
+            labelSelector = {
+              matchLabels = {
+                "app.kubernetes.io/instance"  = "ingress-nginx"
+                "app.kubernetes.io/name"      = "ingress-nginx"
+                "app.kubernetes.io/component" = "controller"
+              }
+            }
+            matchLabelKeys = ["pod-template-hash"]
           }
-        ]
+        ] : []
         enableTopologyAwareRouting = var.ingress_nginx_topology_aware_routing
         watchIngressWithoutClass   = true
         service = merge(

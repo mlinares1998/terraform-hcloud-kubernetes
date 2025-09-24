@@ -49,20 +49,21 @@ data "helm_template" "cluster_autoscaler" {
       cloudProvider = local.cluster_autoscaler_cloud_provider
       replicaCount  = local.control_plane_sum > 1 ? 2 : 1
       podDisruptionBudget = {
-        maxUnavailable = null
-        minAvailable   = local.control_plane_sum > 1 ? 1 : 0
+        minAvailable   = null
+        maxUnavailable = 1
       }
       topologySpreadConstraints = [
         {
           topologyKey       = "kubernetes.io/hostname"
           maxSkew           = 1
-          whenUnsatisfiable = local.control_plane_sum > 2 ? "DoNotSchedule" : "ScheduleAnyway"
+          whenUnsatisfiable = "DoNotSchedule"
           labelSelector = {
             matchLabels = {
               "app.kubernetes.io/instance" = local.cluster_autoscaler_release_name
               "app.kubernetes.io/name"     = "${local.cluster_autoscaler_cloud_provider}-${var.cluster_autoscaler_helm_chart}"
             }
           }
+          matchLabelKeys = ["pod-template-hash"]
         }
       ]
       nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
