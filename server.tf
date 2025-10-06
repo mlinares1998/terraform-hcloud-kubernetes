@@ -131,3 +131,87 @@ resource "hcloud_server" "worker" {
     ]
   }
 }
+
+locals {
+  # IPv4 private (RFC1918)
+  ipv4_private_pattern = "^(10\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[0-1])\\.)"
+
+  # IPv4 special or non-public
+  # 0/8, 127/8, 169.254/16, 100.64/10, 192.0.0/24, 192.0.2/24, 192.88.99/24,
+  # 198.18/15, 198.51.100/24, 203.0.113/24, 224/4 multicast, 240/4 reserved
+  ipv4_special_pattern = "^(0\\.|127\\.|169\\.254\\.|100\\.(6[4-9]|[7-9]\\d|1[01]\\d|12[0-7])\\.|192\\.0\\.0\\.|192\\.0\\.2\\.|192\\.88\\.99\\.|198\\.(1[8-9])\\.|198\\.51\\.100\\.|203\\.0\\.113\\.|22[4-9]\\.|23\\d\\.|24\\d\\.|25[0-5]\\.)"
+
+  # IPv6 private (ULA only: fc00::/7)
+  ipv6_private_pattern = "^f[cd][0-9a-f]{2}:"
+
+  # IPv6 non-public or special
+  # ::, ::1, link-local fe80::/10 (fe80..febf), unique local fc00::/7, multicast ff00::/8,
+  # documentation 2001:db8::/32, IPv4-mapped ::ffff:0:0/96
+  ipv6_non_public_pattern = "^(::$|::1$|fe[89ab][0-9a-f]:|f[cd][0-9a-f]*:|ff[0-9a-f]*:|2001:db8:|::ffff:)"
+
+  cluster_autoscaler_server = var.cluster_autoscaler_discovery_enabled ? {
+    for m in jsondecode(data.external.talos_members[0].result.cluster_autoscaler) : m.spec.hostname => {
+      nodepool = regex(local.cluster_autoscaler_hostname_pattern, m.spec.hostname)[0]
+
+      private_ipv4_address = try(
+        [
+          for a in m.spec.addresses : a
+          if can(cidrnetmask("${a}/32"))
+          && can(regex(local.ipv4_private_pattern, a))
+        ][0], null
+      )
+      public_ipv4_address = try(
+        [
+          for a in m.spec.addresses : a
+          if can(cidrnetmask("${a}/32"))
+          && !can(regex(local.ipv4_private_pattern, a))
+          && !can(regex(local.ipv4_special_pattern, a))
+        ][0], null
+      )
+      private_ipv6_address = try(
+        [
+          for a in m.spec.addresses : lower(a)
+          if can(cidrsubnet("${a}/128", 0, 0))
+          && can(regex(local.ipv6_private_pattern, lower(a)))
+        ][0], null
+      )
+      public_ipv6_address = try(
+        [
+          for a in m.spec.addresses : lower(a)
+          if can(cidrsubnet("${a}/128", 0, 0))
+          && !can(regex(local.ipv6_non_public_pattern, lower(a)))
+        ][0], null
+      )
+    }
+  } : {}
+}
+
+data "external" "talos_members" {
+  count = var.cluster_autoscaler_discovery_enabled ? 1 : 0
+
+  program = [
+    "sh", "-c", <<-EOT
+      set -eu
+
+      talosconfig=$(mktemp)
+      trap 'rm -f "$talosconfig"' EXIT HUP INT TERM QUIT PIPE
+      jq -r '.talosconfig' > "$talosconfig"
+
+      if ${local.cluster_initialized}; then
+        talosctl --talosconfig "$talosconfig" get member -n '${local.talos_primary_node_private_ipv4}' -o json | \
+        jq -c -s '{cluster_autoscaler: (map(select(.spec.hostname | test("${local.cluster_autoscaler_hostname_pattern}"))) | tostring)}'
+      else
+        echo '{"cluster_autoscaler": "[]"}'
+      fi
+    EOT
+  ]
+
+  query = {
+    talosconfig = nonsensitive(data.talos_client_configuration.this.talos_config)
+  }
+
+  depends_on = [
+    terraform_data.upgrade_control_plane,
+    terraform_data.upgrade_worker
+  ]
+}

@@ -41,7 +41,7 @@ resource "terraform_data" "create_talosconfig" {
   count = var.cluster_talosconfig_path != null ? 1 : 0
 
   triggers_replace = [
-    sha1(local.talosconfig),
+    nonsensitive(sha1(local.talosconfig)),
     var.cluster_talosconfig_path
   ]
 
@@ -86,7 +86,7 @@ resource "terraform_data" "create_kubeconfig" {
   count = var.cluster_kubeconfig_path != null ? 1 : 0
 
   triggers_replace = [
-    sha1(local.kubeconfig),
+    nonsensitive(sha1(local.kubeconfig)),
     var.cluster_kubeconfig_path
   ]
 

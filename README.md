@@ -345,6 +345,20 @@ cluster_autoscaler_helm_values = {
   }
 }
 ```
+
+##### Talos Upgrades and Configuration Changes
+Cluster Autoscaler does not support upgrading nodes or changing their configuration, as its primary purpose is to manage short-lived nodes that handle load peaks. If you require long-lived autoscaled nodes, you can upgrade them manually using `talosctl` or use this Terraform module, which supports discovery of autoscaled nodes and manages their upgrades and configuration changes.
+
+To enable this feature, install [jq](https://jqlang.org/download/) and add the following to your configuration:
+```hcl
+cluster_autoscaler_discovery_enabled = true
+```
+
+Please note that errors may occur if a node pool has been scaled down recently, as Talos caches absent nodes for up to [30 minutes](https://www.talos.dev/latest/introduction/troubleshooting/#removed-members-are-still-present). You can pause automatic scaling by stopping the Cluster Autoscaler pods:
+```sh
+kubectl -n kube-system scale deployment cluster-autoscaler-hetzner-cluster-autoscaler --replicas=0
+```
+
 </details>
 
 
@@ -1019,8 +1033,8 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 ### :white_check_mark: Version Compatibility Matrix
 | Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
 | :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
-|  **(4)**   |    1.34    | 1.11  |     ?      |     ?      |     ?     |   ?    |       ?       |      ?       |      ?      |
-|   **3**    |    1.33    | 1.11  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
+|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |       ?       |    (1.19)    |      ?      |
+|   **3**    |    1.33    | 1.10  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
 |   **2**    |    1.32    |  1.9  |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |     1.17     |    9.45     |
 <!--
 |   **1**    |    1.31    |  1.8  |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |     1.15     |    9.38     |

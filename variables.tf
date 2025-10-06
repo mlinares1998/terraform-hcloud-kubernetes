@@ -489,6 +489,12 @@ variable "cluster_autoscaler_config_patches" {
   description = "List of configuration patches applied to the Cluster Autoscaler nodes."
 }
 
+variable "cluster_autoscaler_discovery_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes. This feature requires jq to be installed on the machine running Terraform."
+}
+
 
 # Packer
 variable "packer_amd64_builder" {
@@ -860,7 +866,7 @@ variable "talos_ccm_enabled" {
 
 variable "talos_ccm_version" {
   type        = string
-  default     = "v1.10.1" # https://github.com/siderolabs/talos-cloud-controller-manager
+  default     = "v1.11.0" # https://github.com/siderolabs/talos-cloud-controller-manager
   description = "Specifies the version of the Talos Cloud Controller Manager (CCM) to use. This version controls cloud-specific integration features in the Talos operating system."
 }
 
@@ -1072,7 +1078,7 @@ variable "hcloud_csi_helm_chart" {
 
 variable "hcloud_csi_helm_version" {
   type        = string
-  default     = "2.17.0"
+  default     = "2.18.0"
   description = "Version of the Hcloud CSI Helm chart to deploy."
 }
 
@@ -1137,7 +1143,7 @@ variable "longhorn_helm_chart" {
 
 variable "longhorn_helm_version" {
   type        = string
-  default     = "1.9.1"
+  default     = "1.10.0"
   description = "Version of the Longhorn Helm chart to deploy."
 }
 
@@ -1388,7 +1394,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.13.2"
+  default     = "4.13.3"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 

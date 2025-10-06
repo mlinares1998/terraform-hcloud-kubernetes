@@ -1,5 +1,6 @@
 locals {
-  cluster_autoscaler_enabled = length(local.cluster_autoscaler_nodepools) > 0
+  cluster_autoscaler_enabled          = length(local.cluster_autoscaler_nodepools) > 0
+  cluster_autoscaler_hostname_pattern = "^${var.cluster_name}-(${join("|", distinct([for np in local.cluster_autoscaler_nodepools : np.name]))})-[0-9a-f]+$"
 
   cluster_autoscaler_release_name       = "cluster-autoscaler"
   cluster_autoscaler_cloud_provider     = "hetzner"
