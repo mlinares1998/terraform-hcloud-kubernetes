@@ -27,21 +27,30 @@ locals {
     ) : []
   )
 
+  firewall_kube_api_sources = distinct(compact(concat(
+    coalesce(local.firewall_kube_api_source, []),
+    coalesce(local.current_ip, [])
+  )))
+  firewall_talos_api_sources = distinct(compact(concat(
+    coalesce(local.firewall_talos_api_source, []),
+    coalesce(local.current_ip, [])
+  )))
+
   firewall_default_rules = concat(
-    local.firewall_kube_api_source != null || length(local.current_ip) > 0 ? [
+    length(local.firewall_kube_api_sources) > 0 ? [
       {
         description = "Allow Incoming Requests to Kube API"
         direction   = "in"
-        source_ips  = coalesce(local.firewall_kube_api_source, local.current_ip)
+        source_ips  = local.firewall_kube_api_sources
         protocol    = "tcp"
         port        = local.kube_api_port
       }
     ] : [],
-    local.firewall_talos_api_source != null || length(local.current_ip) > 0 ? [
+    length(local.firewall_talos_api_sources) > 0 ? [
       {
         description = "Allow Incoming Requests to Talos API"
         direction   = "in"
-        source_ips  = coalesce(local.firewall_talos_api_source, local.current_ip)
+        source_ips  = local.firewall_talos_api_sources
         protocol    = "tcp"
         port        = local.talos_api_port
       }

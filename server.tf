@@ -198,8 +198,13 @@ data "external" "talos_members" {
       jq -r '.talosconfig' > "$talosconfig"
 
       if ${local.cluster_initialized}; then
-        talosctl --talosconfig "$talosconfig" get member -n '${local.talos_primary_node_private_ipv4}' -o json | \
-        jq -c -s '{cluster_autoscaler: (map(select(.spec.hostname | test("${local.cluster_autoscaler_hostname_pattern}"))) | tostring)}'
+        if json=$(talosctl --talosconfig "$talosconfig" get member -n '${terraform_data.talos_access_data.output.talos_primary_node}' -o json); then
+          printf '%s' "$json" | \
+          jq -c -s '{cluster_autoscaler: (map(select(.spec.hostname | test("${local.cluster_autoscaler_hostname_pattern}"))) | tostring)}'
+        else
+          echo "talosctl failed" >&2
+          exit 1
+        fi
       else
         echo '{"cluster_autoscaler": "[]"}'
       fi
@@ -207,7 +212,7 @@ data "external" "talos_members" {
   ]
 
   query = {
-    talosconfig = nonsensitive(data.talos_client_configuration.this.talos_config)
+    talosconfig = data.talos_client_configuration.this.talos_config
   }
 
   depends_on = [

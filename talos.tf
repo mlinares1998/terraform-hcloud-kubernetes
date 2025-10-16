@@ -86,7 +86,7 @@ resource "terraform_data" "upgrade_control_plane" {
 
       if ${local.cluster_initialized}; then
         echo "Start upgrading Control Plane Nodes"
-        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig" health --server -n "$host"
+        ${local.talos_healthcheck_enabled} && talosctl --talosconfig "$talosconfig" health --server -n '${local.talos_primary_node_private_ipv4}'
         set -- ${join(" ", local.control_plane_private_ipv4_list)}
         for host in "$@"; do
           talosctl --talosconfig "$talosconfig" upgrade -n "$host" --preserve --image '${local.talos_installer_image_url}'
@@ -402,9 +402,11 @@ resource "hcloud_uploaded_certificate" "state" {
   depends_on = [terraform_data.synchronize_manifests]
 }
 
-resource "terraform_data" "talos_health_data" {
+resource "terraform_data" "talos_access_data" {
   input = {
-    current_ip          = local.current_ip
+    kube_api_source     = local.firewall_kube_api_sources
+    talos_api_source    = local.firewall_talos_api_sources
+    talos_primary_node  = local.talos_primary_node_private_ipv4
     endpoints           = local.talos_endpoints
     control_plane_nodes = local.control_plane_private_ipv4_list
     worker_nodes        = local.worker_private_ipv4_list
@@ -415,7 +417,7 @@ resource "terraform_data" "talos_health_data" {
 data "http" "kube_api_health" {
   count = var.cluster_healthcheck_enabled ? 1 : 0
 
-  url      = "${terraform_data.talos_health_data.output.kube_api_url}/version"
+  url      = "${terraform_data.talos_access_data.output.kube_api_url}/version"
   insecure = true
 
   retry {
@@ -438,9 +440,9 @@ data "talos_cluster_health" "this" {
   count = var.cluster_healthcheck_enabled && (var.cluster_access == "private") ? 1 : 0
 
   client_configuration   = talos_machine_secrets.this.client_configuration
-  endpoints              = terraform_data.talos_health_data.output.endpoints
-  control_plane_nodes    = terraform_data.talos_health_data.output.control_plane_nodes
-  worker_nodes           = terraform_data.talos_health_data.output.worker_nodes
+  endpoints              = terraform_data.talos_access_data.output.endpoints
+  control_plane_nodes    = terraform_data.talos_access_data.output.control_plane_nodes
+  worker_nodes           = terraform_data.talos_access_data.output.worker_nodes
   skip_kubernetes_checks = false
 
   depends_on = [data.http.kube_api_health]
