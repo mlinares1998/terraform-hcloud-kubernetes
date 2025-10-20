@@ -1,4 +1,10 @@
 locals {
+  # Talos Version
+  talos_version_parts = regex("^v?(?P<major>[0-9]+)\\.(?P<minor>[0-9]+)\\.(?P<patch>[0-9]+)", var.talos_version)
+  talos_version_major = local.talos_version_parts.major
+  talos_version_minor = local.talos_version_parts.minor
+  talos_version_patch = local.talos_version_parts.patch
+
   # Talos Nodes
   talos_primary_node_name         = sort(keys(hcloud_server.control_plane))[0]
   talos_primary_node_private_ipv4 = tolist(hcloud_server.control_plane[local.talos_primary_node_name].network)[0].ip
@@ -103,6 +109,7 @@ resource "terraform_data" "upgrade_control_plane" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     data.talos_machine_configuration.control_plane,
     data.talos_client_configuration.this
   ]
@@ -143,6 +150,7 @@ resource "terraform_data" "upgrade_worker" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     data.talos_machine_configuration.worker,
     terraform_data.upgrade_control_plane
   ]
@@ -185,6 +193,7 @@ resource "terraform_data" "upgrade_cluster_autoscaler" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     data.talos_machine_configuration.cluster_autoscaler,
     terraform_data.upgrade_control_plane,
     terraform_data.upgrade_worker
@@ -220,6 +229,7 @@ resource "terraform_data" "upgrade_kubernetes" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     terraform_data.upgrade_control_plane,
     terraform_data.upgrade_worker,
     terraform_data.upgrade_cluster_autoscaler
@@ -317,6 +327,7 @@ resource "terraform_data" "talos_machine_configuration_apply_cluster_autoscaler"
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     terraform_data.upgrade_kubernetes,
     talos_machine_configuration_apply.control_plane,
     talos_machine_configuration_apply.worker
@@ -368,6 +379,7 @@ resource "terraform_data" "synchronize_manifests" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     talos_machine_bootstrap.this,
     talos_machine_configuration_apply.control_plane,
     talos_machine_configuration_apply.worker,

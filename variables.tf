@@ -500,7 +500,7 @@ variable "cluster_autoscaler_discovery_enabled" {
 variable "packer_amd64_builder" {
   type = object({
     server_type     = optional(string, "cpx11")
-    server_location = optional(string, "fsn1")
+    server_location = optional(string, "ash")
   })
   default     = {}
   description = "Configuration for the server used when building the Talos AMD64 image with Packer."
@@ -1658,6 +1658,6 @@ variable "prometheus_operator_crds_enabled" {
 
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.85.0" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.86.1" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }

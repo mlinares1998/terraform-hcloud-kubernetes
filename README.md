@@ -152,19 +152,19 @@ module "kubernetes" {
   cluster_name = "k8s"
   hcloud_token = "<hcloud-token>"
 
-  # Export configs for Talos and Kube API access
+  # Export configs for talosctl and kubectl (optional)
   cluster_kubeconfig_path  = "kubeconfig"
   cluster_talosconfig_path = "talosconfig"
 
-  # Optional Ingress Controller and Cert Manager
+  # Enable Ingress NGINX Controller and Cert Manager (optional)
   cert_manager_enabled  = true
   ingress_nginx_enabled = true
 
   control_plane_nodepools = [
-    { name = "control", type = "cpx21", location = "fsn1", count = 3 }
+    { name = "control", type = "cpx22", location = "fsn1", count = 3 }
   ]
   worker_nodepools = [
-    { name = "worker", type = "cpx11", location = "fsn1", count = 3 }
+    { name = "worker", type = "cpx22", location = "fsn1", count = 3 }
   ]
 }
 ```
@@ -324,7 +324,7 @@ Example `kubernetes.tf` snippet:
 cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
-    type     = "cpx11"
+    type     = "cpx22"
     location = "fsn1"
     min      = 0
     max      = 6
@@ -420,7 +420,7 @@ worker_nodepools = [
   # ... (other node pool configurations)
   {
     name     = "egress"
-    type     = "cpx11"
+    type     = "cpx22"
     location = "fsn1"
     labels   = { "egress-node" = "true" }
     taints   = [ "egress-node=true:NoSchedule" ]
@@ -766,7 +766,7 @@ talos_backup_s3_hcloud_url  = "https://<bucket>.<location>.your-objectstorage.co
 cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
-    type     = "cpx11"
+    type     = "cpx22"
     location = "fsn1"
     min      = 0
     max      = 6
@@ -1033,7 +1033,7 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 ### :white_check_mark: Version Compatibility Matrix
 | Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
 | :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
-|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |       ?       |    (1.19)    |      ?      |
+|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |       ?       |     1.19     |      ?      |
 |   **3**    |    1.33    | 1.10  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
 |   **2**    |    1.32    |  1.9  |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |     1.17     |    9.45     |
 <!--
@@ -1050,7 +1050,7 @@ In this module, upgrades are conducted with care. You will consistently receive 
 - Talos/K8s: https://github.com/siderolabs/talos/blob/release-1.6/pkg/machinery/constants/constants.go
 - HCCM: https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/becfd60814cd868ca972492298f17b8e7e11c8ed/docs/reference/version-policy.md
 - HCSI: https://github.com/hetznercloud/csi-driver/blob/main/docs/kubernetes/README.md#versioning-policy
-- Longhorn: https://longhorn.io/docs/1.7.2/best-practices/#kubernetes-version
+- Longhorn: https://longhorn.io/docs/1.10.0/best-practices/#kubernetes-version
 - Cilium: https://github.com/cilium/cilium/blob/v1.15/Documentation/network/kubernetes/requirements.rst#kubernetes-version
 - Ingress Nginx: https://github.com/kubernetes/ingress-nginx?tab=readme-ov-file#supported-versions-table 
 - Cert Manager: https://cert-manager.io/docs/releases/

@@ -216,6 +216,7 @@ data "external" "talos_members" {
   }
 
   depends_on = [
+    data.external.talosctl_version_check,
     terraform_data.upgrade_control_plane,
     terraform_data.upgrade_worker
   ]
