@@ -34,7 +34,6 @@
         "siderolabs/talos"
       ],
       "matchUpdateTypes": ["patch"],
-      "ignoreUnstable": true,
       "groupName": "Kubernetes-Talos patch updates"
     }
   ],
