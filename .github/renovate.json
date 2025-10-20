@@ -33,7 +33,7 @@
         "kubernetes/kubernetes",
         "siderolabs/talos"
       ],
-      "allowedVersions": "v{{{major}}}.{{{minor}}}.*",
+      "matchUpdateTypes": ["patch"],
       "ignoreUnstable": true,
       "groupName": "Kubernetes-Talos patch updates"
     }
