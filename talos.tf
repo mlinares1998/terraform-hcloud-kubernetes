@@ -163,18 +163,22 @@ resource "terraform_data" "upgrade_control_plane" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(${local.talosctl_get_version_command})
-          current_schematic=$(${local.talosctl_get_schematic_command})
-
-          # Skips upgrading the node if talos version and schematic matches
-          if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
-            printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
-            continue
-          fi
-
-          printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
           retry=1
-          while ! ${local.talosctl_upgrade_command}; do
+          while true; do
+            current_version=$(${local.talosctl_get_version_command})
+            current_schematic=$(${local.talosctl_get_schematic_command})
+
+            # Skips upgrading the node if talos version and schematic matches
+            if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
+              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              break
+            fi
+
+            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            if ${local.talosctl_upgrade_command}; then
+              printf '%s\n' "Upgrade command completed for $host"
+              break
+            fi
             ${local.talosctl_retry_snippet}
           done
           sleep 5
@@ -232,18 +236,22 @@ resource "terraform_data" "upgrade_worker" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(${local.talosctl_get_version_command})
-          current_schematic=$(${local.talosctl_get_schematic_command})
-
-          # Skips upgrading the node if talos version and schematic matches
-          if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
-            printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
-            continue
-          fi
-
-          printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
           retry=1
-          while ! ${local.talosctl_upgrade_command}; do
+          while true; do
+            current_version=$(${local.talosctl_get_version_command})
+            current_schematic=$(${local.talosctl_get_schematic_command})
+
+            # Skips upgrading the node if talos version and schematic matches
+            if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
+              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              break
+            fi
+
+            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            if ${local.talosctl_upgrade_command}; then
+              printf '%s\n' "Upgrade command completed for $host"
+              break
+            fi
             ${local.talosctl_retry_snippet}
           done
           sleep 5
@@ -303,18 +311,22 @@ resource "terraform_data" "upgrade_cluster_autoscaler" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(${local.talosctl_get_version_command})
-          current_schematic=$(${local.talosctl_get_schematic_command})
-
-          # Skips upgrading the node if talos version and schematic matches
-          if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
-            printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
-            continue
-          fi
-
-          printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
           retry=1
-          while ! ${local.talosctl_upgrade_command}; do
+          while true; do
+            current_version=$(${local.talosctl_get_version_command})
+            current_schematic=$(${local.talosctl_get_schematic_command})
+
+            # Skips upgrading the node if talos version and schematic matches
+            if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
+              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              break
+            fi
+
+            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            if ${local.talosctl_upgrade_command}; then
+              printf '%s\n' "Upgrade command completed for $host"
+              break
+            fi
             ${local.talosctl_retry_snippet}
           done
           sleep 5
