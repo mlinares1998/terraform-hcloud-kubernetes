@@ -93,6 +93,26 @@ locals {
       "{ printf '%s\n' \"Retry $retry/${var.talosctl_retry_count}...\"; retry=$((retry + 1)); sleep 10; }"
     ]
   )
+  talosctl_get_version_command = join(" ",
+    [
+      "talosctl",
+      "--talosconfig \"$talosconfig\"",
+      "get version",
+      "-n \"$host\"",
+      "-o jsonpath='{.spec.version}'",
+      "2>/dev/null || echo \"\""
+    ]
+  )
+  talosctl_get_schematic_command = join(" ",
+    [
+      "talosctl",
+      "--talosconfig \"$talosconfig\"",
+      "get extensions",
+      "-n \"$host\"",
+      "-o json",
+      "| awk '/\"name\": \"schematic\"/{flag=1} flag && /\"version\":/{gsub(/.*\"version\": \"|\".*$$/,\"\",$$0); print; exit}' || true"
+    ]
+  )
 
   # Cluster Status
   cluster_initialized = length(data.hcloud_certificates.state.certificates) > 0
@@ -143,9 +163,8 @@ resource "terraform_data" "upgrade_control_plane" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(talosctl --talosconfig "$talosconfig" get version -n "$host" -o jsonpath='{.spec.version}' 2>/dev/null || echo "")
-          current_schematic=$(talosctl --talosconfig "$talosconfig" get extensions -n "$host" -o json \
-            | awk '/"name": "schematic"/{flag=1} flag && /"version":/{gsub(/.*"version": "|".*/,"",$0); print; exit}' || true)
+          current_version=$(${local.talosctl_get_version_command})
+          current_schematic=$(${local.talosctl_get_schematic_command})
 
           # Skips upgrading the node if talos version and schematic matches
           if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
@@ -213,9 +232,8 @@ resource "terraform_data" "upgrade_worker" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(talosctl --talosconfig "$talosconfig" get version -n "$host" -o jsonpath='{.spec.version}' 2>/dev/null || echo "")
-          current_schematic=$(talosctl --talosconfig "$talosconfig" get extensions -n "$host" -o json \
-            | awk '/"name": "schematic"/{flag=1} flag && /"version":/{gsub(/.*"version": "|".*/,"",$0); print; exit}' || true)
+          current_version=$(${local.talosctl_get_version_command})
+          current_schematic=$(${local.talosctl_get_schematic_command})
 
           # Skips upgrading the node if talos version and schematic matches
           if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
@@ -285,9 +303,8 @@ resource "terraform_data" "upgrade_cluster_autoscaler" {
         for host in "$@"; do
           printf '%s\n' "Checking node $host..."
 
-          current_version=$(talosctl --talosconfig "$talosconfig" get version -n "$host" -o jsonpath='{.spec.version}' 2>/dev/null || echo "")
-          current_schematic=$(talosctl --talosconfig "$talosconfig" get extensions -n "$host" -o json \
-            | awk '/"name": "schematic"/{flag=1} flag && /"version":/{gsub(/.*"version": "|".*/,"",$0); print; exit}' || true)
+          current_version=$(${local.talosctl_get_version_command})
+          current_schematic=$(${local.talosctl_get_schematic_command})
 
           # Skips upgrading the node if talos version and schematic matches
           if [ "$${current_version:-}" = "${var.talos_version}" ] && [ "$${current_schematic:-}" = "${local.talos_schematic_id}" ]; then
