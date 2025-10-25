@@ -95,6 +95,31 @@ variable "cluster_delete_protection" {
 }
 
 
+# Client Tools
+variable "client_prerequisites_check_enabled" {
+  type        = bool
+  default     = true
+  description = "Controls whether a preflight check verifies that required client tools are installed before provisioning."
+}
+
+variable "talosctl_version_check_enabled" {
+  type        = bool
+  default     = true
+  description = "Controls whether a preflight check verifies the local talosctl client version before provisioning."
+}
+
+variable "talosctl_retry_count" {
+  type        = number
+  default     = 5
+  description = "Specifies how many times talosctl operations should retry before failing. This setting helps improve resilience against transient network issues or temporary API unavailability."
+
+  validation {
+    condition     = var.talosctl_retry_count >= 0
+    error_message = "The talosctl retry count must be at least 0."
+  }
+}
+
+
 # Network Configuration
 variable "network_ipv4_cidr" {
   type        = string
@@ -492,7 +517,7 @@ variable "cluster_autoscaler_config_patches" {
 variable "cluster_autoscaler_discovery_enabled" {
   type        = bool
   default     = false
-  description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes. This feature requires jq to be installed on the machine running Terraform."
+  description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes."
 }
 
 
@@ -1368,7 +1393,7 @@ variable "cert_manager_helm_chart" {
 
 variable "cert_manager_helm_version" {
   type        = string
-  default     = "v1.18.2"
+  default     = "v1.18.3"
   description = "Version of the Cert Manager Helm chart to deploy."
 }
 

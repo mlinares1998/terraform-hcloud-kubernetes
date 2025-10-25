@@ -134,7 +134,8 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 
 - [terraform](https://developer.hashicorp.com/terraform/install) or [tofu](https://opentofu.org/docs/intro/install/) to deploy the Cluster
 - [packer](https://developer.hashicorp.com/packer/install) to upload Talos Images
-- [talosctl](https://www.talos.dev/latest/talos-guides/install/talosctl/) to control the Talos Cluster
+- [jq](https://jqlang.org/download/) for internal API Communication
+- [talosctl](https://www.talos.dev/latest/talos-guides/install/talosctl) to control the Talos Cluster
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) to control Kubernetes (optional)
 
 > [!IMPORTANT]
@@ -349,7 +350,7 @@ cluster_autoscaler_helm_values = {
 ##### Talos Upgrades and Configuration Changes
 Cluster Autoscaler does not support upgrading nodes or changing their configuration, as its primary purpose is to manage short-lived nodes that handle load peaks. If you require long-lived autoscaled nodes, you can upgrade them manually using `talosctl` or use this Terraform module, which supports discovery of autoscaled nodes and manages their upgrades and configuration changes.
 
-To enable this feature, install [jq](https://jqlang.org/download/) and add the following to your configuration:
+To enable this feature, add the following to your configuration:
 ```hcl
 cluster_autoscaler_discovery_enabled = true
 ```
