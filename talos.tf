@@ -90,7 +90,7 @@ locals {
   talosctl_retry_snippet = join(" ",
     [
       "[ \"$retry\" -gt ${var.talosctl_retry_count} ] && exit 1 ||",
-      "{ printf '%s\n' \"Retry $retry/${var.talosctl_retry_count}...\"; retry=$((retry + 1)); sleep 10; }"
+      "{ printf '%s\n' \"Retry $retry/${var.talosctl_retry_count} ...\"; retry=$((retry + 1)); sleep 10; }"
     ]
   )
   talosctl_get_version_command = join(" ",
@@ -159,35 +159,48 @@ resource "terraform_data" "upgrade_control_plane" {
 
         set -- ${join(" ", local.control_plane_private_ipv4_list)}
         for host in "$@"; do
-          printf '%s\n' "Checking node $host..."
+          printf '%s\n' "Checking node $host ..."
 
           retry=1
           while true; do
             current_version=$(${local.talosctl_get_version_command})
             current_schematic=$(${local.talosctl_get_schematic_command})
-
-            # Skips upgrading the node if talos version and schematic matches
             if [ "$current_version" = "${var.talos_version}" ] && [ "$current_schematic" = "${local.talos_schematic_id}" ]; then
-              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              if [ "$retry" -gt 1 ]; then
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Waiting for cluster to stabilize ..."
+                sleep 5
+
+                retry=1
+                while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                  ${local.talosctl_retry_snippet}
+                done
+                printf '%s\n' "Node $host upgraded successfully"
+              else
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Skipping upgrade ..."
+              fi
               break
+            elif [ -n "$current_version" ] && [ -n "$current_schematic" ]; then
+              printf '%s\n' "Node $host is currently at Talos $current_version ($current_schematic)"
+            else
+              printf '%s\n' "Could not determine current Talos version or schematic for node $host"
             fi
 
-            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            printf '%s\n' "Upgrading node $host to Talos ${var.talos_version} (${local.talos_schematic_id}) ..."
             if ${local.talosctl_upgrade_command}; then
-              printf '%s\n' "Upgrade command completed for $host"
+              printf '%s\n' "Upgrade successfully completed for node $host"
+              sleep 5
+
+              retry=1
+              while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                ${local.talosctl_retry_snippet}
+              done
+
+              printf '%s\n' "Node $host upgraded successfully"
               break
             fi
             ${local.talosctl_retry_snippet}
           done
-          sleep 5
-
-          retry=1
-          while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n "$host"; do
-            ${local.talosctl_retry_snippet}
-          done
-          printf '%s\n' "Node $host upgraded successfully"
         done
-
         printf '%s\n' "Control Plane Nodes upgraded successfully"
       else
         printf '%s\n' "Cluster not initialized, skipping Control Plane Node upgrade"
@@ -232,35 +245,48 @@ resource "terraform_data" "upgrade_worker" {
 
         set -- ${join(" ", local.worker_private_ipv4_list)}
         for host in "$@"; do
-          printf '%s\n' "Checking node $host..."
+          printf '%s\n' "Checking node $host ..."
 
           retry=1
           while true; do
             current_version=$(${local.talosctl_get_version_command})
             current_schematic=$(${local.talosctl_get_schematic_command})
-
-            # Skips upgrading the node if talos version and schematic matches
             if [ "$current_version" = "${var.talos_version}" ] && [ "$current_schematic" = "${local.talos_schematic_id}" ]; then
-              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              if [ "$retry" -gt 1 ]; then
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Waiting for cluster to stabilize ..."
+                sleep 5
+
+                retry=1
+                while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                  ${local.talosctl_retry_snippet}
+                done
+                printf '%s\n' "Node $host upgraded successfully"
+              else
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Skipping upgrade ..."
+              fi
               break
+            elif [ -n "$current_version" ] && [ -n "$current_schematic" ]; then
+              printf '%s\n' "Node $host is currently at Talos $current_version ($current_schematic)"
+            else
+              printf '%s\n' "Could not determine current Talos version or schematic for node $host"
             fi
 
-            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            printf '%s\n' "Upgrading node $host to Talos ${var.talos_version} (${local.talos_schematic_id}) ..."
             if ${local.talosctl_upgrade_command}; then
-              printf '%s\n' "Upgrade command completed for $host"
+              printf '%s\n' "Upgrade successfully completed for node $host"
+              sleep 5
+
+              retry=1
+              while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                ${local.talosctl_retry_snippet}
+              done
+
+              printf '%s\n' "Node $host upgraded successfully"
               break
             fi
             ${local.talosctl_retry_snippet}
           done
-          sleep 5
-
-          retry=1
-          while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
-            ${local.talosctl_retry_snippet}
-          done
-          printf '%s\n' "Node $host upgraded successfully"
         done
-
         printf '%s\n' "Worker Nodes upgraded successfully"
       else
         printf '%s\n' "Cluster not initialized, skipping Worker Node upgrade"
@@ -307,35 +333,48 @@ resource "terraform_data" "upgrade_cluster_autoscaler" {
 
         set -- ${join(" ", local.cluster_autoscaler_private_ipv4_list)}
         for host in "$@"; do
-          printf '%s\n' "Checking node $host..."
+          printf '%s\n' "Checking node $host ..."
 
           retry=1
           while true; do
             current_version=$(${local.talosctl_get_version_command})
             current_schematic=$(${local.talosctl_get_schematic_command})
-
-            # Skips upgrading the node if talos version and schematic matches
             if [ "$current_version" = "${var.talos_version}" ] && [ "$current_schematic" = "${local.talos_schematic_id}" ]; then
-              printf '%s\n' "Node $host already at target version and schematic — skipping upgrade"
+              if [ "$retry" -gt 1 ]; then
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Waiting for cluster to stabilize ..."
+                sleep 5
+
+                retry=1
+                while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                  ${local.talosctl_retry_snippet}
+                done
+                printf '%s\n' "Node $host upgraded successfully"
+              else
+                printf '%s\n' "Node $host is already at Talos $current_version ($current_schematic). Skipping upgrade ..."
+              fi
               break
+            elif [ -n "$current_version" ] && [ -n "$current_schematic" ]; then
+              printf '%s\n' "Node $host is currently at Talos $current_version ($current_schematic)"
+            else
+              printf '%s\n' "Could not determine current Talos version or schematic for node $host"
             fi
 
-            printf '%s\n' "Upgrading $host to ${var.talos_version} / schematic ${local.talos_schematic_id}..."
+            printf '%s\n' "Upgrading node $host to Talos ${var.talos_version} (${local.talos_schematic_id}) ..."
             if ${local.talosctl_upgrade_command}; then
-              printf '%s\n' "Upgrade command completed for $host"
+              printf '%s\n' "Upgrade successfully completed for node $host"
+              sleep 5
+
+              retry=1
+              while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
+                ${local.talosctl_retry_snippet}
+              done
+
+              printf '%s\n' "Node $host upgraded successfully"
               break
             fi
             ${local.talosctl_retry_snippet}
           done
-          sleep 5
-
-          retry=1
-          while ${var.cluster_healthcheck_enabled} && ! ${local.talosctl_health_check_command} -n '${local.talos_primary_node_private_ipv4}'; do
-            ${local.talosctl_retry_snippet}
-          done
-          printf '%s\n' "Node $host upgraded successfully"
         done
-
         printf '%s\n' "Cluster Autoscaler Nodes upgraded successfully"
       else
         printf '%s\n' "Cluster not initialized, skipping Cluster Autoscaler Node upgrade"

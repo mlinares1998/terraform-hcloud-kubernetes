@@ -9,20 +9,35 @@
 
 <!-- Badges -->
 <p>
-  <a href="">
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/releases/latest">
     <img src="https://img.shields.io/github/release/hcloud-k8s/terraform-hcloud-kubernetes?logo=github" alt="last update" />
   </a>
-  <a href="">
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/commit/main">
     <img src="https://img.shields.io/github/last-commit/hcloud-k8s/terraform-hcloud-kubernetes?logo=github" alt="last update" />
-  </a>
-  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/network/members">
-    <img src="https://img.shields.io/github/forks/hcloud-k8s/terraform-hcloud-kubernetes" alt="forks" />
   </a>
   <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/stargazers">
     <img src="https://img.shields.io/github/stars/hcloud-k8s/terraform-hcloud-kubernetes" alt="stars" />
   </a>
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/network/members">
+    <img src="https://img.shields.io/github/forks/hcloud-k8s/terraform-hcloud-kubernetes" alt="forks" />
+  </a>
+  <a href="https://search.opentofu.org/module/hcloud-k8s/kubernetes/hcloud">
+    <img src="https://img.shields.io/badge/OpenTofu-Hcloud--K8s-blue?logo=opentofu" alt="OpenTofu Module" />
+  </a>
+  <a href="https://registry.terraform.io/modules/hcloud-k8s/kubernetes/hcloud">
+    <img src="https://img.shields.io/terraform/module/dt/hcloud-k8s/kubernetes/hcloud?logo=terraform&label=Terraform" alt="Terraform Registry downloads" />
+  </a>
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/search?l=hcl">
+    <img src="https://img.shields.io/github/languages/top/hcloud-k8s/terraform-hcloud-kubernetes?logo=hashicorp&label=HCL" alt="HCL top language" />
+  </a>
   <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/issues/">
     <img src="https://img.shields.io/github/issues/hcloud-k8s/terraform-hcloud-kubernetes?logo=github" alt="open issues" />
+  </a>
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/pulls">
+    <img src="https://img.shields.io/github/issues-pr/hcloud-k8s/terraform-hcloud-kubernetes?logo=github" alt="open pull requests" />
+  </a>
+  <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/discussions">
+    <img src="https://img.shields.io/github/discussions/hcloud-k8s/terraform-hcloud-kubernetes?logo=github&label=discussions" alt="discussions" />
   </a>
   <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/hcloud-k8s/terraform-hcloud-kubernetes?logo=github" alt="license" />
@@ -1034,7 +1049,7 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 ### :white_check_mark: Version Compatibility Matrix
 | Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
 | :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
-|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |       ?       |     1.19     |      ?      |
+|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |       ?       |     1.19     |    9.51     |
 |   **3**    |    1.33    | 1.10  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
 |   **2**    |    1.32    |  1.9  |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |     1.17     |    9.45     |
 <!--
@@ -1045,7 +1060,7 @@ The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolab
 In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components, avoiding the latest untested or incompatible releases that could disrupt your cluster.
 
 > [!WARNING]
-> Do not change any software versions in this project on your own. Each component is tailored to ensure compatibility with new Kubernetes releases. This project specifies versions that are supported and have been thoroughly tested to work together.
+> It is not recommended to change any software versions in this project on your own. Each component is specifically configured for compatibility with new Kubernetes releases. The specified versions are supported and have been tested to work together.
 
 <!--
 - Talos/K8s: https://github.com/siderolabs/talos/blob/release-1.6/pkg/machinery/constants/constants.go
