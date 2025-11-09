@@ -149,8 +149,8 @@ locals {
   # documentation 2001:db8::/32, IPv4-mapped ::ffff:0:0/96
   ipv6_non_public_pattern = "^(::$|::1$|fe[89ab][0-9a-f]:|f[cd][0-9a-f]*:|ff[0-9a-f]*:|2001:db8:|::ffff:)"
 
-  talos_discovery_cluster_autoscaler = {
-    for m in jsondecode(data.external.talos_member.result.cluster_autoscaler) : m.spec.hostname => {
+  talos_discovery_cluster_autoscaler = var.cluster_autoscaler_discovery_enabled ? {
+    for m in jsondecode(data.external.talos_member[0].result.cluster_autoscaler) : m.spec.hostname => {
       nodepool = regex(local.cluster_autoscaler_hostname_pattern, m.spec.hostname)[0]
 
       private_ipv4_address = try(
@@ -183,10 +183,12 @@ locals {
         ][0], null
       )
     }
-  }
+  } : {}
 }
 
 data "external" "talos_member" {
+  count = var.cluster_autoscaler_discovery_enabled ? 1 : 0
+
   program = [
     "sh", "-c", <<-EOT
       set -eu

@@ -1071,7 +1071,7 @@ variable "hcloud_ccm_helm_chart" {
 
 variable "hcloud_ccm_helm_version" {
   type        = string
-  default     = "1.27.0"
+  default     = "1.28.0"
   description = "Version of the Hcloud CCM Helm chart to deploy."
 }
 
@@ -1218,7 +1218,7 @@ variable "cilium_helm_chart" {
 
 variable "cilium_helm_version" {
   type        = string
-  default     = "1.18.2"
+  default     = "1.18.3"
   description = "Version of the Cilium Helm chart to deploy."
 }
 
@@ -1393,7 +1393,7 @@ variable "cert_manager_helm_chart" {
 
 variable "cert_manager_helm_version" {
   type        = string
-  default     = "v1.18.3"
+  default     = "v1.19.1"
   description = "Version of the Cert Manager Helm chart to deploy."
 }
 
@@ -1425,7 +1425,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.13.3"
+  default     = "4.13.4"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
