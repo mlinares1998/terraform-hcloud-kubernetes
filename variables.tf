@@ -357,6 +357,7 @@ variable "control_plane_config_patches" {
 variable "worker_nodepools" {
   type = list(object({
     name            = string
+    subnet_index    = optional(number)
     location        = string
     type            = string
     backups         = optional(bool, false)
@@ -458,14 +459,15 @@ variable "cluster_autoscaler_helm_values" {
 
 variable "cluster_autoscaler_nodepools" {
   type = list(object({
-    name        = string
-    location    = string
-    type        = string
-    labels      = optional(map(string), {})
-    annotations = optional(map(string), {})
-    taints      = optional(list(string), [])
-    min         = optional(number, 0)
-    max         = number
+    name         = string
+    subnet_index = optional(number)
+    location     = string
+    type         = string
+    labels       = optional(map(string), {})
+    annotations  = optional(map(string), {})
+    taints       = optional(list(string), [])
+    min          = optional(number, 0)
+    max          = number
   }))
   default     = []
   description = "Defines configuration settings for Autoscaler node pools within the cluster."
@@ -518,6 +520,12 @@ variable "cluster_autoscaler_discovery_enabled" {
   type        = bool
   default     = false
   description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes."
+}
+
+variable "cluster_autoscaler_dedicated_subnets_enabled" {
+  type        = bool
+  default     = false
+  description = "Allocate dedicated subnet per autoscaler nodepool. When false (default), uses single shared subnet (slot 49) for all autoscaler nodes. When true, allocates 23 worker subnets (slots 2-24) and 23 autoscaler subnets (slots 25-47), leaving slot 48 as backup."
 }
 
 

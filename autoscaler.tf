@@ -24,8 +24,11 @@ locals {
           nodeConfigs = {
             for nodepool in local.cluster_autoscaler_nodepools : "${var.cluster_name}-${nodepool.name}" => {
               cloudInit = data.talos_machine_configuration.cluster_autoscaler[nodepool.name].machine_configuration,
-              labels    = nodepool.labels
-              taints    = nodepool.taints
+              subnetIPRange = var.cluster_autoscaler_dedicated_subnets_enabled ?
+                hcloud_network_subnet.autoscaler_dedicated[nodepool.name].ip_range :
+                hcloud_network_subnet.autoscaler_shared[0].ip_range,
+              labels = nodepool.labels
+              taints = nodepool.taints
             }
           }
         }
@@ -91,7 +94,7 @@ data "helm_template" "cluster_autoscaler" {
         HCLOUD_SSH_KEY                 = tostring(hcloud_ssh_key.this.id)
         HCLOUD_PUBLIC_IPV4             = tostring(var.talos_public_ipv4_enabled)
         HCLOUD_PUBLIC_IPV6             = tostring(var.talos_public_ipv6_enabled)
-        HCLOUD_NETWORK                 = tostring(hcloud_network_subnet.autoscaler.network_id)
+        HCLOUD_NETWORK                 = tostring(local.hcloud_network_id)
       }
       extraEnvSecrets = {
         HCLOUD_TOKEN = {
