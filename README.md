@@ -611,7 +611,173 @@ Here is a table with more example calculations:
 | **10.0.0.0/19** | /28 (16 IPs)     | 10.0.8.0/22  (64) | 10.0.12.0/22 (1024) | 10.0.16.0/20 (16)   |
 | **10.0.0.0/20** | /29 (8 IPs)      | 10.0.4.0/23  (64) | 10.0.6.0/23 (512)   | 10.0.8.0/21 (8)     |
 | **10.0.0.0/21** | /30 (4 IPs)      | 10.0.2.0/24  (64) | 10.0.3.0/24 (256)   | 10.0.4.0/22 (4)     |
- 
+
+</details>
+
+
+<!-- Stable Subnet Allocation -->
+<details>
+<summary><b>Stable Subnet Allocation</b></summary>
+
+This module implements **stable subnet allocation** to prevent unwanted subnet shifts when adding or removing nodepools. Previously, removing a nodepool from the middle of the `worker_nodepools` array would cause all subsequent nodepools to shift to different subnets, triggering node recreation and potential cluster disruption.
+
+### How It Works
+
+Each nodepool (worker or autoscaler) is assigned a **stable subnet slot** that persists even when other nodepools are added or removed. Subnet slots are assigned using one of two methods:
+
+1. **Explicit Assignment** (Recommended for production): Set the `subnet_index` field to manually control the subnet slot
+2. **Automatic Assignment** (Default): The module automatically assigns a slot based on a hash of the nodepool name
+
+### Subnet Slot Allocation
+
+The module divides the available subnet slots (0-49, per Hetzner's 50 subnet limit) as follows:
+
+**Scenario 1: Shared Autoscaler Subnet** (default, `cluster_autoscaler_dedicated_subnets_enabled = false`)
+```
+Slot  0-1:  Control Plane + Load Balancer (reserved)
+Slot  2-47: Workers (46 available slots)
+Slot 48:    Free backup slot
+Slot 49:    Shared autoscaler subnet
+```
+
+**Scenario 2: Dedicated Autoscaler Subnets** (opt-in, `cluster_autoscaler_dedicated_subnets_enabled = true`)
+```
+Slot  0-1:  Control Plane + Load Balancer (reserved)
+Slot  2-24: Workers (23 available slots)
+Slot 25-47: Autoscalers (23 available slots)
+Slot 48:    Free backup slot
+Slot 49:    Reserved
+```
+
+### Usage Examples
+
+#### Automatic Assignment (Default)
+
+```hcl
+worker_nodepools = [
+  {
+    name     = "workers"
+    type     = "cpx22"
+    location = "fsn1"
+    count    = 3
+  },
+  {
+    name     = "platform"
+    type     = "cpx31"
+    location = "nbg1"
+    count    = 2
+  }
+]
+```
+
+Each nodepool name is hashed to determine its subnet slot. Removing a nodepool only affects its specific slot, leaving others unchanged.
+
+#### Explicit Assignment (Recommended for Production)
+
+```hcl
+worker_nodepools = [
+  {
+    name         = "workers"
+    subnet_index = 0  # Explicitly assigned to slot 2 (base + 0)
+    type         = "cpx22"
+    location     = "fsn1"
+    count        = 3
+  },
+  {
+    name         = "platform"
+    subnet_index = 1  # Explicitly assigned to slot 3 (base + 1)
+    type         = "cpx31"
+    location     = "nbg1"
+    count        = 2
+  }
+]
+```
+
+**Note:** `subnet_index` values are **relative** to the nodepool type's range:
+- Worker indices: 0-45 (default) or 0-22 (with dedicated autoscaler subnets)
+- Autoscaler indices: 0-22 (only when dedicated subnets enabled)
+
+#### Dedicated Autoscaler Subnets
+
+```hcl
+cluster_autoscaler_dedicated_subnets_enabled = true
+
+cluster_autoscaler_nodepools = [
+  {
+    name         = "autoscaler-workers"
+    subnet_index = 0  # Slot 25 (autoscaler range start + 0)
+    type         = "cpx22"
+    location     = "fsn1"
+    min          = 0
+    max          = 10
+  },
+  {
+    name     = "autoscaler-gpu"
+    # Auto-assigned via hash
+    type     = "ccx33"
+    location = "fsn1"
+    min      = 0
+    max      = 5
+  }
+]
+```
+
+### Collision Detection
+
+If two auto-assigned nodepools hash to the same slot (rare, but possible), Terraform will fail with a helpful error message:
+
+```
+Worker subnet collision detected among auto-assigned nodepools!
+
+Current auto-assignments: {"pool-a": 5, "pool-b": 5}
+Available free slots (relative indices): [0, 1, 2, 3, 4, 6, 7, ...]
+
+Fix: Set explicit subnet_index for one of the colliding nodepools.
+Example:
+  worker_nodepools = [
+    { name = "pool-a", subnet_index = 0, ... },
+  ]
+```
+
+Simply set an explicit `subnet_index` for one of the conflicting nodepools to resolve the collision.
+
+### Migration Guide for Existing Clusters
+
+To preserve current subnet assignments when upgrading to this version:
+
+1. **Determine current assignments** - They follow the array order:
+   - First pool in array → `subnet_index = 0`
+   - Second pool → `subnet_index = 1`
+   - Third pool → `subnet_index = 2`
+   - And so on...
+
+2. **Add explicit indices** to your configuration:
+   ```hcl
+   worker_nodepools = [
+     { name = "my-pool-1", subnet_index = 0, ... },
+     { name = "my-pool-2", subnet_index = 1, ... },
+     { name = "my-pool-3", subnet_index = 2, ... },
+   ]
+   ```
+
+3. **Run `terraform plan`** - Should show no subnet changes if indices match current state
+
+4. **Apply safely** - Subnets remain unchanged
+
+5. **Going forward** - Add/remove nodepools without affecting others!
+
+### Best Practices
+
+1. **Use explicit `subnet_index` in production** - Guarantees predictable subnet assignments
+2. **Leave gaps for future expansion** - Use indices like 0, 5, 10 instead of 0, 1, 2 to allow inserting nodepools later
+3. **Document your slot allocation** - Maintain a comment or separate document showing which indices are in use
+4. **Enable dedicated autoscaler subnets** when using cluster autoscaler for better network isolation
+
+### Variables
+
+- **`subnet_index`** (optional, number): Explicit subnet slot assignment for a nodepool (worker: 0-45/0-22, autoscaler: 0-22)
+- **`cluster_autoscaler_dedicated_subnets_enabled`** (optional, bool, default: `false`): Allocate dedicated subnets per autoscaler nodepool instead of a single shared subnet
+
 </details>
 
 
