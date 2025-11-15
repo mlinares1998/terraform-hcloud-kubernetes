@@ -43,20 +43,30 @@ locals {
 
   # === STABLE SUBNET ALLOCATION ===
 
-  # Subnet allocation schema:
-  # Slot 0: Other VM network (outside module scope, may be skipped)
+  # Subnet allocation schema (when skip_first_subnet = false):
+  # Slot 0: Control Plane
+  # Slot 1: Load Balancer
+  # Slot 2: Reserved (alignment)
+  # Slots 3-47: Manual assignment pool (45 slots, indices 0-44)
+  # Slot 48: Worker shared subnet
+  # Slot 49: Autoscaler shared subnet
+  #
+  # When skip_first_subnet = true, all slots shift +1:
+  # Slot 0: Skipped
   # Slot 1: Control Plane
   # Slot 2: Load Balancer
-  # Slots 3-47: Manual assignment pool (45 slots) for workers and autoscalers with explicit subnet_index
-  # Slot 48: Worker shared subnet (for workers without subnet_index)
-  # Slot 49: Autoscaler shared subnet (for autoscalers without subnet_index)
+  # Slot 3: Reserved (alignment)
+  # Slots 4-47: Manual assignment pool (44 slots, indices 0-43)
+  # Slot 48: Worker shared subnet
+  # Slot 49: Autoscaler shared subnet
 
   # Base offset accounting for skip_first_subnet logic
   subnet_base_offset = 2 + (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0)
 
-  # Manual assignment pool: slots 3-47 (45 slots available)
-  manual_pool_start = local.subnet_base_offset + 1  # After Control Plane (1) and Load Balancer (2)
-  manual_pool_size  = 45
+  # Manual assignment pool adjusts based on skip_first_subnet
+  # skip=false: slots 3-47 (45 slots), skip=true: slots 4-47 (44 slots)
+  manual_pool_start = local.subnet_base_offset + 1  # After Control Plane and Load Balancer
+  manual_pool_size  = 45 - (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0)
 
   # Shared subnet slots
   worker_shared_slot     = manual_pool_start + manual_pool_size      # Slot 48
@@ -230,11 +240,54 @@ resource "hcloud_network_subnet" "autoscaler_shared" {
 }
 
 # === SUBNET ALLOCATION VALIDATION ===
-# Note: Range validation (0-44) is performed at variable level for early detection.
-# Cross-variable validations (collision, total count) are performed here.
+# Note: Basic range validation (0-44) is performed at variable level for early detection.
+# Context-aware validations (exact range based on skip_first_subnet, collision, total count) performed here.
 
 resource "terraform_data" "validate_subnet_allocation" {
   lifecycle {
+    # Validate worker subnet_index is within context-aware range
+    # Range depends on skip_first_subnet: 0-44 (skip=false) or 0-43 (skip=true)
+    precondition {
+      condition = alltrue([
+        for np in local.workers_manual :
+        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
+      ])
+      error_message = <<-EOT
+        Worker nodepool subnet_index out of valid range!
+
+        Invalid assignments: ${jsonencode([
+          for np in local.workers_manual :
+          { name = np.name, subnet_index = np.subnet_index }
+          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
+        ])}
+
+        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
+
+        Note: Available slots depend on skip_first_subnet setting.
+      EOT
+    }
+
+    # Validate autoscaler subnet_index is within context-aware range
+    precondition {
+      condition = alltrue([
+        for np in local.autoscalers_manual :
+        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
+      ])
+      error_message = <<-EOT
+        Autoscaler nodepool subnet_index out of valid range!
+
+        Invalid assignments: ${jsonencode([
+          for np in local.autoscalers_manual :
+          { name = np.name, subnet_index = np.subnet_index }
+          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
+        ])}
+
+        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
+
+        Note: Available slots depend on skip_first_subnet setting.
+      EOT
+    }
+
     # Validate no collisions between worker and autoscaler manual assignments
     precondition {
       condition     = !local.manual_assignment_collision

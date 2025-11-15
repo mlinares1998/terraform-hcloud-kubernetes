@@ -634,19 +634,31 @@ This approach leverages Hetzner Cloud's automatic IP assignment (available since
 
 The module allocates subnet slots (0-49, per Hetzner's 50 subnet limit) as follows:
 
+**When `skip_first_subnet = false` (default):**
 ```
-Slot  0:    Other VM network (outside module scope, may be skipped)
+Slot  0:    Control Plane
+Slot  1:    Load Balancer
+Slot  2:    Reserved (alignment)
+Slots 3-47: Manual assignment pool (45 slots, indices 0-44)
+Slot 48:    Worker shared subnet (all workers without subnet_index)
+Slot 49:    Autoscaler shared subnet (all autoscalers without subnet_index)
+```
+
+**When `skip_first_subnet = true`:**
+```
+Slot  0:    Skipped (reserved for other VMs outside module)
 Slot  1:    Control Plane
 Slot  2:    Load Balancer
-Slots 3-47: Manual assignment pool (45 slots available)
+Slot  3:    Reserved (alignment)
+Slots 4-47: Manual assignment pool (44 slots, indices 0-43)
 Slot 48:    Worker shared subnet (all workers without subnet_index)
 Slot 49:    Autoscaler shared subnet (all autoscalers without subnet_index)
 ```
 
 **Key Points:**
 - **Shared subnets** (slots 48-49) have no nodepool limit - add as many workers/autoscalers as needed
-- **Manual pool** (slots 3-47) is shared between workers AND autoscalers - each `subnet_index` can only be used once
-- `subnet_index` values range from **0-44** (relative to manual pool: slot 3 = index 0, slot 47 = index 44)
+- **Manual pool** (slots 3-47 when `skip_first_subnet=false`, slots 4-47 when `skip_first_subnet=true`) is shared between workers AND autoscalers - each `subnet_index` can only be used once
+- `subnet_index` values range from **0-44** (when `skip_first_subnet=false`) or **0-43** (when `skip_first_subnet=true`)
 
 ### Usage Examples
 
@@ -799,7 +811,7 @@ To preserve current subnet assignments when upgrading to this version:
 
 ### Variables
 
-- **`subnet_index`** (optional, number, range 0-44): Allocate a dedicated subnet from the manual pool for this nodepool. Omit this field to use the shared subnet (recommended for most use cases).
+- **`subnet_index`** (optional, number): Allocate a dedicated subnet from the manual pool for this nodepool. Valid range is 0-44 (when `skip_first_subnet=false`) or 0-43 (when `skip_first_subnet=true`). Omit this field to use the shared subnet (recommended for most use cases).
 
 ### Technical Details
 
