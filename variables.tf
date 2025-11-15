@@ -380,6 +380,14 @@ variable "worker_nodepools" {
   }
 
   validation {
+    condition = alltrue([
+      for np in var.worker_nodepools :
+      np.subnet_index == null || (np.subnet_index >= 0 && np.subnet_index <= 44)
+    ])
+    error_message = "Worker nodepool subnet_index must be between 0 and 44 (manual assignment pool range). Leave unset to use the shared worker subnet."
+  }
+
+  validation {
     condition = sum(concat(
       [for worker_nodepool in var.worker_nodepools : coalesce(worker_nodepool.count, 1)],
       [for control_nodepool in var.control_plane_nodepools : coalesce(control_nodepool.count, 1)]
@@ -482,6 +490,14 @@ variable "cluster_autoscaler_nodepools" {
       for np in var.cluster_autoscaler_nodepools : np.max >= coalesce(np.min, 0)
     ])
     error_message = "Max size of a nodepool must be greater than or equal to its Min size."
+  }
+
+  validation {
+    condition = alltrue([
+      for np in var.cluster_autoscaler_nodepools :
+      np.subnet_index == null || (np.subnet_index >= 0 && np.subnet_index <= 44)
+    ])
+    error_message = "Autoscaler nodepool subnet_index must be between 0 and 44 (manual assignment pool range). Leave unset to use the shared autoscaler subnet."
   }
 
   validation {

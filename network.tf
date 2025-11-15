@@ -230,47 +230,11 @@ resource "hcloud_network_subnet" "autoscaler_shared" {
 }
 
 # === SUBNET ALLOCATION VALIDATION ===
+# Note: Range validation (0-44) is performed at variable level for early detection.
+# Cross-variable validations (collision, total count) are performed here.
 
 resource "terraform_data" "validate_subnet_allocation" {
   lifecycle {
-    # Validate worker subnet_index is within valid range
-    precondition {
-      condition = alltrue([
-        for np in local.workers_manual :
-        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
-      ])
-      error_message = <<-EOT
-        Worker nodepool subnet_index out of range!
-
-        Invalid assignments: ${jsonencode([
-          for np in local.workers_manual :
-          { name = np.name, subnet_index = np.subnet_index }
-          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
-        ])}
-
-        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
-      EOT
-    }
-
-    # Validate autoscaler subnet_index is within valid range
-    precondition {
-      condition = alltrue([
-        for np in local.autoscalers_manual :
-        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
-      ])
-      error_message = <<-EOT
-        Autoscaler nodepool subnet_index out of range!
-
-        Invalid assignments: ${jsonencode([
-          for np in local.autoscalers_manual :
-          { name = np.name, subnet_index = np.subnet_index }
-          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
-        ])}
-
-        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
-      EOT
-    }
-
     # Validate no collisions between worker and autoscaler manual assignments
     precondition {
       condition     = !local.manual_assignment_collision
