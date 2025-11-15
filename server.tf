@@ -77,8 +77,15 @@ resource "hcloud_server" "worker" {
         keep_disk          = local.worker_nodepools[np_index].keep_disk,
         labels             = local.worker_nodepools[np_index].labels,
         placement_group_id = local.worker_nodepools[np_index].placement_group ? hcloud_placement_group.worker["${var.cluster_name}-${local.worker_nodepools[np_index].name}-pg-${ceil((wkr_index + 1) / 10.0)}"].id : null,
-        subnet             = hcloud_network_subnet.worker[local.worker_nodepools[np_index].name],
-        ipv4_private       = cidrhost(hcloud_network_subnet.worker[local.worker_nodepools[np_index].name].ip_range, wkr_index + 1)
+        nodepool_name      = local.worker_nodepools[np_index].name,
+        # Determine subnet: manual (dedicated) or shared
+        subnet = local.worker_nodepools[np_index].subnet_index != null ?
+          hcloud_network_subnet.worker_manual[local.worker_nodepools[np_index].name] :
+          hcloud_network_subnet.worker_shared[0],
+        # Only assign IP for manual (dedicated) subnets, null for shared (auto-assign)
+        ipv4_private = local.worker_nodepools[np_index].subnet_index != null ?
+          cidrhost(hcloud_network_subnet.worker_manual[local.worker_nodepools[np_index].name].ip_range, wkr_index + 1) :
+          null
       }
     }
   ]...)
@@ -114,12 +121,13 @@ resource "hcloud_server" "worker" {
 
   network {
     network_id = each.value.subnet.network_id
-    ip         = each.value.ipv4_private
+    ip         = each.value.ipv4_private  # null for shared subnet (auto-assign), set for manual
     alias_ips  = []
   }
 
   depends_on = [
-    hcloud_network_subnet.worker,
+    hcloud_network_subnet.worker_manual,
+    hcloud_network_subnet.worker_shared,
     hcloud_placement_group.worker
   ]
 

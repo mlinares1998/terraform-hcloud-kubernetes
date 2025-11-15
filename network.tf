@@ -43,114 +43,63 @@ locals {
 
   # === STABLE SUBNET ALLOCATION ===
 
+  # Subnet allocation schema:
+  # Slot 0: Other VM network (outside module scope, may be skipped)
+  # Slot 1: Control Plane
+  # Slot 2: Load Balancer
+  # Slots 3-47: Manual assignment pool (45 slots) for workers and autoscalers with explicit subnet_index
+  # Slot 48: Worker shared subnet (for workers without subnet_index)
+  # Slot 49: Autoscaler shared subnet (for autoscalers without subnet_index)
+
   # Base offset accounting for skip_first_subnet logic
   subnet_base_offset = 2 + (local.network_node_ipv4_cidr_skip_first_subnet ? 1 : 0)
 
-  # Hetzner hard limit: 50 subnets per network
-  # Theoretical max based on CIDR calculation
-  theoretical_max_subnets = pow(2,
-    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1]
-  )
+  # Manual assignment pool: slots 3-47 (45 slots available)
+  manual_pool_start = local.subnet_base_offset + 1  # After Control Plane (1) and Load Balancer (2)
+  manual_pool_size  = 45
 
-  # Use minimum of theoretical and Hetzner limit
-  max_node_subnets = min(local.theoretical_max_subnets, 50)
+  # Shared subnet slots
+  worker_shared_slot     = manual_pool_start + manual_pool_size      # Slot 48
+  autoscaler_shared_slot = manual_pool_start + manual_pool_size + 1  # Slot 49
 
-  # Reserved: Control Plane + Load Balancer + 1 backup slot = 3
-  # Available for workers + autoscalers: 50 - 3 = 47
-  available_worker_autoscaler_slots = local.max_node_subnets - local.subnet_base_offset - 1
+  # === WORKER SUBNET ALLOCATION ===
 
-  # Scenario-based allocation
-  worker_range_start = local.subnet_base_offset
-  worker_range_size = var.cluster_autoscaler_dedicated_subnets_enabled ? 23 : 46
+  # Separate workers with explicit subnet_index from those using shared subnet
+  workers_manual = [for np in var.worker_nodepools : np if np.subnet_index != null]
+  workers_shared = [for np in var.worker_nodepools : np if np.subnet_index == null]
 
-  autoscaler_range_start = var.cluster_autoscaler_dedicated_subnets_enabled ?
-    (local.worker_range_start + local.worker_range_size) : 49
-  autoscaler_range_size = var.cluster_autoscaler_dedicated_subnets_enabled ? 23 : 1
-
-  # === WORKER SUBNET SLOT ALLOCATION ===
-
-  # Separate explicit from auto-assigned
-  workers_explicit = [for np in var.worker_nodepools : np if np.subnet_index != null]
-  workers_auto = [for np in var.worker_nodepools : np if np.subnet_index == null]
-
-  # Explicit assignments (user-provided indices are relative to worker range)
-  worker_explicit_slots = {
-    for np in local.workers_explicit :
-    np.name => local.worker_range_start + np.subnet_index
+  # Manual worker assignments (subnet_index is relative to manual pool: 0-44)
+  worker_manual_slots = {
+    for np in local.workers_manual :
+    np.name => local.manual_pool_start + np.subnet_index
   }
 
-  # Auto assignments via hash (hash to worker range)
-  worker_auto_slots = {
-    for np in local.workers_auto :
-    np.name => local.worker_range_start + (
-      parseint(substr(md5(np.name), 0, 8), 16) % local.worker_range_size
-    )
+  # === AUTOSCALER SUBNET ALLOCATION ===
+
+  # Separate autoscalers with explicit subnet_index from those using shared subnet
+  autoscalers_manual = [for np in var.cluster_autoscaler_nodepools : np if np.subnet_index != null]
+  autoscalers_shared = [for np in var.cluster_autoscaler_nodepools : np if np.subnet_index == null]
+
+  # Manual autoscaler assignments (subnet_index is relative to manual pool: 0-44)
+  autoscaler_manual_slots = {
+    for np in local.autoscalers_manual :
+    np.name => local.manual_pool_start + np.subnet_index
   }
-
-  # Merge explicit and auto
-  worker_subnet_slots = merge(local.worker_explicit_slots, local.worker_auto_slots)
-
-  # === AUTOSCALER SUBNET SLOT ALLOCATION (only if dedicated enabled) ===
-
-  autoscaler_explicit = var.cluster_autoscaler_dedicated_subnets_enabled ? [
-    for np in var.cluster_autoscaler_nodepools : np if np.subnet_index != null
-  ] : []
-
-  autoscaler_auto = var.cluster_autoscaler_dedicated_subnets_enabled ? [
-    for np in var.cluster_autoscaler_nodepools : np if np.subnet_index == null
-  ] : []
-
-  autoscaler_explicit_slots = {
-    for np in local.autoscaler_explicit :
-    np.name => local.autoscaler_range_start + np.subnet_index
-  }
-
-  autoscaler_auto_slots = {
-    for np in local.autoscaler_auto :
-    np.name => local.autoscaler_range_start + (
-      parseint(substr(md5(np.name), 0, 8), 16) % local.autoscaler_range_size
-    )
-  }
-
-  autoscaler_subnet_slots = merge(local.autoscaler_explicit_slots, local.autoscaler_auto_slots)
 
   # === COLLISION DETECTION ===
 
-  # Workers
-  worker_explicit_used = toset(values(local.worker_explicit_slots))
-  worker_auto_values = values(local.worker_auto_slots)
-  worker_all_slots = values(local.worker_subnet_slots)
+  # Collect all manually assigned slot indices
+  all_manual_slots        = concat(values(local.worker_manual_slots), values(local.autoscaler_manual_slots))
+  all_manual_slot_indices = [for slot in local.all_manual_slots : slot - local.manual_pool_start]
 
-  worker_collision_with_explicit = length([
-    for slot in local.worker_auto_values : slot
-    if contains(local.worker_explicit_used, slot)
-  ]) > 0
+  # Check for collisions between workers and autoscalers
+  manual_assignment_collision = length(local.all_manual_slots) != length(distinct(local.all_manual_slots))
 
-  worker_collision_among_auto = length(local.worker_auto_values) != length(distinct(local.worker_auto_values))
-
-  # Calculate free worker slots for helpful error messages
-  worker_free_slots = [
-    for i in range(local.worker_range_size) :
-    i if !contains(local.worker_all_slots, local.worker_range_start + i)
+  # Calculate free manual slots for helpful error messages
+  manual_free_slots = [
+    for i in range(local.manual_pool_size) :
+    i if !contains(local.all_manual_slot_indices, i)
   ]
-
-  # Autoscalers (only if dedicated enabled)
-  autoscaler_explicit_used = toset(values(local.autoscaler_explicit_slots))
-  autoscaler_auto_values = values(local.autoscaler_auto_slots)
-  autoscaler_all_slots = values(local.autoscaler_subnet_slots)
-
-  autoscaler_collision_with_explicit = var.cluster_autoscaler_dedicated_subnets_enabled && length([
-    for slot in local.autoscaler_auto_values : slot
-    if contains(local.autoscaler_explicit_used, slot)
-  ]) > 0
-
-  autoscaler_collision_among_auto = var.cluster_autoscaler_dedicated_subnets_enabled &&
-    length(local.autoscaler_auto_values) != length(distinct(local.autoscaler_auto_values))
-
-  autoscaler_free_slots = var.cluster_autoscaler_dedicated_subnets_enabled ? [
-    for i in range(local.autoscaler_range_size) :
-    i if !contains(local.autoscaler_all_slots, local.autoscaler_range_start + i)
-  ] : []
 }
 
 data "hcloud_location" "this" {
@@ -199,162 +148,160 @@ resource "hcloud_network_subnet" "load_balancer" {
   )
 }
 
-resource "hcloud_network_subnet" "worker" {
-  for_each = { for np in local.worker_nodepools : np.name => np }
+# Worker subnets: Manual assignments (dedicated subnet per pool with explicit subnet_index)
+resource "hcloud_network_subnet" "worker_manual" {
+  for_each = { for np in local.workers_manual : np.name => np }
 
   network_id   = local.hcloud_network_id
   type         = "cloud"
   network_zone = local.hcloud_network_zone
 
-  # Use stable slot assignment instead of array index
   ip_range = cidrsubnet(
     local.network_node_ipv4_cidr,
     local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
-    local.worker_subnet_slots[each.key]
+    local.worker_manual_slots[each.key]
   )
 }
 
-# Autoscaler: Shared subnet (legacy behavior, slot 49)
-resource "hcloud_network_subnet" "autoscaler_shared" {
-  count = var.cluster_autoscaler_dedicated_subnets_enabled ? 0 : 1
+# Worker subnet: Shared pool (for all workers without explicit subnet_index)
+resource "hcloud_network_subnet" "worker_shared" {
+  count = length(local.workers_shared) > 0 ? 1 : 0
 
   network_id   = local.hcloud_network_id
   type         = "cloud"
   network_zone = local.hcloud_network_zone
 
-  # Always use slot 49 for shared autoscaler subnet
   ip_range = cidrsubnet(
     local.network_node_ipv4_cidr,
     local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
-    49
+    local.worker_shared_slot
   )
 
   depends_on = [
     hcloud_network_subnet.control_plane,
     hcloud_network_subnet.load_balancer,
-    hcloud_network_subnet.worker
+    hcloud_network_subnet.worker_manual
   ]
 }
 
-# Autoscaler: Dedicated subnets per pool (new behavior, slots 25-47)
-resource "hcloud_network_subnet" "autoscaler_dedicated" {
-  for_each = var.cluster_autoscaler_dedicated_subnets_enabled ? {
-    for np in local.cluster_autoscaler_nodepools : np.name => np
-  } : {}
+# Autoscaler subnets: Manual assignments (dedicated subnet per pool with explicit subnet_index)
+resource "hcloud_network_subnet" "autoscaler_manual" {
+  for_each = { for np in local.autoscalers_manual : np.name => np }
 
   network_id   = local.hcloud_network_id
   type         = "cloud"
   network_zone = local.hcloud_network_zone
 
-  # Use stable slot assignment
   ip_range = cidrsubnet(
     local.network_node_ipv4_cidr,
     local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
-    local.autoscaler_subnet_slots[each.key]
+    local.autoscaler_manual_slots[each.key]
   )
 
   depends_on = [
     hcloud_network_subnet.control_plane,
     hcloud_network_subnet.load_balancer,
-    hcloud_network_subnet.worker
+    hcloud_network_subnet.worker_manual,
+    hcloud_network_subnet.worker_shared
+  ]
+}
+
+# Autoscaler subnet: Shared pool (for all autoscalers without explicit subnet_index)
+resource "hcloud_network_subnet" "autoscaler_shared" {
+  count = length(local.autoscalers_shared) > 0 || !local.cluster_autoscaler_enabled ? 1 : 0
+
+  network_id   = local.hcloud_network_id
+  type         = "cloud"
+  network_zone = local.hcloud_network_zone
+
+  ip_range = cidrsubnet(
+    local.network_node_ipv4_cidr,
+    local.network_node_ipv4_subnet_mask_size - split("/", local.network_node_ipv4_cidr)[1],
+    local.autoscaler_shared_slot
+  )
+
+  depends_on = [
+    hcloud_network_subnet.control_plane,
+    hcloud_network_subnet.load_balancer,
+    hcloud_network_subnet.worker_manual,
+    hcloud_network_subnet.worker_shared,
+    hcloud_network_subnet.autoscaler_manual
   ]
 }
 
 # === SUBNET ALLOCATION VALIDATION ===
 
-resource "terraform_data" "validate_worker_subnets" {
+resource "terraform_data" "validate_subnet_allocation" {
   lifecycle {
+    # Validate worker subnet_index is within valid range
     precondition {
-      condition     = !local.worker_collision_with_explicit
+      condition = alltrue([
+        for np in local.workers_manual :
+        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
+      ])
       error_message = <<-EOT
-        Worker subnet collision detected! Auto-assigned nodepool conflicts with explicit subnet_index.
+        Worker nodepool subnet_index out of range!
 
-        Conflicting nodepools: ${jsonencode([
-          for np in local.workers_auto :
-          np.name if contains(local.worker_explicit_used, local.worker_auto_slots[np.name])
+        Invalid assignments: ${jsonencode([
+          for np in local.workers_manual :
+          { name = np.name, subnet_index = np.subnet_index }
+          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
         ])}
 
-        Available free slots (relative indices): ${jsonencode(local.worker_free_slots)}
-
-        Fix: Set explicit subnet_index (0-${local.worker_range_size - 1}) for one of the conflicting nodepools.
+        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
       EOT
     }
 
+    # Validate autoscaler subnet_index is within valid range
     precondition {
-      condition     = !local.worker_collision_among_auto
+      condition = alltrue([
+        for np in local.autoscalers_manual :
+        np.subnet_index >= 0 && np.subnet_index < local.manual_pool_size
+      ])
       error_message = <<-EOT
-        Worker subnet collision detected among auto-assigned nodepools!
+        Autoscaler nodepool subnet_index out of range!
 
-        Current auto-assignments: ${jsonencode(local.worker_auto_slots)}
-
-        Available free slots (relative indices): ${jsonencode(local.worker_free_slots)}
-
-        Fix: Set explicit subnet_index for one of the colliding nodepools.
-        Example:
-          worker_nodepools = [
-            { name = "conflicting-pool", subnet_index = ${length(local.worker_free_slots) > 0 ? local.worker_free_slots[0] : 0}, ... },
-          ]
-      EOT
-    }
-
-    precondition {
-      condition     = length(var.worker_nodepools) <= local.worker_range_size
-      error_message = <<-EOT
-        Too many worker nodepools! Maximum allowed: ${local.worker_range_size}
-        Current: ${length(var.worker_nodepools)}
-
-        ${var.cluster_autoscaler_dedicated_subnets_enabled ?
-          "With dedicated autoscaler subnets enabled, worker pools are limited to 23 slots." :
-          "With shared autoscaler subnet (default), worker pools are limited to 46 slots."}
-      EOT
-    }
-  }
-}
-
-resource "terraform_data" "validate_autoscaler_subnets" {
-  count = var.cluster_autoscaler_dedicated_subnets_enabled ? 1 : 0
-
-  lifecycle {
-    precondition {
-      condition     = !local.autoscaler_collision_with_explicit
-      error_message = <<-EOT
-        Autoscaler subnet collision detected! Auto-assigned nodepool conflicts with explicit subnet_index.
-
-        Conflicting nodepools: ${jsonencode([
-          for np in local.autoscaler_auto :
-          np.name if contains(local.autoscaler_explicit_used, local.autoscaler_auto_slots[np.name])
+        Invalid assignments: ${jsonencode([
+          for np in local.autoscalers_manual :
+          { name = np.name, subnet_index = np.subnet_index }
+          if np.subnet_index < 0 || np.subnet_index >= local.manual_pool_size
         ])}
 
-        Available free slots (relative indices): ${jsonencode(local.autoscaler_free_slots)}
-
-        Fix: Set explicit subnet_index (0-${local.autoscaler_range_size - 1}) for one of the conflicting nodepools.
+        Valid range: 0-${local.manual_pool_size - 1} (${local.manual_pool_size} slots in manual assignment pool)
       EOT
     }
 
+    # Validate no collisions between worker and autoscaler manual assignments
     precondition {
-      condition     = !local.autoscaler_collision_among_auto
+      condition     = !local.manual_assignment_collision
       error_message = <<-EOT
-        Autoscaler subnet collision detected among auto-assigned nodepools!
+        Subnet collision detected! Multiple nodepools assigned to the same subnet slot.
 
-        Current auto-assignments: ${jsonencode(local.autoscaler_auto_slots)}
+        Worker manual assignments: ${jsonencode(local.worker_manual_slots)}
+        Autoscaler manual assignments: ${jsonencode(local.autoscaler_manual_slots)}
 
-        Available free slots (relative indices): ${jsonencode(local.autoscaler_free_slots)}
+        Colliding slot indices: ${jsonencode([
+          for idx in distinct(local.all_manual_slot_indices) :
+          idx if length([for s in local.all_manual_slot_indices : s if s == idx]) > 1
+        ])}
 
-        Fix: Set explicit subnet_index for one of the colliding nodepools.
-        Example:
-          cluster_autoscaler_nodepools = [
-            { name = "conflicting-pool", subnet_index = ${length(local.autoscaler_free_slots) > 0 ? local.autoscaler_free_slots[0] : 0}, ... },
-          ]
+        Available free slots (relative indices): ${jsonencode(local.manual_free_slots)}
+
+        Fix: Assign different subnet_index values to avoid collisions.
+        Each subnet_index (0-${local.manual_pool_size - 1}) can only be used once across ALL nodepools (workers + autoscalers).
       EOT
     }
 
+    # Validate total manual assignments don't exceed pool size
     precondition {
-      condition     = length(var.cluster_autoscaler_nodepools) <= local.autoscaler_range_size
+      condition     = length(local.all_manual_slots) <= local.manual_pool_size
       error_message = <<-EOT
-        Too many autoscaler nodepools! Maximum allowed: ${local.autoscaler_range_size}
-        Current: ${length(var.cluster_autoscaler_nodepools)}
+        Too many manual subnet assignments!
 
-        With dedicated autoscaler subnets enabled, autoscaler pools are limited to 23 slots.
+        Maximum allowed: ${local.manual_pool_size} (shared between workers and autoscalers)
+        Current assignments: ${length(local.all_manual_slots)} (${length(local.workers_manual)} workers + ${length(local.autoscalers_manual)} autoscalers)
+
+        Note: Workers and autoscalers without subnet_index will use shared subnets (no limit).
       EOT
     }
   }

@@ -36,11 +36,12 @@ locals {
 
   worker_nodepools = [
     for np in var.worker_nodepools : {
-      name        = np.name,
-      location    = np.location,
-      server_type = np.type,
-      backups     = np.backups,
-      keep_disk   = np.keep_disk,
+      name         = np.name,
+      location     = np.location,
+      server_type  = np.type,
+      subnet_index = np.subnet_index,
+      backups      = np.backups,
+      keep_disk    = np.keep_disk,
       rdns_ipv4 = var.talos_public_ipv4_enabled ? (
         np.rdns_ipv4 != null ? np.rdns_ipv4 :
         np.rdns != null ? np.rdns :
@@ -67,9 +68,10 @@ locals {
 
   cluster_autoscaler_nodepools = [
     for np in var.cluster_autoscaler_nodepools : {
-      name        = np.name,
-      location    = np.location,
-      server_type = np.type,
+      name         = np.name,
+      location     = np.location,
+      server_type  = np.type,
+      subnet_index = np.subnet_index,
       labels = merge(
         np.labels,
         { nodepool = np.name }

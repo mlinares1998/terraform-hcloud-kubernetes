@@ -522,12 +522,6 @@ variable "cluster_autoscaler_discovery_enabled" {
   description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes."
 }
 
-variable "cluster_autoscaler_dedicated_subnets_enabled" {
-  type        = bool
-  default     = false
-  description = "Allocate dedicated subnet per autoscaler nodepool. When false (default), uses single shared subnet (slot 49) for all autoscaler nodes. When true, allocates 23 worker subnets (slots 2-24) and 23 autoscaler subnets (slots 25-47), leaving slot 48 as backup."
-}
-
 
 # Packer
 variable "packer_amd64_builder" {

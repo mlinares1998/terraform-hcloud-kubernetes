@@ -24,8 +24,9 @@ locals {
           nodeConfigs = {
             for nodepool in local.cluster_autoscaler_nodepools : "${var.cluster_name}-${nodepool.name}" => {
               cloudInit = data.talos_machine_configuration.cluster_autoscaler[nodepool.name].machine_configuration,
-              subnetIPRange = var.cluster_autoscaler_dedicated_subnets_enabled ?
-                hcloud_network_subnet.autoscaler_dedicated[nodepool.name].ip_range :
+              # Use manual subnet if subnet_index is set, otherwise use shared subnet
+              subnetIPRange = contains(keys(local.autoscaler_manual_slots), nodepool.name) ?
+                hcloud_network_subnet.autoscaler_manual[nodepool.name].ip_range :
                 hcloud_network_subnet.autoscaler_shared[0].ip_range,
               labels = nodepool.labels
               taints = nodepool.taints

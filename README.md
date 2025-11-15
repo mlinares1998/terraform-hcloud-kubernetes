@@ -623,35 +623,34 @@ This module implements **stable subnet allocation** to prevent unwanted subnet s
 
 ### How It Works
 
-Each nodepool (worker or autoscaler) is assigned a **stable subnet slot** that persists even when other nodepools are added or removed. Subnet slots are assigned using one of two methods:
+The module provides **shared subnets** by default for efficient IP address usage, with **manual subnet assignment** available for nodepools requiring dedicated network isolation:
 
-1. **Explicit Assignment** (Recommended for production): Set the `subnet_index` field to manually control the subnet slot
-2. **Automatic Assignment** (Default): The module automatically assigns a slot based on a hash of the nodepool name
+1. **Shared Subnets (Default)**: Nodepools without `subnet_index` use shared subnets with automatic IP assignment
+2. **Manual Assignment (Optional)**: Set `subnet_index` to allocate a dedicated subnet for a specific nodepool
+
+This approach leverages Hetzner Cloud's automatic IP assignment (available since provider v1.56.0) when the `ip` field is omitted, allowing multiple servers to share a subnet without IP conflicts.
 
 ### Subnet Slot Allocation
 
-The module divides the available subnet slots (0-49, per Hetzner's 50 subnet limit) as follows:
+The module allocates subnet slots (0-49, per Hetzner's 50 subnet limit) as follows:
 
-**Scenario 1: Shared Autoscaler Subnet** (default, `cluster_autoscaler_dedicated_subnets_enabled = false`)
 ```
-Slot  0-1:  Control Plane + Load Balancer (reserved)
-Slot  2-47: Workers (46 available slots)
-Slot 48:    Free backup slot
-Slot 49:    Shared autoscaler subnet
+Slot  0:    Other VM network (outside module scope, may be skipped)
+Slot  1:    Control Plane
+Slot  2:    Load Balancer
+Slots 3-47: Manual assignment pool (45 slots available)
+Slot 48:    Worker shared subnet (all workers without subnet_index)
+Slot 49:    Autoscaler shared subnet (all autoscalers without subnet_index)
 ```
 
-**Scenario 2: Dedicated Autoscaler Subnets** (opt-in, `cluster_autoscaler_dedicated_subnets_enabled = true`)
-```
-Slot  0-1:  Control Plane + Load Balancer (reserved)
-Slot  2-24: Workers (23 available slots)
-Slot 25-47: Autoscalers (23 available slots)
-Slot 48:    Free backup slot
-Slot 49:    Reserved
-```
+**Key Points:**
+- **Shared subnets** (slots 48-49) have no nodepool limit - add as many workers/autoscalers as needed
+- **Manual pool** (slots 3-47) is shared between workers AND autoscalers - each `subnet_index` can only be used once
+- `subnet_index` values range from **0-44** (relative to manual pool: slot 3 = index 0, slot 47 = index 44)
 
 ### Usage Examples
 
-#### Automatic Assignment (Default)
+#### Shared Subnets (Default - Recommended)
 
 ```hcl
 worker_nodepools = [
@@ -660,86 +659,101 @@ worker_nodepools = [
     type     = "cpx22"
     location = "fsn1"
     count    = 3
+    # No subnet_index → uses worker shared subnet (slot 48)
   },
   {
     name     = "platform"
     type     = "cpx31"
     location = "nbg1"
     count    = 2
+    # No subnet_index → uses worker shared subnet (slot 48)
+  },
+  {
+    name     = "database"
+    type     = "cpx41"
+    location = "hel1"
+    count    = 2
+    # No subnet_index → uses worker shared subnet (slot 48)
+  }
+]
+
+cluster_autoscaler_nodepools = [
+  {
+    name     = "autoscaler-workers"
+    type     = "cpx22"
+    location = "fsn1"
+    min      = 0
+    max      = 10
+    # No subnet_index → uses autoscaler shared subnet (slot 49)
   }
 ]
 ```
 
-Each nodepool name is hashed to determine its subnet slot. Removing a nodepool only affects its specific slot, leaving others unchanged.
+All workers share subnet slot 48, autoscalers share slot 49. Hetzner automatically assigns unique IPs. Add/remove nodepools freely without subnet changes.
 
-#### Explicit Assignment (Recommended for Production)
+#### Manual Assignment (For Network Isolation)
 
 ```hcl
 worker_nodepools = [
   {
     name         = "workers"
-    subnet_index = 0  # Explicitly assigned to slot 2 (base + 0)
     type         = "cpx22"
     location     = "fsn1"
     count        = 3
+    # No subnet_index → shared subnet
   },
   {
-    name         = "platform"
-    subnet_index = 1  # Explicitly assigned to slot 3 (base + 1)
+    name         = "sensitive-db"
+    subnet_index = 0  # Dedicated subnet at slot 3 (manual pool start + 0)
+    type         = "cpx41"
+    location     = "fsn1"
+    count        = 2
+  },
+  {
+    name         = "dmz"
+    subnet_index = 5  # Dedicated subnet at slot 8 (manual pool start + 5)
     type         = "cpx31"
     location     = "nbg1"
-    count        = 2
+    count        = 1
   }
 ]
-```
-
-**Note:** `subnet_index` values are **relative** to the nodepool type's range:
-- Worker indices: 0-45 (default) or 0-22 (with dedicated autoscaler subnets)
-- Autoscaler indices: 0-22 (only when dedicated subnets enabled)
-
-#### Dedicated Autoscaler Subnets
-
-```hcl
-cluster_autoscaler_dedicated_subnets_enabled = true
 
 cluster_autoscaler_nodepools = [
   {
-    name         = "autoscaler-workers"
-    subnet_index = 0  # Slot 25 (autoscaler range start + 0)
-    type         = "cpx22"
+    name         = "autoscaler-gpu"
+    subnet_index = 10  # Dedicated subnet at slot 13 (manual pool start + 10)
+    type         = "ccx33"
     location     = "fsn1"
     min          = 0
-    max          = 10
-  },
-  {
-    name     = "autoscaler-gpu"
-    # Auto-assigned via hash
-    type     = "ccx33"
-    location = "fsn1"
-    min      = 0
-    max      = 5
+    max          = 5
   }
 ]
 ```
 
+**Important:** `subnet_index` is shared across workers AND autoscalers. In this example:
+- Index 0 (slot 3) → `sensitive-db` worker pool
+- Index 5 (slot 8) → `dmz` worker pool
+- Index 10 (slot 13) → `autoscaler-gpu` autoscaler pool
+
 ### Collision Detection
 
-If two auto-assigned nodepools hash to the same slot (rare, but possible), Terraform will fail with a helpful error message:
+If multiple nodepools use the same `subnet_index`, Terraform will fail with a collision error:
 
 ```
-Worker subnet collision detected among auto-assigned nodepools!
+Subnet collision detected! Multiple nodepools assigned to the same subnet slot.
 
-Current auto-assignments: {"pool-a": 5, "pool-b": 5}
-Available free slots (relative indices): [0, 1, 2, 3, 4, 6, 7, ...]
+Worker manual assignments: {"sensitive-db": 3, "dmz": 8}
+Autoscaler manual assignments: {"autoscaler-gpu": 3}
 
-Fix: Set explicit subnet_index for one of the colliding nodepools.
-Example:
-  worker_nodepools = [
-    { name = "pool-a", subnet_index = 0, ... },
-  ]
+Colliding slot indices: [0]
+
+Available free slots (relative indices): [1, 2, 3, 4, 6, 7, 9, 11, ...]
+
+Fix: Assign different subnet_index values to avoid collisions.
+Each subnet_index (0-44) can only be used once across ALL nodepools (workers + autoscalers).
 ```
 
-Simply set an explicit `subnet_index` for one of the conflicting nodepools to resolve the collision.
+Change the conflicting `subnet_index` to a free slot to resolve.
 
 ### Migration Guide for Existing Clusters
 
@@ -764,19 +778,35 @@ To preserve current subnet assignments when upgrading to this version:
 
 4. **Apply safely** - Subnets remain unchanged
 
-5. **Going forward** - Add/remove nodepools without affecting others!
+5. **Going forward** - You can now:
+   - **Remove `subnet_index`** from nodepools that don't need isolation → they'll migrate to shared subnet on next apply
+   - **Keep `subnet_index`** for nodepools requiring dedicated subnets
+   - **Add new nodepools** without `subnet_index` → automatically use shared subnets
 
 ### Best Practices
 
-1. **Use explicit `subnet_index` in production** - Guarantees predictable subnet assignments
-2. **Leave gaps for future expansion** - Use indices like 0, 5, 10 instead of 0, 1, 2 to allow inserting nodepools later
-3. **Document your slot allocation** - Maintain a comment or separate document showing which indices are in use
-4. **Enable dedicated autoscaler subnets** when using cluster autoscaler for better network isolation
+1. **Default to shared subnets** - Only use `subnet_index` when you need dedicated network isolation
+2. **Leave gaps in manual assignments** - Use indices like 0, 5, 10 instead of 0, 1, 2 for future flexibility
+3. **Document manual slot allocation** - Maintain comments showing which `subnet_index` values are in use
+4. **Use manual subnets for**:
+   - Nodepools requiring network policies or firewall rules
+   - Security-sensitive workloads (databases, DMZ, PCI compliance zones)
+   - Workloads needing dedicated bandwidth or traffic monitoring
+5. **Use shared subnets for**:
+   - General-purpose worker pools
+   - Development/staging environments
+   - Auto-scaling nodepools
 
 ### Variables
 
-- **`subnet_index`** (optional, number): Explicit subnet slot assignment for a nodepool (worker: 0-45/0-22, autoscaler: 0-22)
-- **`cluster_autoscaler_dedicated_subnets_enabled`** (optional, bool, default: `false`): Allocate dedicated subnets per autoscaler nodepool instead of a single shared subnet
+- **`subnet_index`** (optional, number, range 0-44): Allocate a dedicated subnet from the manual pool for this nodepool. Omit this field to use the shared subnet (recommended for most use cases).
+
+### Technical Details
+
+- **Shared subnet implementation**: Uses Hetzner Cloud provider v1.56.0+ automatic IP assignment
+- **IP assignment**: When `ip` field is omitted in the network block, Hetzner automatically assigns an available IP from the subnet
+- **Scalability**: Shared subnets support up to 100 nodes (Hetzner Cloud limit), far exceeding typical cluster sizes
+- **Network performance**: No performance difference between shared and dedicated subnets
 
 </details>
 
