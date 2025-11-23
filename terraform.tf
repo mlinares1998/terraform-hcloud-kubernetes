@@ -9,7 +9,7 @@ terraform {
 
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.55.0"
+      version = "1.56.0"
     }
 
     helm = {
@@ -31,16 +31,5 @@ terraform {
       source  = "hashicorp/random"
       version = "~>3.7.2"
     }
-  }
-}
-
-provider "hcloud" {
-  token         = var.hcloud_token
-  poll_interval = "2s"
-}
-
-provider "helm" {
-  kubernetes = {
-    config_path = "kubeconfig"
   }
 }

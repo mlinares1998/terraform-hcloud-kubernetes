@@ -49,24 +49,26 @@
 <br />
 
 <!-- Table of Contents -->
-# :notebook_with_decorative_cover: Table of Contents
-- [:star2: About the Project](#star2-about-the-project)
-- [:rocket: Getting Started](#rocket-getting-started)
-- [:hammer_and_pick: Advanced Configuration](#hammer_and_pick-advanced-configuration)
-- [:recycle: Lifecycle](#recycle-lifecycle)
-- [:compass: Roadmap](#compass-roadmap)
+# 📔 Overview
+- [🌟 About the Project](#-about-the-project)
+- [🚀 Getting Started](#-getting-started)
+- [⚙️ Advanced Configuration](#%EF%B8%8F-advanced-configuration)
+- [♻️ Lifecycle](#%EF%B8%8F-lifecycle)
+- [👋 Community](#-community)
+- [❤️ Support this Project](#%EF%B8%8F-support-this-project)
+- [📎 Project Info](#-project-info)
 
 <!-- About the Project -->
-## :star2: About the Project
+## 🌟 About the Project
 Hcloud Kubernetes is a Terraform module for deploying a fully declarative, managed Kubernetes cluster on Hetzner Cloud. It utilizes Talos, a secure, immutable, and minimal operating system specifically designed for Kubernetes, featuring a streamlined architecture with only a handful of binaries and shared libraries. Just enough to run containerd and a small set of system services.
 
 This project is committed to production-grade configuration and lifecycle management, ensuring all components are set up for high availability. It includes a curated selection of widely used and officially recognized Kubernetes components. If you encounter any issues, suboptimal settings, or missing elements, please file an [issue](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/issues) to help us improve this project.
 
 > [!TIP]
-> If you don't yet have a Hetzner account, feel free to use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project.
+> If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
 
 <!-- Features -->
-### :sparkles: Features
+### ✨ Features
 
 This setup offers a production-ready, best-practice Kubernetes deployment on Hetzner Cloud featuring:
 - **Fully Deterministic:** Uses Talos Linux for a completely declarative, immutable Kubernetes cluster.
@@ -78,7 +80,7 @@ This setup offers a production-ready, best-practice Kubernetes deployment on Het
 - **Built-in Protection:** Security-first design with perimeter firewall and encryption in transit and at rest.
 
 <!-- Components -->
-### :package: Components
+### 📦 Components
 This project bundles essential Kubernetes components, preconfigured for seamless operation on Hetzner Cloud:
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=talos.dev&sz=32" width="16" height="16">
@@ -132,7 +134,7 @@ This project bundles essential Kubernetes components, preconfigured for seamless
   Collects and provides container resource metrics for Kubernetes, enabling features like autoscaling by interacting with Horizontal and Vertical Pod Autoscalers.
 
 <!-- Security -->
-### :shield: Security
+### 🛡️ Security
 Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH and shell access to reduce attack surfaces. Managed through a secure API with mTLS, Talos prevents configuration drift, enhancing both security and predictability. It follows [NIST](https://www.nist.gov/publications/application-container-security-guide) and [CIS](https://www.cisecurity.org/benchmark/kubernetes) hardening standards, operates in memory, and is built to support modern, production-grade Kubernetes environments.
 
 **Firewall Protection:** This module uses [Hetzner Cloud Firewalls](https://docs.hetzner.com/cloud/firewalls/) to manage external access to nodes. For internal pod-to-pod communication, support for Kubernetes Network Policies is provided through [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
@@ -142,10 +144,10 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 **Encryption at Rest:** In this module, the [STATE](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) and [EPHEMERAL](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) partitions are encrypted by default with [Talos Disk Encryption](https://www.talos.dev/latest/talos-guides/configuration/disk-encryption/) using LUKS2. Each node is secured with individual encryption keys derived from its unique `nodeID`.
 
 <!-- Getting Started -->
-## 	:rocket: Getting Started
+## 🚀 Getting Started
 
 <!-- Prerequisites -->
-### :heavy_check_mark: Prerequisites
+### ✅ Prerequisites
 
 - [terraform](https://developer.hashicorp.com/terraform/install) or [tofu](https://opentofu.org/docs/intro/install/) to deploy the Cluster
 - [packer](https://developer.hashicorp.com/packer/install) to upload Talos Images
@@ -157,7 +159,7 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 > Keep the CLI tools up to date. Ensure that `talosctl` matches your Talos version for compatibility, especially before a Talos upgrade.
 
 <!-- Installation -->
-### :dart: Installation
+### 🎯 Installation
 
 Create `kubernetes.tf` file with the module configuration:
 ```hcl
@@ -201,7 +203,7 @@ tofu apply
 ```
 
 <!-- Cluster Access -->
-### :key: Cluster Access
+### 🔑 Cluster Access
 
 Set config file locations:
 ```sh
@@ -224,7 +226,7 @@ For more detailed information and examples, please visit:
 - [Talos CLI Documentation](https://www.talos.dev/latest/reference/cli/)
 - [Kubernetes CLI Documentation](https://kubernetes.io/docs/reference/kubectl/introduction/)
 
-### :boom: Teardown
+### 💥 Teardown
 To destroy the cluster, first disable the delete protection by setting:
 ```hcl
 cluster_delete_protection = false
@@ -248,7 +250,7 @@ tofu destroy
 ```
 
 <!-- Advanced Configuration -->
-## :hammer_and_pick: Advanced Configuration
+## ⚙️ Advanced Configuration
 
 <!-- Cluster Access -->
 <details>
@@ -388,12 +390,12 @@ This module enables [Cilium Transparent Encryption](https://cilium.io/use-cases/
 
 All pod network traffic is encrypted using WireGuard (Default) or  protocols, includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
 
-:bulb: Although WireGuard is the default option, Hetzner Cloud VMs supports AES-NI instruction set, making IPSec encryption more CPU-efficient compared to WireGuard. Consider enabling IPSec for CPU savings through hardware acceleration.
+💡 Although WireGuard is the default option, Hetzner Cloud VMs supports AES-NI instruction set, making IPSec encryption more CPU-efficient compared to WireGuard. Consider enabling IPSec for CPU savings through hardware acceleration.
 
 IPSec mode supports RFC4106 AES-GCM encryption with 128, 192 and 256 bits key sizes.
 
 
-**:warning: IPSec encryption has the following limitations:**
+**⚠️ IPSec encryption has the following limitations:**
 
 - No transparent encryption when chaining Cilium with other CNI plugins
 - Host Policies not supported with IPSec
@@ -843,7 +845,7 @@ Talos supports two node discovery mechanisms:
 
 This module uses the discovery service to perform additional health checks during Talos upgrades, Kubernetes upgrades, and Kubernetes manifest synchronization. If no discovery mechanism is enabled, these additional checks will be skipped.
 
-> :warning: **Important:** Kubernetes-based discovery is **incompatible by default** with Kubernetes **v1.32+** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata. This can cause broken discovery behavior, such as failing or incomplete results from `talosctl health` or `talosctl get members`.
+> ⚠️ **Important:** Kubernetes-based discovery is **incompatible by default** with Kubernetes **v1.32+** due to the `AuthorizeNodeWithSelectors` feature gate, which restricts access to Node metadata. This can cause broken discovery behavior, such as failing or incomplete results from `talosctl health` or `talosctl get members`.
 
 ##### Example Configuration
 
@@ -1040,13 +1042,13 @@ kubectl get pods  # This will trigger OIDC authentication
 </details>
 
 <!-- Lifecycle -->
-## :recycle: Lifecycle
+## ♻️ Lifecycle
 The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolabs/talos) does not support declarative upgrades of Talos or Kubernetes versions. This module compensates for these limitations using `talosctl` to implement the required functionalities. Any minor or major upgrades to Talos and Kubernetes will result in a major version change of this module. Please be aware that downgrades are typically neither supported nor tested.
 
 > [!IMPORTANT]
 > Before upgrading to the next major version of this module, ensure you are on the latest release of the current major version. Do not skip any major release upgrades.
 
-### :white_check_mark: Version Compatibility Matrix
+### ☑️ Version Compatibility Matrix
 | Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
 | :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
 |  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |     4.14      |     1.19     |    9.51     |
@@ -1075,14 +1077,18 @@ In this module, upgrades are conducted with care. You will consistently receive 
 
 
 <!-- Roadmap -->
-## :compass: Roadmap
-* [ ] **Upgrade to Talos 1.11 and Kubernetes 1.34**<br>
-      Once all components have compatible versions, the upgrade can be performed.
-* [x] **Upgrade to Talos 1.10 and Kubernetes 1.33**<br>
+### 🧭 Roadmap
+* [ ] **Ingress NGINX Retirement in March 2026**<br>
+      Replace Ingress NGINX (will be deprecated as announced in this [blog post](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/)) with Cilium Gateway API.
+* [ ] **Upgrade to latest Talos 1.11 and Kubernetes 1.34**<br>
       Once all components have compatible versions, the upgrade can be performed.
 
+<!-- Community -->
+## 👋 Community
+We welcome everyone to join the discussion, report issues, and help improve this project.
+
 <!-- Contributing -->
-## :wave: Contributing
+### 🤝 Contributing
 
 <a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=hcloud-k8s/terraform-hcloud-kubernetes" />
@@ -1091,14 +1097,32 @@ In this module, upgrades are conducted with care. You will consistently receive 
 
 Contributions are always welcome!
 
+<!-- Support this Project -->
+## ❤️ Support this Project
+If you'd like to support this project, please consider leaving a ⭐ on GitHub!<br>
+<a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes">
+  <img
+    src="https://img.shields.io/github/stars/hcloud-k8s/terraform-hcloud-kubernetes"
+    alt="Stars"
+    width="105"
+  />
+</a>
+
+> [!TIP]
+> If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
+
+<!-- Project Meta -->
+## 📎 Project Info
+This project is built for the public and will always remain fully [open source](https://opensource.org).
+
 <!-- License -->
-## :balance_scale: License
+### ⚖️ License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/blob/main/LICENSE) for more information.
 
 <!-- Acknowledgments -->
-## :gem: Acknowledgements
+### 💎 Acknowledgements
 
 - [Talos Linux](https://www.talos.dev) for its impressively secure, immutable, and minimalistic Kubernetes distribution.
 - [Hetzner Cloud](https://www.hetzner.com/cloud) for offering excellent cloud infrastructure with robust Kubernetes integrations.
-- Other projects like [Kube-Hetzner](https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner) and [Terraform - Hcloud - Talos](https://github.com/hcloud-talos/terraform-hcloud-talos), where we’ve contributed and gained valuable insights into Kubernetes deployments on Hetzner.
+- [Kube-Hetzner](https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner) and [Terraform - Hcloud - Talos](https://github.com/hcloud-talos/terraform-hcloud-talos) for providing practical examples and inspiration for this module.
