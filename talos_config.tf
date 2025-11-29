@@ -1,5 +1,5 @@
 locals {
-  talos_allow_scheduling_on_control_planes = ((local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
+  talos_allow_scheduling_on_control_planes = coalesce(var.cluster_allow_scheduling_on_control_planes, (local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
 
   kube_oidc_configuration = var.oidc_enabled ? {
     "oidc-issuer-url"     = var.oidc_issuer_url

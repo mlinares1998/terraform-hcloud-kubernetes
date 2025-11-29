@@ -94,6 +94,12 @@ variable "cluster_delete_protection" {
   description = "Adds delete protection for resources that support it."
 }
 
+variable "cluster_allow_scheduling_on_control_planes" {
+  type        = bool
+  default     = null
+  description = "Allow scheduling on control plane nodes. If this is false, scheduling on control plane nodes is explicitly disabled. Defaults to true if there are no workers present."
+}
+
 
 # Client Tools
 variable "client_prerequisites_check_enabled" {
@@ -1109,7 +1115,7 @@ variable "hcloud_csi_helm_chart" {
 
 variable "hcloud_csi_helm_version" {
   type        = string
-  default     = "2.18.1"
+  default     = "2.18.2"
   description = "Version of the Hcloud CSI Helm chart to deploy."
 }
 
@@ -1689,6 +1695,6 @@ variable "prometheus_operator_crds_enabled" {
 
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.86.2" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.87.0" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }
