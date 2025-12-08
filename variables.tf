@@ -1425,7 +1425,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.14.0"
+  default     = "4.14.1"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
