@@ -37,9 +37,7 @@ resource "hcloud_server" "control_plane" {
     }
   )
 
-  firewall_ids = [
-    hcloud_firewall.this.id
-  ]
+  firewall_ids = [local.firewall_id]
 
   public_net {
     ipv4_enabled = var.talos_public_ipv4_enabled
@@ -52,10 +50,13 @@ resource "hcloud_server" "control_plane" {
     alias_ips  = []
   }
 
-  depends_on = [
-    hcloud_network_subnet.control_plane,
-    hcloud_placement_group.control_plane
-  ]
+  depends_on = concat(
+    [
+      hcloud_network_subnet.control_plane,
+      hcloud_placement_group.control_plane
+    ],
+    local.firewall_external ? [] : [hcloud_firewall.this[0]]
+  )
 
   lifecycle {
     ignore_changes = [
@@ -103,9 +104,7 @@ resource "hcloud_server" "worker" {
     }
   )
 
-  firewall_ids = [
-    hcloud_firewall.this.id
-  ]
+  firewall_ids = [local.firewall_id]
 
   public_net {
     ipv4_enabled = var.talos_public_ipv4_enabled
@@ -118,10 +117,13 @@ resource "hcloud_server" "worker" {
     alias_ips  = []
   }
 
-  depends_on = [
-    hcloud_network_subnet.worker,
-    hcloud_placement_group.worker
-  ]
+  depends_on = concat(
+    [
+      hcloud_network_subnet.worker,
+      hcloud_placement_group.worker
+    ],
+    local.firewall_external ? [] : [hcloud_firewall.this[0]]
+  )
 
   lifecycle {
     ignore_changes = [
