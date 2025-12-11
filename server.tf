@@ -50,13 +50,10 @@ resource "hcloud_server" "control_plane" {
     alias_ips  = []
   }
 
-  depends_on = concat(
-    [
-      hcloud_network_subnet.control_plane,
-      hcloud_placement_group.control_plane
-    ],
-    local.firewall_external ? [] : [hcloud_firewall.this[0]]
-  )
+  depends_on = [
+    hcloud_network_subnet.control_plane,
+    hcloud_placement_group.control_plane
+  ]
 
   lifecycle {
     ignore_changes = [
@@ -117,13 +114,10 @@ resource "hcloud_server" "worker" {
     alias_ips  = []
   }
 
-  depends_on = concat(
-    [
-      hcloud_network_subnet.worker,
-      hcloud_placement_group.worker
-    ],
-    local.firewall_external ? [] : [hcloud_firewall.this[0]]
-  )
+  depends_on = [
+    hcloud_network_subnet.worker,
+    hcloud_placement_group.worker
+  ]
 
   lifecycle {
     ignore_changes = [
