@@ -141,7 +141,7 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 
 **Perimeter Security:** External access to cluster nodes is controlled and restricted using [Hetzner Cloud Firewall](https://docs.hetzner.com/cloud/firewalls/).
 
-**Network Policy:** Internal cluster traffic is governed by Kubernetes Network Policies, enforced via the [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
+**Network Policy:** Internal cluster traffic can be governed by Kubernetes Network Policies, enforced via the [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
 
 **Encryption in Transit:** All pod network traffic is transparently encrypted by Cilium using [WireGuard](https://docs.cilium.io/en/latest/security/network/encryption-wireguard/) (default) or [IPSec](https://docs.cilium.io/en/latest/security/network/encryption-ipsec/), with automatic key rotation and in-kernel encryption for all traffic.
 
