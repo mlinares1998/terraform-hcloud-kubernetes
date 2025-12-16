@@ -1115,7 +1115,7 @@ variable "hcloud_csi_helm_chart" {
 
 variable "hcloud_csi_helm_version" {
   type        = string
-  default     = "2.18.2"
+  default     = "2.18.3"
   description = "Version of the Hcloud CSI Helm chart to deploy."
 }
 
@@ -1279,6 +1279,18 @@ variable "cilium_ipsec_key_id" {
   }
 }
 
+variable "cilium_kube_proxy_replacement_enabled" {
+  type        = bool
+  default     = true
+  description = "Enables Cilium's eBPF kube-proxy replacement."
+}
+
+variable "cilium_socket_lb_host_namespace_only_enabled" {
+  type        = bool
+  default     = false
+  description = "Limit Cilium's socket-level load-balancing to the host namespace only."
+}
+
 variable "cilium_routing_mode" {
   type        = string
   description = "Cilium routing mode (e.g., 'native', 'tunnel', etc.)"
@@ -1303,6 +1315,11 @@ variable "cilium_egress_gateway_enabled" {
   type        = bool
   default     = false
   description = "Enables egress gateway to redirect and SNAT the traffic that leaves the cluster."
+
+  validation {
+    condition     = !var.cilium_egress_gateway_enabled || var.cilium_kube_proxy_replacement_enabled
+    error_message = "cilium_egress_gateway_enabled can only be true when cilium_kube_proxy_replacement_enabled is true, because Cilium Egress Gateway requires kubeProxyReplacement=true and BPF masquerading."
+  }
 }
 
 variable "cilium_service_monitor_enabled" {
@@ -1399,7 +1416,7 @@ variable "cert_manager_helm_chart" {
 
 variable "cert_manager_helm_version" {
   type        = string
-  default     = "v1.19.1"
+  default     = "v1.19.2"
   description = "Version of the Cert Manager Helm chart to deploy."
 }
 
@@ -1431,7 +1448,7 @@ variable "ingress_nginx_helm_chart" {
 
 variable "ingress_nginx_helm_version" {
   type        = string
-  default     = "4.14.0"
+  default     = "4.14.1"
   description = "Version of the Ingress NGINX Controller Helm chart to deploy."
 }
 
@@ -1695,6 +1712,6 @@ variable "prometheus_operator_crds_enabled" {
 
 variable "prometheus_operator_crds_version" {
   type        = string
-  default     = "v0.87.0" # https://github.com/prometheus-operator/prometheus-operator
+  default     = "v0.87.1" # https://github.com/prometheus-operator/prometheus-operator
   description = "Specifies the version of the Prometheus Operator Custom Resource Definitions (CRDs) to deploy."
 }

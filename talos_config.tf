@@ -269,7 +269,7 @@ locals {
           disabled = !var.talos_coredns_enabled
         }
         proxy = {
-          disabled = true
+          disabled = var.cilium_kube_proxy_replacement_enabled
         }
         apiServer = {
           admissionControl = var.kube_api_admission_control
@@ -404,7 +404,7 @@ locals {
           cni            = { name = "none" }
         }
         proxy = {
-          disabled = true
+          disabled = var.cilium_kube_proxy_replacement_enabled
         }
         discovery = local.talos_discovery
       }
@@ -504,7 +504,7 @@ locals {
           cni            = { name = "none" }
         }
         proxy = {
-          disabled = true
+          disabled = var.cilium_kube_proxy_replacement_enabled
         }
         discovery = local.talos_discovery
       }

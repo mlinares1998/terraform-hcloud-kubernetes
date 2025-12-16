@@ -59,7 +59,7 @@ data "helm_template" "cilium" {
       routingMode           = var.cilium_routing_mode
       ipv4NativeRoutingCIDR = local.network_native_routing_ipv4_cidr
       bpf = {
-        masquerade        = true
+        masquerade        = var.cilium_kube_proxy_replacement_enabled
         datapathMode      = var.cilium_bpf_datapath_mode
         hostLegacyRouting = local.cilium_ipsec_enabled
       }
@@ -72,9 +72,12 @@ data "helm_template" "cilium" {
       }
       k8sServiceHost                      = local.kube_prism_host
       k8sServicePort                      = local.kube_prism_port
-      kubeProxyReplacement                = true
-      kubeProxyReplacementHealthzBindAddr = "0.0.0.0:10256"
-      installNoConntrackIptablesRules     = true
+      kubeProxyReplacement                = var.cilium_kube_proxy_replacement_enabled
+      kubeProxyReplacementHealthzBindAddr = var.cilium_kube_proxy_replacement_enabled ? "0.0.0.0:10256" : ""
+      installNoConntrackIptablesRules     = var.cilium_kube_proxy_replacement_enabled && var.cilium_routing_mode == "native"
+      socketLB = {
+        hostNamespaceOnly = var.cilium_socket_lb_host_namespace_only_enabled
+      }
       cgroup = {
         autoMount = { enabled = false }
         hostRoot  = "/sys/fs/cgroup"

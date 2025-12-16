@@ -70,14 +70,16 @@ This project is committed to production-grade configuration and lifecycle manage
 <!-- Features -->
 ### ✨ Features
 
-This setup offers a production-ready, best-practice Kubernetes deployment on Hetzner Cloud featuring:
-- **Fully Deterministic:** Uses Talos Linux for a completely declarative, immutable Kubernetes cluster.
-- **Cross-Architecture:** Supports AMD64 and ARM64 with automated image uploads to Hetzner Cloud.
-- **High Availability:** Production-grade high availability across all components for consistent, reliable performance.
-- **Autoscaling:** Supports automatic scaling of nodes and pods to handle dynamic workload demands.
-- **Plug-and-Play:** Optional Ingress Controller and Cert Manager for rapid workload deployment.
-- **Dual-Stack Support:** Load Balancers with native IPv4 and IPv6 for efficient traffic routing.
-- **Built-in Protection:** Security-first design with perimeter firewall and encryption in transit and at rest.
+Provision a highly available and secure Kubernetes cluster on Hetzner Cloud, defined by these key features:
+
+* **Immutable Infrastructure:** Utilizes Talos Linux to provide a fully declarative, completely immutable Kubernetes cluster.
+* **Architecture Flexibility:** Supports deployment on both **AMD64** and **ARM64** instances with automated image synchronization.
+* **Maximized Uptime:** Delivers high availability across all control plane and worker components for consistent, reliable performance.
+* **Elastic Scaling:** Supports automatic scaling of both **nodes** and **pods** to effortlessly accommodate dynamic workloads.
+* **Quick Start Addons:** Optional, pre-integrated Ingress Controller and Cert Manager simplifies the rapid deployment of applications.
+* **Dual-Stack Networking:** Load Balancers offer native support for both **IPv4** and **IPv6** for modern, efficient traffic management.
+* **Isolated Network Fabric:** Ensures all internal cluster traffic is confined to an isolated, private Hetzner Cloud Network.
+* **Comprehensive Security:** Enforces a security-first design with perimeter firewalls and encryption applied to data both in transit and at rest.
 
 <!-- Components -->
 ### 📦 Components
@@ -137,11 +139,13 @@ This project bundles essential Kubernetes components, preconfigured for seamless
 ### 🛡️ Security
 Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH and shell access to reduce attack surfaces. Managed through a secure API with mTLS, Talos prevents configuration drift, enhancing both security and predictability. It follows [NIST](https://www.nist.gov/publications/application-container-security-guide) and [CIS](https://www.cisecurity.org/benchmark/kubernetes) hardening standards, operates in memory, and is built to support modern, production-grade Kubernetes environments.
 
-**Firewall Protection:** This module uses [Hetzner Cloud Firewalls](https://docs.hetzner.com/cloud/firewalls/) to manage external access to nodes. For internal pod-to-pod communication, support for Kubernetes Network Policies is provided through [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
+**Perimeter Security:** External access to cluster nodes is controlled and restricted using [Hetzner Cloud Firewall](https://docs.hetzner.com/cloud/firewalls/).
 
-**Encryption in Transit:** In this module, all pod network traffic is encrypted by default using [WireGuard (Default) or IPSec via Cilium CNI](https://cilium.io/use-cases/transparent-encryption/). It includes automatic key rotation and efficient in-kernel encryption, covering all traffic types.
+**Network Policy:** Internal cluster traffic can be governed by Kubernetes Network Policies using [Cilium CNI](https://docs.cilium.io/en/stable/network/kubernetes/policy/).
 
-**Encryption at Rest:** In this module, the [STATE](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) and [EPHEMERAL](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) partitions are encrypted by default with [Talos Disk Encryption](https://www.talos.dev/latest/talos-guides/configuration/disk-encryption/) using LUKS2. Each node is secured with individual encryption keys derived from its unique `nodeID`.
+**Encryption in Transit:** Pod network traffic is transparently encrypted by Cilium using [WireGuard](https://docs.cilium.io/en/latest/security/network/encryption-wireguard/) by default, with optional support for [IPsec](https://docs.cilium.io/en/latest/security/network/encryption-ipsec/).
+
+**Encryption at Rest:** The [STATE](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) and [EPHEMERAL](https://www.talos.dev/latest/learn-more/architecture/#file-system-partitions) partitions are encrypted by default using [Talos Disk Encryption](https://www.talos.dev/latest/talos-guides/configuration/disk-encryption/) with LUKS2. Each node is secured with an individual encryption key derived from its unique `nodeID`.
 
 <!-- Getting Started -->
 ## 🚀 Getting Started
