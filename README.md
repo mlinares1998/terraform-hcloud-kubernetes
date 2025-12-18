@@ -1112,8 +1112,25 @@ If you'd like to support this project, please consider leaving a ⭐ on GitHub!<
   />
 </a>
 
+<a href="https://www.star-history.com/#hcloud-k8s/terraform-hcloud-kubernetes&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=hcloud-k8s/terraform-hcloud-kubernetes&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=hcloud-k8s/terraform-hcloud-kubernetes&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=hcloud-k8s/terraform-hcloud-kubernetes&type=date&legend=top-left" />
+ </picture>
+</a>
+
 > [!TIP]
 > If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
+
+### Sponsor this Project
+Your contributions support development, maintenance, documentation, support, and operating costs 🙏
+
+**Become a Sponsor:**
+- [![GitHub Sponsors](https://img.shields.io/static/v1?label=GitHub%20Sponsors&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/hcloud-k8s)
+- [![Liberapay](https://img.shields.io/static/v1?label=Liberapay&message=Donate&logo=liberapay&color=F6C915&labelColor=555555)](https://liberapay.com/hcloud-k8s/donate)
+
+
 
 <!-- Project Meta -->
 ## 📎 Project Info
