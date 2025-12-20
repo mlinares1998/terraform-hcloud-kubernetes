@@ -116,7 +116,7 @@ This project bundles essential Kubernetes components, preconfigured for seamless
   A high performance CNI plugin that enhances and secures network connectivity and observability for container workloads through the use of eBPF technology in Linux kernels.
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cilium.io&sz=32" width="16" height="16">
-    <b><a href="https://cilium.io">Cilium Gateway API</a></b>
+    <b><a href="https://cilium.io/use-cases/gateway-api/">Cilium Gateway API</a></b>
   </summary>
   Cilium Gateway API implements the Kubernetes Gateway API using eBPF for traffic steering and policy enforcement, with Envoy providing Layer 7 proxying for HTTP and TLS routing.
 - <summary>
