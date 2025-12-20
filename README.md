@@ -179,7 +179,7 @@ module "kubernetes" {
   cluster_talosconfig_path = "talosconfig"
 
   # Enable Cilium Gateway API and Cert Manager (optional)
-  cert_manager_enabled  = true
+  cert_manager_enabled       = true
   cilium_gateway_api_enabled = true
 
   control_plane_nodepools = [
