@@ -603,6 +603,13 @@ spec:
           - name: example-com-tls
             kind: Secret
             group: ""
+    - name: http
+      hostname: example.com
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 ```
 
 #### Create an `HTTPRoute` (bind hostname + route traffic to your service)
