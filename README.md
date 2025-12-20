@@ -115,10 +115,10 @@ This project bundles essential Kubernetes components, preconfigured for seamless
   </summary>
   A high performance CNI plugin that enhances and secures network connectivity and observability for container workloads through the use of eBPF technology in Linux kernels.
 - <summary>
-    <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=nginx.org&sz=32" width="16" height="16">
-    <b><a href="https://kubernetes.github.io/ingress-nginx/">Ingress NGINX Controller</a></b>
+    <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cilium.io&sz=32" width="16" height="16">
+    <b><a href="https://cilium.io">Cilium Gateway API</a></b>
   </summary>
-  Provides a robust web routing and load balancing solution for Kubernetes, utilizing NGINX as a reverse proxy to manage traffic and enhance network performance.
+  Cilium Gateway API implements the Kubernetes Gateway API using eBPF for traffic steering and policy enforcement, with Envoy providing Layer 7 proxying for HTTP and TLS routing.
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cert-manager.io&sz=32" width="16" height="16">
     <b><a href="https://cert-manager.io">Cert Manager</a></b>
@@ -178,9 +178,9 @@ module "kubernetes" {
   cluster_kubeconfig_path  = "kubeconfig"
   cluster_talosconfig_path = "talosconfig"
 
-  # Enable Ingress NGINX Controller and Cert Manager (optional)
+  # Enable Cilium Gateway API and Cert Manager (optional)
   cert_manager_enabled  = true
-  ingress_nginx_enabled = true
+  cilium_gateway_api_enabled = true
 
   control_plane_nodepools = [
     { name = "control", type = "cpx22", location = "fsn1", count = 3 }
@@ -515,6 +515,128 @@ firewall_extra_rules = [
 ```
 
 For access to Talos and the Kubernetes API, please refer to the [Cluster Access](#public-cluster-access) configuration section.
+
+</details>
+
+<!-- Gateway API -->
+<details>
+<summary><b>Gateway API</b></summary>
+
+Kubernetes Gateway API is the modern replacement for Kubernetes Ingress. It fixes many Ingress limitations by offering a richer, more consistent model for traffic management, and it's designed to support multiple gateway controllers in parallel.
+
+This module installs the Gateway API CRDs by default and deploys Cert Manager with Gateway API support enabled.
+
+### Example with Cilium Gateway API and Cert Manager TLS Certificate
+
+To use Cilium's Gateway API implementation, configure:
+```hcl
+cilium_gateway_api_enabled = true
+```
+
+If Cert Manager and Cilium weren't initially deployed/configured with Gateway API support enabled, you may need to restart their controllers to pick up the new configuration:
+```shell
+kubectl -n cert-manager rollout restart deployment
+kubectl -n kube-system rollout restart deployment/cilium-operator
+```
+
+#### Create a Cert Manager `Issuer` (Let's Encrypt HTTP-01 via Gateway API)
+
+`Issuer` configures Cert Manager to request TLS certificates from Let's Encrypt using the ACME `HTTP-01` challenge. The important part is the `gatewayHTTPRoute` solver: when Cert Manager needs to prove domain ownership, it will temporarily create/attach an HTTPRoute under the referenced `Gateway` and serve the `/.well-known/acme-challenge/...` response there.
+
+Replace the placeholder email address, and note that `privateKeySecretRef` is the secret where Cert Manager stores your ACME account key (not the issued certificate).
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-http01
+  namespace: default
+spec:
+  acme:
+    email: <user@example.com>
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-http01-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: cilium-gateway
+                namespace: default
+                kind: Gateway
+```
+
+#### Create the `Gateway` (Cilium GatewayClass + Hetzner LB + Cert Manager integration)
+
+A `Gateway` defines the external entry point for traffic. With `gatewayClassName: cilium`, the resource is reconciled by the Cilium Gateway controller. The `infrastructure.annotations` are passed through as Hetzner-specific load balancer settings (interpreted by the Hetzner Cloud Controller Manager) to control how the Hetzner Cloud LB is created and configured. See: [Load Balancer Annotations](https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/docs/reference/load_balancer_annotations.md)
+
+The `cert-manager.io/issuer: letsencrypt-http01` annotation is used by Cert Manager's Gateway shim so it knows which Issuer to use when populating the TLS secret referenced by the listener.
+
+`tls.certificateRefs` points at the Kubernetes Secret that will contain the issued certificate and private key (`example-com-tls`). Cert Manager will keep that secret up to date, and the Gateway will use it to terminate TLS.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cilium-gateway
+  namespace: default
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http01
+spec:
+  gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      load-balancer.hetzner.cloud/name: "cilium-gateway-fsn1"
+      load-balancer.hetzner.cloud/location: "fsn1"
+      load-balancer.hetzner.cloud/uses-proxyprotocol: "true"
+  listeners:
+    - name: https
+      hostname: example.com
+      port: 443
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-com-tls
+            kind: Secret
+            group: ""
+```
+
+#### Create an `HTTPRoute` (bind hostname + route traffic to your service)
+
+Finally, the `HTTPRoute` attaches to the Gateway and defines routing rules for `example.com`. In this example it forwards all matching requests to a Kubernetes Service called `example-service` on port `8080`.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: example-app
+  namespace: default
+spec:
+  hostnames:
+    - example.com
+  parentRefs:
+    - name: cilium-gateway
+      namespace: default
+  rules:
+    - backendRefs:
+        - name: example-service
+          port: 8080
+```
+
+> ⚠️ **Important:** When using PROXY protocol with Cilium Gateway API (enabled by default), external IPv6 connections will not work due to a bug in Cilium’s Gateway API implementation: [https://github.com/cilium/cilium/issues/42950](https://github.com/cilium/cilium/issues/42950)
+> 
+> If you need IPv6, disable PROXY protocol by adding the `load-balancer.hetzner.cloud/uses-proxyprotocol: "false"` infrastructure annotation and setting this module config:
+> ```
+> cilium_gateway_api_proxy_protocol_enabled = false
+> ```
+> After applying the module config, you may need to restart Cilium to pick up the change:
+> ```shell
+> kubectl -n kube-system rollout restart deployment/cilium-operator
+> ```
 
 </details>
 
