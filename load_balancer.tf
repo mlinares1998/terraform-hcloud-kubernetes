@@ -1,6 +1,6 @@
 locals {
   hcloud_load_balancer_location = coalesce(
-    var.hcloud_load_balancer_location,
+    var.hcloud_ccm_load_balancers_location,
     length(local.worker_nodepools) > 0 ? local.worker_nodepools[0].location : null,
     length(local.cluster_autoscaler_nodepools) > 0 ? local.cluster_autoscaler_nodepools[0].location : null,
     local.control_plane_nodepools[0].location

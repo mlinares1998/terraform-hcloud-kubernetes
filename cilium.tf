@@ -97,6 +97,16 @@ data "helm_template" "cilium" {
       loadBalancer = {
         acceleration = "native"
       }
+      gatewayAPI = {
+        enabled               = var.cilium_gateway_api_enabled
+        enableProxyProtocol   = var.cilium_gateway_api_proxy_protocol_enabled
+        enableAppProtocol     = true
+        enableAlpn            = true
+        externalTrafficPolicy = var.cilium_gateway_api_external_traffic_policy
+        gatewayClass = {
+          create = tostring(var.cilium_gateway_api_enabled)
+        }
+      }
       hubble = {
         enabled = var.cilium_hubble_enabled
         relay   = { enabled = var.cilium_hubble_relay_enabled }

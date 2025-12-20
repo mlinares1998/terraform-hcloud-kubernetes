@@ -57,6 +57,7 @@ data "helm_template" "cert_manager" {
           crds            = { enabled = true }
           startupapicheck = { enabled = false }
           config = {
+            enableGatewayAPI = true
             featureGates = {
               # Disable the use of Exact PathType in Ingress resources, to work around a bug in ingress-nginx
               # https://github.com/kubernetes/ingress-nginx/issues/11176
