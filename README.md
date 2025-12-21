@@ -522,7 +522,7 @@ For access to Talos and the Kubernetes API, please refer to the [Cluster Access]
 <details>
 <summary><b>Gateway API</b></summary>
 
-Kubernetes Gateway API is the modern replacement for Kubernetes Ingress. It fixes many Ingress limitations by offering a richer, more consistent model for traffic management, and it's designed to support multiple gateway controllers in parallel.
+Kubernetes Gateway API is the modern replacement for Kubernetes Ingress. It fixes many Ingress limitations by offering a richer, more consistent model for traffic management, and it's designed to support multiple [Gateway API implementations](https://gateway-api.sigs.k8s.io/implementations/#conformant) in parallel.
 
 This module installs the Gateway API CRDs by default and deploys Cert Manager with Gateway API support enabled.
 
