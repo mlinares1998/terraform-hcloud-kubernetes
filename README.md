@@ -1258,7 +1258,7 @@ Your contributions support development, maintenance, documentation, support, and
 - [![GitHub Sponsors](https://img.shields.io/static/v1?label=GitHub%20Sponsors&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/hcloud-k8s)
 - [![Liberapay](https://img.shields.io/static/v1?label=Liberapay&message=Donate&logo=liberapay&color=F6C915&labelColor=555555)](https://liberapay.com/hcloud-k8s/donate)
 
-<!-- sponsors --><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="60px" alt="User avatar: Jona Koudijs" /></a><!-- sponsors -->
 
 <!-- Project Meta -->
 ## 📎 Project Info
