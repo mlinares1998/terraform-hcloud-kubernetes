@@ -1263,7 +1263,7 @@ Your sponsorship supports the ongoing development, improvement, and maintenance 
 
 <!-- Project Meta -->
 ## 📎 Project Info
-This project is built for the public and will always remain fully [open source](https://opensource.org).
+This project is built for the public and will always remain fully [Open Source](https://opensource.org/osd).
 
 <!-- License -->
 ### ⚖️ License
