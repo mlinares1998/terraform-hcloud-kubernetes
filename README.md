@@ -54,8 +54,8 @@
 - [🚀 Getting Started](#-getting-started)
 - [⚙️ Advanced Configuration](#%EF%B8%8F-advanced-configuration)
 - [♻️ Lifecycle](#%EF%B8%8F-lifecycle)
-- [👋 Community](#-community)
 - [❤️ Support this Project](#%EF%B8%8F-support-this-project)
+- [👋 Community](#-community)
 - [📎 Project Info](#-project-info)
 
 <!-- About the Project -->
@@ -1219,19 +1219,6 @@ In this module, upgrades are conducted with care. You will consistently receive 
 * [ ] **Upgrade to latest Talos 1.11 and Kubernetes 1.34**<br>
       Once all components have compatible versions, the upgrade can be performed.
 
-<!-- Community -->
-## 👋 Community
-We welcome everyone to join the discussion, report issues, and help improve this project.
-
-<!-- Contributing -->
-### 🤝 Contributing
-
-<a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=hcloud-k8s/terraform-hcloud-kubernetes" />
-</a>
-
-
-Contributions are always welcome!
 
 <!-- Support this Project -->
 ## ❤️ Support this Project
@@ -1263,6 +1250,20 @@ Your sponsorship supports the ongoing development, improvement, and maintenance 
 **Become a Sponsor:**
 - [![GitHub Sponsors](https://img.shields.io/static/v1?label=GitHub%20Sponsors&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/hcloud-k8s)
 - [![Liberapay](https://img.shields.io/static/v1?label=Liberapay&message=Donate&logo=liberapay&color=F6C915&labelColor=555555)](https://liberapay.com/hcloud-k8s/donate)
+
+<!-- Community -->
+## 👋 Community
+We welcome everyone to join the [Discussions](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/discussions), report [Issues](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/issues/new/choose), and help improve this project.
+
+<!-- Contributing -->
+### 🤝 Contributing
+
+<a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hcloud-k8s/terraform-hcloud-kubernetes" />
+</a>
+
+
+Contributions are always welcome!
 
 <!-- Project Meta -->
 ## 📎 Project Info
