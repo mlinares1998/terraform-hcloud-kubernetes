@@ -27,19 +27,28 @@
       "minimumReleaseAge": "14 days"
     },
     {
-      "description": "Kubernetes & Talos — block minor/major updates",
+      "description": "Kubernetes — block minor/major updates",
       "matchDatasources": [
         "github-tags"
       ],
       "matchDepNames": [
-        "kubernetes/kubernetes",
-        "siderolabs/talos"
+        "kubernetes/kubernetes"
       ],
       "matchUpdateTypes": [
         "minor",
         "major"
       ],
       "enabled": false
+    },
+    {
+      "description": "Talos — skip x.y.0 releases",
+      "matchDatasources": [
+        "github-tags"
+      ],
+      "matchDepNames": [
+        "siderolabs/talos"
+      ],
+      "allowedVersions": "!/^v?\\d+\\.\\d+\\.0$/"
     }
   ],
   "customManagers": [
