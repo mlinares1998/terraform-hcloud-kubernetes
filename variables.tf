@@ -468,6 +468,12 @@ variable "cluster_autoscaler_helm_values" {
   description = "Custom Helm values for the Cluster Autoscaler chart deployment. These values will merge with and will override the default values provided by the Cluster Autoscaler Helm chart."
 }
 
+variable "cluster_autoscaler_image_tag" {
+  type        = string
+  default     = "v1.33.0"
+  description = "Version of the Cluster Autoscaler Image."
+}
+
 variable "cluster_autoscaler_nodepools" {
   type = list(object({
     name        = string
