@@ -1214,12 +1214,12 @@ In this module, upgrades are conducted with care. You will consistently receive 
 
 <!-- Roadmap -->
 ### 🧭 Roadmap
-* [ ] **Ingress NGINX [Retirement](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/) in March 2026**<br>
+* [ ] **Ingress NGINX [Retirement in March 2026](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/)**<br>
   * [x] Add general support for Gateway API
   * [x] Integrate Cilium Gateway API
   * [ ] Deprecate Ingress NGINX in v4 (~ Q1 2026)
   * [ ] Remove Ingress NGINX in v5 (~ Q2/Q3 2026)
-* [ ] **Upgrade to latest Talos 1.11 and Kubernetes 1.34**<br>
+* [ ] **Upgrade to latest Talos 1.12**<br>
       Once all components have compatible versions, the upgrade can be performed.
 
 
