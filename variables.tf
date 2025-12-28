@@ -559,7 +559,7 @@ variable "packer_amd64_builder" {
 variable "packer_arm64_builder" {
   type = object({
     server_type     = optional(string, "cax11")
-    server_location = optional(string, "fsn1")
+    server_location = optional(string, "nbg1")
   })
   default     = {}
   description = "Configuration for the server used when building the Talos ARM64 image with Packer."
