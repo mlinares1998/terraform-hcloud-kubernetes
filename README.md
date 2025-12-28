@@ -183,10 +183,10 @@ module "kubernetes" {
   cilium_gateway_api_enabled = true
 
   control_plane_nodepools = [
-    { name = "control", type = "cpx22", location = "fsn1", count = 3 }
+    { name = "control", type = "cpx22", location = "nbg1", count = 3 }
   ]
   worker_nodepools = [
-    { name = "worker", type = "cpx22", location = "fsn1", count = 3 }
+    { name = "worker", type = "cpx22", location = "nbg1", count = 3 }
   ]
 }
 ```
@@ -347,7 +347,7 @@ cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     min      = 0
     max      = 6
     labels   = { "autoscaler-node" = "true" }
@@ -443,7 +443,7 @@ worker_nodepools = [
   {
     name     = "egress"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     labels   = { "egress-node" = "true" }
     taints   = [ "egress-node=true:NoSchedule" ]
   }
@@ -586,8 +586,8 @@ spec:
   gatewayClassName: cilium
   infrastructure:
     annotations:
-      load-balancer.hetzner.cloud/name: "cilium-gateway-fsn1"
-      load-balancer.hetzner.cloud/location: "fsn1"
+      load-balancer.hetzner.cloud/name: "cilium-gateway-nbg1"
+      load-balancer.hetzner.cloud/location: "nbg1"
       load-balancer.hetzner.cloud/uses-proxyprotocol: "true"
   listeners:
     - name: https
@@ -918,7 +918,7 @@ cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     min      = 0
     max      = 6
     labels   = {
