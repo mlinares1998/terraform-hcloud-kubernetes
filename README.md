@@ -388,6 +388,18 @@ kubectl -n kube-system scale deployment cluster-autoscaler-hetzner-cluster-autos
 <details>
 <summary><b>Cilium Advanced Configuration</b></summary>
 
+#### Cilium CIDR Policy Match Mode
+
+By default, when using K8s NetworkPolicies CIDR-based selectors in Cilium do not match in-cluster entities (pods or nodes). This is however required when using NetworkPolicies that control traffic to the kube-apiserver pods as these use the Talos node IPs in our setup.
+Cilium's policy engine can be directed to select nodes by CIDR / ipBlock. This requires you to add the following to your configuration:
+
+```hcl
+cilium_policy_cidr_match_mode = "nodes"
+```
+
+It is safe to toggle this option on a running cluster, and toggling the option affects neither upgrades nor downgrades
+More information can be found in [the Cilium docs.](https://docs.cilium.io/en/stable/security/policy/language/#selecting-nodes-with-cidr-ipblock)
+
 #### Cilium Transparent Encryption
 
 This module enables [Cilium Transparent Encryption](https://cilium.io/use-cases/transparent-encryption/) feature by default.  

@@ -58,6 +58,7 @@ data "helm_template" "cilium" {
       }
       routingMode           = var.cilium_routing_mode
       ipv4NativeRoutingCIDR = local.network_native_routing_ipv4_cidr
+      policyCIDRMatchMode   = var.cilium_policy_cidr_match_mode
       bpf = {
         masquerade        = var.cilium_kube_proxy_replacement_enabled
         datapathMode      = var.cilium_bpf_datapath_mode
