@@ -592,6 +592,41 @@ variable "talos_image_extensions" {
   description = "Specifies Talos image extensions for additional functionality on top of the default Talos Linux capabilities. See: https://github.com/siderolabs/extensions"
 }
 
+variable "talos_upgrade_debug" {
+  type        = bool
+  default     = false
+  description = "Enable debug operation from kernel logs during Talos upgrades. When true, --wait is set to true by talosctl."
+}
+
+variable "talos_upgrade_force" {
+  type        = bool
+  default     = false
+  description = "Force the Talos upgrade by skipping etcd health and member checks."
+}
+
+variable "talos_upgrade_insecure" {
+  type        = bool
+  default     = false
+  description = "Upgrade using the insecure (no auth) maintenance service."
+}
+
+variable "talos_upgrade_reboot_mode" {
+  type        = string
+  default     = null
+  description = "Select the reboot mode during upgrade. Mode \"powercycle\" bypasses kexec. Valid values: \"default\" or \"powercycle\"."
+
+  validation {
+    condition     = var.talos_upgrade_reboot_mode == null || contains(["default", "powercycle"], var.talos_upgrade_reboot_mode)
+    error_message = "The talos_upgrade_reboot_mode must be \"default\" or \"powercycle\"."
+  }
+}
+
+variable "talos_upgrade_stage" {
+  type        = bool
+  default     = false
+  description = "Stage the Talos upgrade to perform it after a reboot."
+}
+
 variable "talos_discovery_kubernetes_enabled" {
   type        = bool
   default     = false
