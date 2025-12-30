@@ -1376,6 +1376,16 @@ variable "cilium_helm_values" {
   description = "Custom Helm values for the Cilium chart deployment. These values will merge with and will override the default values provided by the Cilium Helm chart."
 }
 
+variable "cilium_policy_cidr_match_mode" {
+  type        = string
+  default     = ""
+  description = "Allows setting policy-cidr-match-mode to "nodes", which means that cluster nodes can be selected by CIDR network policies. Normally nodes are only accessible via remote-node entity selectors. This is required if you want to target the kube-api server with a k8s NetworkPolicy."
+  validation {
+    condition     = var.cilium_policy_cidr_match_mode == "" || var.cilium_policy_cidr_match_mode == "nodes"
+    error_message = "cilium_policy_cidr_match_mode must be either \"nodes\" or an empty string."
+  }
+}
+
 variable "cilium_encryption_enabled" {
   type        = bool
   default     = true
