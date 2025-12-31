@@ -52,12 +52,17 @@ locals {
 
   # Talos Control
   talosctl_upgrade_command = join(" ",
-    [
+    compact([
       "talosctl upgrade",
       "--talosconfig \"$talosconfig\"",
       "--nodes \"$host\"",
+      var.talos_upgrade_debug ? "--debug" : "",
+      var.talos_upgrade_force ? "--force" : "",
+      var.talos_upgrade_insecure ? "--insecure" : "",
+      var.talos_upgrade_stage ? "--stage" : "",
+      var.talos_upgrade_reboot_mode != null ? "--reboot-mode '${var.talos_upgrade_reboot_mode}'" : "",
       "--image '${local.talos_installer_image_url}'"
-    ]
+    ])
   )
   talosctl_upgrade_k8s_command = join(" ",
     [
@@ -561,8 +566,7 @@ resource "talos_machine_bootstrap" "this" {
 resource "terraform_data" "synchronize_manifests" {
   triggers_replace = [
     nonsensitive(sha1(jsonencode(local.talos_inline_manifests))),
-    var.talos_ccm_version,
-    var.prometheus_operator_crds_version
+    nonsensitive(sha1(jsonencode(local.talos_manifests))),
   ]
 
   provisioner "local-exec" {

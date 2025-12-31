@@ -468,6 +468,12 @@ variable "cluster_autoscaler_helm_values" {
   description = "Custom Helm values for the Cluster Autoscaler chart deployment. These values will merge with and will override the default values provided by the Cluster Autoscaler Helm chart."
 }
 
+variable "cluster_autoscaler_image_tag" {
+  type        = string
+  default     = "v1.33.3"
+  description = "Version of the Cluster Autoscaler Image."
+}
+
 variable "cluster_autoscaler_nodepools" {
   type = list(object({
     name        = string
@@ -553,7 +559,7 @@ variable "packer_amd64_builder" {
 variable "packer_arm64_builder" {
   type = object({
     server_type     = optional(string, "cax11")
-    server_location = optional(string, "fsn1")
+    server_location = optional(string, "nbg1")
   })
   default     = {}
   description = "Configuration for the server used when building the Talos ARM64 image with Packer."
@@ -570,7 +576,7 @@ variable "packer_arm64_builder" {
 # Talos
 variable "talos_version" {
   type        = string
-  default     = "v1.11.1" # https://github.com/siderolabs/talos
+  default     = "v1.11.6" # https://github.com/siderolabs/talos
   description = "Specifies the version of Talos to be used in generated machine configurations."
 }
 
@@ -584,6 +590,41 @@ variable "talos_image_extensions" {
   type        = list(string)
   default     = []
   description = "Specifies Talos image extensions for additional functionality on top of the default Talos Linux capabilities. See: https://github.com/siderolabs/extensions"
+}
+
+variable "talos_upgrade_debug" {
+  type        = bool
+  default     = false
+  description = "Enable debug operation from kernel logs during Talos upgrades. When true, --wait is set to true by talosctl."
+}
+
+variable "talos_upgrade_force" {
+  type        = bool
+  default     = false
+  description = "Force the Talos upgrade by skipping etcd health and member checks."
+}
+
+variable "talos_upgrade_insecure" {
+  type        = bool
+  default     = false
+  description = "Upgrade using the insecure (no auth) maintenance service."
+}
+
+variable "talos_upgrade_reboot_mode" {
+  type        = string
+  default     = null
+  description = "Select the reboot mode during upgrade. Mode \"powercycle\" bypasses kexec. Valid values: \"default\" or \"powercycle\"."
+
+  validation {
+    condition     = var.talos_upgrade_reboot_mode == null || contains(["default", "powercycle"], var.talos_upgrade_reboot_mode)
+    error_message = "The talos_upgrade_reboot_mode must be \"default\" or \"powercycle\"."
+  }
+}
+
+variable "talos_upgrade_stage" {
+  type        = bool
+  default     = false
+  description = "Stage the Talos upgrade to perform it after a reboot."
 }
 
 variable "talos_discovery_kubernetes_enabled" {
@@ -857,7 +898,7 @@ variable "talos_backup_schedule" {
 # Kubernetes
 variable "kubernetes_version" {
   type        = string
-  default     = "v1.33.4" # https://github.com/kubernetes/kubernetes
+  default     = "v1.33.7" # https://github.com/kubernetes/kubernetes
   description = "Specifies the Kubernetes version to deploy."
 }
 
@@ -1048,19 +1089,6 @@ variable "hcloud_network_id" {
   }
 }
 
-variable "hcloud_load_balancer_location" {
-  type        = string
-  default     = null
-  description = "The default location for Hetzner load balancers."
-
-  validation {
-    condition = can(contains([
-      "fsn1", "nbg1", "hel1", "ash", "hil", "sin"
-    ], var.hcloud_load_balancer_location)) || var.hcloud_load_balancer_location == null
-    error_message = "Location must be one of: 'fsn1' (Falkenstein), 'nbg1' (Nuremberg), 'hel1' (Helsinki), 'ash' (Ashburn), 'hil' (Hillsboro), 'sin' (Singapore)."
-  }
-}
-
 
 # Hetzner Cloud Controller Manager (CCM)
 variable "hcloud_ccm_enabled" {
@@ -1083,7 +1111,7 @@ variable "hcloud_ccm_helm_chart" {
 
 variable "hcloud_ccm_helm_version" {
   type        = string
-  default     = "1.28.0"
+  default     = "1.29.0"
   description = "Version of the Hcloud CCM Helm chart to deploy."
 }
 
@@ -1097,6 +1125,114 @@ variable "hcloud_ccm_load_balancers_enabled" {
   type        = bool
   default     = true
   description = "Enable or disable Hetzner Cloud CCM Service Controller"
+}
+
+variable "hcloud_ccm_load_balancers_location" {
+  type        = string
+  default     = null
+  description = "Default Hetzner location for CCM-managed Load Balancers. "
+
+  validation {
+    condition = (
+      var.hcloud_ccm_load_balancers_location == null ||
+      contains(["fsn1", "nbg1", "hel1", "ash", "hil", "sin"], var.hcloud_ccm_load_balancers_location)
+    )
+    error_message = "hcloud_ccm_load_balancers_location must be one of: 'fsn1', 'nbg1', 'hel1', 'ash', 'hil', 'sin'."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_disable_private_ingress" {
+  type        = bool
+  default     = true
+  description = "Disables the use of the private network for ingress by default."
+}
+
+variable "hcloud_ccm_load_balancers_use_private_ip" {
+  type        = bool
+  default     = true
+  description = "Configures Load Balancer server targets to use the private IP by default."
+}
+
+variable "hcloud_ccm_load_balancers_disable_ipv6" {
+  type        = bool
+  default     = false
+  description = "Disables the use of IPv6 for Load Balancers by default."
+}
+
+variable "hcloud_ccm_load_balancers_algorithm_type" {
+  type        = string
+  default     = "least_connections"
+  description = "Default Load Balancer algorithm for CCM-managed Load Balancers."
+
+  validation {
+    condition     = contains(["round_robin", "least_connections"], var.hcloud_ccm_load_balancers_algorithm_type)
+    error_message = "hcloud_ccm_load_balancers_algorithm_type must be 'round_robin' or 'least_connections'."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_disable_public_network" {
+  type        = bool
+  default     = false
+  description = "Disables the public interface of CCM-managed Load Balancers by default."
+}
+
+variable "hcloud_ccm_load_balancers_health_check_interval" {
+  type        = number
+  default     = 3
+  description = "Default time interval in seconds in which health checks are performed."
+
+  validation {
+    condition = (
+      var.hcloud_ccm_load_balancers_health_check_interval >= 3 &&
+      var.hcloud_ccm_load_balancers_health_check_interval <= 60
+    )
+    error_message = "The health check interval must be between 3 and 60 seconds."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_health_check_retries" {
+  type        = number
+  default     = 3
+  description = "Default amount of unsuccessful retries needed until a target is considered unhealthy."
+
+  validation {
+    condition = (
+      var.hcloud_ccm_load_balancers_health_check_retries >= 0 &&
+      var.hcloud_ccm_load_balancers_health_check_retries <= 5
+    )
+    error_message = "The health check retries must be between 0 and 5."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_health_check_timeout" {
+  type        = number
+  default     = 3
+  description = "Default time in seconds after an attempt is considered a timeout."
+
+  validation {
+    condition = (
+      var.hcloud_ccm_load_balancers_health_check_timeout > 0 &&
+      var.hcloud_ccm_load_balancers_health_check_timeout <= var.hcloud_ccm_load_balancers_health_check_interval
+    )
+    error_message = "The health check timeout must be a positive number and cannot exceed the interval."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_type" {
+  type        = string
+  default     = "lb11"
+  description = "Default Load Balancer type for CCM-managed Load Balancers."
+
+  validation {
+    condition     = contains(["lb11", "lb21", "lb31"], var.hcloud_ccm_load_balancers_type)
+    error_message = "Invalid load balancer type. Allowed values are 'lb11', 'lb21', or 'lb31'."
+  }
+}
+
+variable "hcloud_ccm_load_balancers_uses_proxyprotocol" {
+  type        = bool
+  default     = false
+  description = "Enables the proxyprotocol for CCM-managed Load Balancers by default."
 }
 
 variable "hcloud_ccm_network_routes_enabled" {
@@ -1230,7 +1366,7 @@ variable "cilium_helm_chart" {
 
 variable "cilium_helm_version" {
   type        = string
-  default     = "1.18.4"
+  default     = "1.18.5"
   description = "Version of the Cilium Helm chart to deploy."
 }
 
@@ -1238,6 +1374,17 @@ variable "cilium_helm_values" {
   type        = any
   default     = {}
   description = "Custom Helm values for the Cilium chart deployment. These values will merge with and will override the default values provided by the Cilium Helm chart."
+}
+
+variable "cilium_policy_cidr_match_mode" {
+  type        = string
+  default     = ""
+  description = "Allows setting policy-cidr-match-mode to \"nodes\", which means that cluster nodes can be selected by CIDR network policies. Normally nodes are only accessible via remote-node entity selectors. This is required if you want to target the kube-api server with a k8s NetworkPolicy."
+
+  validation {
+    condition     = var.cilium_policy_cidr_match_mode == "" || var.cilium_policy_cidr_match_mode == "nodes"
+    error_message = "cilium_policy_cidr_match_mode must be either \"nodes\" or an empty string."
+  }
 }
 
 variable "cilium_encryption_enabled" {
@@ -1301,6 +1448,7 @@ variable "cilium_routing_mode" {
   type        = string
   description = "Cilium routing mode (e.g., 'native', 'tunnel', etc.)"
   default     = "native"
+
   validation {
     condition     = contains(["", "native", "tunnel"], var.cilium_routing_mode)
     error_message = "cilium_routing_mode must be one of: empty string, native, or tunnel."
@@ -1311,9 +1459,33 @@ variable "cilium_bpf_datapath_mode" {
   type        = string
   default     = "veth"
   description = "Mode for Pod devices for the core datapath. Allowed values: veth, netkit, netkit-l2. Warning: Netkit is still in beta and should not be used together with IPsec encryption!"
+
   validation {
     condition     = contains(["veth", "netkit", "netkit-l2"], var.cilium_bpf_datapath_mode)
     error_message = "cilium_bpf_datapath_mode must be one of: veth, netkit, netkit-l2."
+  }
+}
+
+variable "cilium_gateway_api_enabled" {
+  type        = bool
+  default     = false
+  description = "Enables Cilium Gateway API."
+}
+
+variable "cilium_gateway_api_proxy_protocol_enabled" {
+  type        = bool
+  default     = true
+  description = "Enable PROXY Protocol on Cilium Gateway API for external load balancer traffic."
+}
+
+variable "cilium_gateway_api_external_traffic_policy" {
+  type        = string
+  default     = "Cluster"
+  description = "Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints."
+
+  validation {
+    condition     = contains(["Cluster", "Local"], var.cilium_gateway_api_external_traffic_policy)
+    error_message = "Invalid value for external traffic policy. Allowed values are 'Cluster' or 'Local'."
   }
 }
 
@@ -1709,7 +1881,33 @@ variable "ingress_load_balancer_pools" {
   }
 }
 
-# Miscellaneous
+
+# Gateway API CRDs
+variable "gateway_api_crds_enabled" {
+  type        = bool
+  default     = true
+  description = "Enables the Gateway API Custom Resource Definitions (CRDs) deployment."
+}
+
+variable "gateway_api_crds_version" {
+  type        = string
+  default     = "v1.4.1" # https://github.com/kubernetes-sigs/gateway-api
+  description = "Specifies the version of the Gateway API Custom Resource Definitions (CRDs) to deploy."
+}
+
+variable "gateway_api_crds_release_channel" {
+  type        = string
+  default     = "standard"
+  description = "Specifies the release channel for the Gateway API CRDs. Valid options are 'standard' or 'experimental'."
+
+  validation {
+    condition     = contains(["standard", "experimental"], var.gateway_api_crds_release_channel)
+    error_message = "Invalid value for 'gateway_api_crds_release_channel'. Valid options are 'standard' or 'experimental'."
+  }
+}
+
+
+# Prometheus Operator CRDs
 variable "prometheus_operator_crds_enabled" {
   type        = bool
   default     = true

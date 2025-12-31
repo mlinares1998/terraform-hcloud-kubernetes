@@ -58,6 +58,7 @@ data "helm_template" "cilium" {
       }
       routingMode           = var.cilium_routing_mode
       ipv4NativeRoutingCIDR = local.network_native_routing_ipv4_cidr
+      policyCIDRMatchMode   = var.cilium_policy_cidr_match_mode
       bpf = {
         masquerade        = var.cilium_kube_proxy_replacement_enabled
         datapathMode      = var.cilium_bpf_datapath_mode
@@ -96,6 +97,16 @@ data "helm_template" "cilium" {
       }
       loadBalancer = {
         acceleration = "native"
+      }
+      gatewayAPI = {
+        enabled               = var.cilium_gateway_api_enabled
+        enableProxyProtocol   = var.cilium_gateway_api_proxy_protocol_enabled
+        enableAppProtocol     = true
+        enableAlpn            = true
+        externalTrafficPolicy = var.cilium_gateway_api_external_traffic_policy
+        gatewayClass = {
+          create = tostring(var.cilium_gateway_api_enabled)
+        }
       }
       hubble = {
         enabled = var.cilium_hubble_enabled

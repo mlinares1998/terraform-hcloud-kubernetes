@@ -27,19 +27,29 @@
       "minimumReleaseAge": "14 days"
     },
     {
-      "description": "Kubernetes & Talos — block minor/major updates",
+      "description": "Kubernetes — block minor/major updates",
       "matchDatasources": [
         "github-tags"
       ],
       "matchDepNames": [
         "kubernetes/kubernetes",
-        "siderolabs/talos"
+        "kubernetes/autoscaler"
       ],
       "matchUpdateTypes": [
         "minor",
         "major"
       ],
       "enabled": false
+    },
+    {
+      "description": "Talos — skip x.y.0 releases",
+      "matchDatasources": [
+        "github-tags"
+      ],
+      "matchDepNames": [
+        "siderolabs/talos"
+      ],
+      "allowedVersions": "!/^v?\\d+\\.\\d+\\.0$/"
     }
   ],
   "customManagers": [
@@ -64,6 +74,19 @@
         "variable\\s*\"[^\"]+_version\"\\s*{[^}]*\\s*default\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s*#\\s*https://github.com/(?<depName>[^\\s]+)[^}]*}"
       ],
       "datasourceTemplate": "github-tags"
+    },
+    {
+      "description": "Update Cluster Autoscaler image",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^variables\\.tf$/"
+      ],
+      "matchStrings": [
+        "variable\\s+\"cluster_autoscaler_image_tag\"\\s*{[^}]*\\s*default\\s*=\\s*\"v(?<currentValue>\\d+\\.\\d+\\.\\d+)\"[^}]*}"
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "kubernetes/autoscaler",
+      "extractVersionTemplate": "^cluster-autoscaler-(?<version>\\d+\\.\\d+\\.\\d+)$"
     },
     {
       "description": "Update Packer Dependencies from GitHub",

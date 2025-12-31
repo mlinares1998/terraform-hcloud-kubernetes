@@ -84,6 +84,9 @@ data "helm_template" "cluster_autoscaler" {
           region       = np.location
         }
       ]
+      image = {
+        tag = var.cluster_autoscaler_image_tag
+      }
       extraEnv = {
         HCLOUD_CLUSTER_CONFIG_FILE     = "/config/cluster-config"
         HCLOUD_SERVER_CREATION_TIMEOUT = "10"

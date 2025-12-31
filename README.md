@@ -54,8 +54,8 @@
 - [🚀 Getting Started](#-getting-started)
 - [⚙️ Advanced Configuration](#%EF%B8%8F-advanced-configuration)
 - [♻️ Lifecycle](#%EF%B8%8F-lifecycle)
-- [👋 Community](#-community)
 - [❤️ Support this Project](#%EF%B8%8F-support-this-project)
+- [👋 Community](#-community)
 - [📎 Project Info](#-project-info)
 
 <!-- About the Project -->
@@ -115,10 +115,10 @@ This project bundles essential Kubernetes components, preconfigured for seamless
   </summary>
   A high performance CNI plugin that enhances and secures network connectivity and observability for container workloads through the use of eBPF technology in Linux kernels.
 - <summary>
-    <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=nginx.org&sz=32" width="16" height="16">
-    <b><a href="https://kubernetes.github.io/ingress-nginx/">Ingress NGINX Controller</a></b>
+    <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cilium.io&sz=32" width="16" height="16">
+    <b><a href="https://cilium.io/use-cases/gateway-api/">Cilium Gateway API</a></b>
   </summary>
-  Provides a robust web routing and load balancing solution for Kubernetes, utilizing NGINX as a reverse proxy to manage traffic and enhance network performance.
+  Cilium Gateway API implements the Kubernetes Gateway API using eBPF for traffic steering and policy enforcement, with Envoy providing Layer 7 proxying for HTTP and TLS routing.
 - <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=cert-manager.io&sz=32" width="16" height="16">
     <b><a href="https://cert-manager.io">Cert Manager</a></b>
@@ -178,15 +178,15 @@ module "kubernetes" {
   cluster_kubeconfig_path  = "kubeconfig"
   cluster_talosconfig_path = "talosconfig"
 
-  # Enable Ingress NGINX Controller and Cert Manager (optional)
-  cert_manager_enabled  = true
-  ingress_nginx_enabled = true
+  # Enable Cilium Gateway API and Cert Manager (optional)
+  cert_manager_enabled       = true
+  cilium_gateway_api_enabled = true
 
   control_plane_nodepools = [
-    { name = "control", type = "cpx22", location = "fsn1", count = 3 }
+    { name = "control", type = "cpx22", location = "nbg1", count = 3 }
   ]
   worker_nodepools = [
-    { name = "worker", type = "cpx22", location = "fsn1", count = 3 }
+    { name = "worker", type = "cpx22", location = "nbg1", count = 3 }
   ]
 }
 ```
@@ -347,7 +347,7 @@ cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     min      = 0
     max      = 6
     labels   = { "autoscaler-node" = "true" }
@@ -387,6 +387,18 @@ kubectl -n kube-system scale deployment cluster-autoscaler-hetzner-cluster-autos
 <!-- Cilium Advanced Configuration -->
 <details>
 <summary><b>Cilium Advanced Configuration</b></summary>
+
+#### Cilium CIDR Policy Match Mode
+
+By default, when using K8s NetworkPolicies CIDR-based selectors in Cilium do not match in-cluster entities (pods or nodes). This is however required when using NetworkPolicies that control traffic to the kube-apiserver pods as these use the Talos node IPs in our setup.
+Cilium's policy engine can be directed to select nodes by CIDR / ipBlock. This requires you to add the following to your configuration:
+
+```hcl
+cilium_policy_cidr_match_mode = "nodes"
+```
+
+It is safe to toggle this option on a running cluster, and toggling the option affects neither upgrades nor downgrades
+More information can be found in [the Cilium docs.](https://docs.cilium.io/en/stable/security/policy/language/#selecting-nodes-with-cidr-ipblock)
 
 #### Cilium Transparent Encryption
 
@@ -443,7 +455,7 @@ worker_nodepools = [
   {
     name     = "egress"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     labels   = { "egress-node" = "true" }
     taints   = [ "egress-node=true:NoSchedule" ]
   }
@@ -515,6 +527,135 @@ firewall_extra_rules = [
 ```
 
 For access to Talos and the Kubernetes API, please refer to the [Cluster Access](#public-cluster-access) configuration section.
+
+</details>
+
+<!-- Gateway API -->
+<details>
+<summary><b>Gateway API</b></summary>
+
+Kubernetes Gateway API is the modern replacement for Kubernetes Ingress. It fixes many Ingress limitations by offering a richer, more consistent model for traffic management, and it's designed to support multiple [Gateway API implementations](https://gateway-api.sigs.k8s.io/implementations/#conformant) in parallel.
+
+This module installs the Gateway API CRDs by default and deploys Cert Manager with Gateway API support enabled.
+
+### Example with Cilium Gateway API and Cert Manager TLS Certificate
+
+To use Cilium's Gateway API implementation, configure:
+```hcl
+cilium_gateway_api_enabled = true
+```
+
+If Cert Manager and Cilium weren't initially deployed/configured with Gateway API support enabled, you may need to restart their controllers to pick up the new configuration:
+```shell
+kubectl -n cert-manager rollout restart deployment
+kubectl -n kube-system rollout restart deployment/cilium-operator
+```
+
+#### Create a Cert Manager `Issuer` (Let's Encrypt HTTP-01 via Gateway API)
+
+`Issuer` configures Cert Manager to request TLS certificates from Let's Encrypt using the ACME `HTTP-01` challenge. The important part is the `gatewayHTTPRoute` solver: when Cert Manager needs to prove domain ownership, it will temporarily create/attach an HTTPRoute under the referenced `Gateway` and serve the `/.well-known/acme-challenge/...` response there.
+
+Replace the placeholder email address, and note that `privateKeySecretRef` is the secret where Cert Manager stores your ACME account key (not the issued certificate).
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-http01
+  namespace: default
+spec:
+  acme:
+    email: <user@example.com>
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-http01-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: cilium-gateway
+                namespace: default
+                kind: Gateway
+```
+
+#### Create the `Gateway` (Cilium GatewayClass + Hetzner LB + Cert Manager integration)
+
+A `Gateway` defines the external entry point for traffic. With `gatewayClassName: cilium`, the resource is reconciled by the Cilium Gateway controller. The `infrastructure.annotations` are passed through as Hetzner-specific load balancer settings (interpreted by the Hetzner Cloud Controller Manager) to control how the Hetzner Cloud LB is created and configured. See: [Load Balancer Annotations](https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/docs/reference/load_balancer_annotations.md)
+
+The `cert-manager.io/issuer: letsencrypt-http01` annotation is used by Cert Manager's Gateway shim so it knows which Issuer to use when populating the TLS secret referenced by the listener.
+
+`tls.certificateRefs` points at the Kubernetes Secret that will contain the issued certificate and private key (`example-com-tls`). Cert Manager will keep that secret up to date, and the Gateway will use it to terminate TLS.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cilium-gateway
+  namespace: default
+  annotations:
+    cert-manager.io/issuer: letsencrypt-http01
+spec:
+  gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      load-balancer.hetzner.cloud/name: "cilium-gateway-nbg1"
+      load-balancer.hetzner.cloud/location: "nbg1"
+      load-balancer.hetzner.cloud/uses-proxyprotocol: "true"
+  listeners:
+    - name: https
+      hostname: example.com
+      port: 443
+      protocol: HTTPS
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-com-tls
+            kind: Secret
+            group: ""
+    - name: http
+      hostname: example.com
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+```
+
+#### Create an `HTTPRoute` (bind hostname + route traffic to your service)
+
+Finally, the `HTTPRoute` attaches to the Gateway and defines routing rules for `example.com`. In this example it forwards all matching requests to a Kubernetes Service called `example-service` on port `8080`.
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: example-app
+  namespace: default
+spec:
+  hostnames:
+    - example.com
+  parentRefs:
+    - name: cilium-gateway
+      namespace: default
+  rules:
+    - backendRefs:
+        - name: example-service
+          port: 8080
+```
+
+> ⚠️ **Important:** When using PROXY protocol with Cilium Gateway API (enabled by default), external IPv6 connections will not work due to a bug in Cilium’s Gateway API implementation: [https://github.com/cilium/cilium/issues/42950](https://github.com/cilium/cilium/issues/42950)
+> 
+> If you need IPv6, disable PROXY protocol by adding the `load-balancer.hetzner.cloud/uses-proxyprotocol: "false"` infrastructure annotation and setting this module config:
+> ```
+> cilium_gateway_api_proxy_protocol_enabled = false
+> ```
+> After applying the module config, you may need to restart Cilium to pick up the change:
+> ```shell
+> kubectl -n kube-system rollout restart deployment/cilium-operator
+> ```
 
 </details>
 
@@ -789,7 +930,7 @@ cluster_autoscaler_nodepools = [
   {
     name     = "autoscaler"
     type     = "cpx22"
-    location = "fsn1"
+    location = "nbg1"
     min      = 0
     max      = 6
     labels   = {
@@ -1047,23 +1188,26 @@ kubectl get pods  # This will trigger OIDC authentication
 
 <!-- Lifecycle -->
 ## ♻️ Lifecycle
-The [Talos Terraform Provider](https://registry.terraform.io/providers/siderolabs/talos) does not support declarative upgrades of Talos or Kubernetes versions. This module compensates for these limitations using `talosctl` to implement the required functionalities. Any minor or major upgrades to Talos and Kubernetes will result in a major version change of this module. Please be aware that downgrades are typically neither supported nor tested.
+Any minor or major upgrades to Talos and Kubernetes will result in a major version change of this module. Please be aware that downgrades are typically neither supported nor tested.
 
 > [!IMPORTANT]
 > Before upgrading to the next major version of this module, ensure you are on the latest release of the current major version. Do not skip any major release upgrades.
 
 ### ☑️ Version Compatibility Matrix
-| Hcloud K8s | Kubernetes | Talos | Hcloud CCM | Hcloud CSI | Long-horn | Cilium | Ingress NGINX | Cert Manager | Auto-scaler |
-| :--------: | :--------: | :---: | :--------: | :--------: | :-------: | :----: | :-----------: | :----------: | :---------: |
-|  **(4)**   |    1.34    | 1.11  |    1.27    |    2.18    |     ?     | (1.19) |     4.14      |     1.19     |    9.51     |
-|   **3**    |    1.33    | 1.10  |    1.26    |    2.14    |   1.8.2   |  1.18  |     4.13      |     1.18     |    9.47     |
-|   **2**    |    1.32    |  1.9  |    1.23    |    2.12    |   1.8.1   |  1.17  |     4.12      |     1.17     |    9.45     |
+The table below lists the minimum required versions of each component to support the specified Kubernetes release.
+
+| Hcloud K8s | Kubernetes | Hcloud CCM | Hcloud CSI | Longhorn | Cilium | Ingress NGINX | Cert Manager |
+| :--------: | :--------: | :--------: | :--------: | :------: | :----: | :-----------: | :----------: |
+|  **(5)**   |    1.34    |    1.27    |    2.18    |    ?     | (1.19) |     4.14      |     1.19     |
+|  **(4)**   |    1.33    |    1.26    |    2.14    |  1.8.2   |  1.18  |     4.13      |     1.18     |
 <!--
-|   **1**    |    1.31    |  1.8  |    1.21    |    2.10    |    1.8    |  1.17  |     4.12      |     1.15     |    9.38     |
-|   **0**    |    1.30    |  1.7  |    1.20    |    2.9     |   1.7.1   |  1.16  |    4.10.1     |     1.14     |    9.37     |
+|   **3**    |    1.33    |    1.26    |    2.14    |   1.8.2  |  1.18  |     4.13      |     1.18     |
+|   **2**    |    1.32    |    1.23    |    2.12    |   1.8.1  |  1.17  |     4.12      |     1.17     |
+|   **1**    |    1.31    |    1.21    |    2.10    |    1.8   |  1.17  |     4.12      |     1.15     |
+|   **0**    |    1.30    |    1.20    |    2.9     |   1.7.1  |  1.16  |    4.10.1     |     1.14     |
 -->
 
-In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components, avoiding the latest untested or incompatible releases that could disrupt your cluster.
+In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components.
 
 > [!WARNING]
 > It is not recommended to change any software versions in this project on your own. Each component is specifically configured for compatibility with new Kubernetes releases. The specified versions are supported and have been tested to work together.
@@ -1082,24 +1226,14 @@ In this module, upgrades are conducted with care. You will consistently receive 
 
 <!-- Roadmap -->
 ### 🧭 Roadmap
-* [ ] **Ingress NGINX Retirement in March 2026**<br>
-      Replace Ingress NGINX (will be deprecated as announced in this [blog post](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/)) with Cilium Gateway API.
-* [ ] **Upgrade to latest Talos 1.11 and Kubernetes 1.34**<br>
+* [ ] **Ingress NGINX [Retirement in March 2026](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/)**<br>
+  * [x] Add general support for Gateway API
+  * [x] Integrate Cilium Gateway API
+  * [ ] Deprecate Ingress NGINX in v4 (~ Q1 2026)
+  * [ ] Remove Ingress NGINX in v5 (~ Q2/Q3 2026)
+* [ ] **Upgrade to latest Talos 1.12**<br>
       Once all components have compatible versions, the upgrade can be performed.
 
-<!-- Community -->
-## 👋 Community
-We welcome everyone to join the discussion, report issues, and help improve this project.
-
-<!-- Contributing -->
-### 🤝 Contributing
-
-<a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=hcloud-k8s/terraform-hcloud-kubernetes" />
-</a>
-
-
-Contributions are always welcome!
 
 <!-- Support this Project -->
 ## ❤️ Support this Project
@@ -1122,18 +1256,33 @@ If you'd like to support this project, please consider leaving a ⭐ on GitHub!<
 > [!TIP]
 > If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
 
-### Sponsor this Project
-Your contributions support development, maintenance, documentation, support, and operating costs 🙏
+### 💖 Special Thanks to All Sponsors! 💖
+<!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="80px" alt="User avatar: jonakoudijs" /></a>&nbsp;&nbsp;<!-- sponsors -->
+
+Your sponsorship supports the ongoing development, improvement, and maintenance of this project 🙏
+<br>
 
 **Become a Sponsor:**
 - [![GitHub Sponsors](https://img.shields.io/static/v1?label=GitHub%20Sponsors&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/hcloud-k8s)
 - [![Liberapay](https://img.shields.io/static/v1?label=Liberapay&message=Donate&logo=liberapay&color=F6C915&labelColor=555555)](https://liberapay.com/hcloud-k8s/donate)
 
+<!-- Community -->
+## 👋 Community
+We welcome everyone to join the [Discussions](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/discussions), report [Issues](https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/issues/new/choose), and help improve this project.
 
+<!-- Contributing -->
+### 🤝 Contributing
+
+<a href="https://github.com/hcloud-k8s/terraform-hcloud-kubernetes/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hcloud-k8s/terraform-hcloud-kubernetes" />
+</a>
+
+
+Contributions are always welcome!
 
 <!-- Project Meta -->
 ## 📎 Project Info
-This project is built for the public and will always remain fully [open source](https://opensource.org).
+This project is built for the public and will always remain fully [Open Source](https://opensource.org/osd).
 
 <!-- License -->
 ### ⚖️ License

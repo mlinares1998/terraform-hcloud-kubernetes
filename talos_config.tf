@@ -26,8 +26,15 @@ locals {
     local.oidc_manifest != null ? [local.oidc_manifest] : []
   )
   talos_manifests = concat(
-    var.talos_ccm_enabled ? ["https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/${var.talos_ccm_version}/docs/deploy/cloud-controller-manager-daemonset.yml"] : [],
-    var.prometheus_operator_crds_enabled ? ["https://github.com/prometheus-operator/prometheus-operator/releases/download/${var.prometheus_operator_crds_version}/stripped-down-crds.yaml"] : [],
+    var.talos_ccm_enabled ? [
+      "https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/${var.talos_ccm_version}/docs/deploy/cloud-controller-manager-daemonset.yml"
+    ] : [],
+    var.prometheus_operator_crds_enabled ? [
+      "https://github.com/prometheus-operator/prometheus-operator/releases/download/${var.prometheus_operator_crds_version}/stripped-down-crds.yaml"
+    ] : [],
+    var.gateway_api_crds_enabled ? [
+      "https://github.com/kubernetes-sigs/gateway-api/releases/download/${var.gateway_api_crds_version}/${var.gateway_api_crds_release_channel}-install.yaml"
+    ] : [],
     var.talos_extra_remote_manifests != null ? var.talos_extra_remote_manifests : []
   )
 
