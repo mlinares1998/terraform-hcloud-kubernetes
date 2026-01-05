@@ -162,7 +162,8 @@ locals {
         }
         nodeLabels = merge(
           local.talos_allow_scheduling_on_control_planes ? { "node.kubernetes.io/exclude-from-external-load-balancers" = { "$patch" = "delete" } } : {},
-          local.control_plane_nodepools_map[node.labels.nodepool].labels
+          local.control_plane_nodepools_map[node.labels.nodepool].labels,
+          { "nodeid" = tostring(node.id) }
         )
         nodeAnnotations = local.control_plane_nodepools_map[node.labels.nodepool].annotations
         nodeTaints = {
@@ -325,7 +326,10 @@ locals {
           image           = local.talos_installer_image_url
           extraKernelArgs = var.talos_extra_kernel_args
         }
-        nodeLabels      = local.worker_nodepools_map[node.labels.nodepool].labels
+        nodeLabels = merge(
+          local.worker_nodepools_map[node.labels.nodepool].labels,
+          { "nodeid" = tostring(node.id) }
+        )
         nodeAnnotations = local.worker_nodepools_map[node.labels.nodepool].annotations
         certSANs        = local.certificate_san
         network = {
