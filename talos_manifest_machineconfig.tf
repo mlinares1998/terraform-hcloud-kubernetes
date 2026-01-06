@@ -193,9 +193,6 @@ locals {
           },
           hostDNS = local.talos_host_dns
         }
-        time = {
-          servers = var.talos_time_servers
-        }
         logging = {
           destinations = var.talos_logging_destinations
         }
@@ -314,9 +311,6 @@ locals {
         features = {
           hostDNS = local.talos_host_dns
         }
-        time = {
-          servers = var.talos_time_servers
-        }
         logging = {
           destinations = var.talos_logging_destinations
         }
@@ -393,9 +387,6 @@ locals {
         registries = var.talos_registries
         features = {
           hostDNS = local.talos_host_dns
-        }
-        time = {
-          servers = var.talos_time_servers
         }
         logging = {
           destinations = var.talos_logging_destinations

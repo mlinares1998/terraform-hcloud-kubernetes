@@ -17,6 +17,8 @@ data "talos_machine_configuration" "control_plane" {
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
+    # TimeSyncConfig document - NTP configuration
+    [local.talos_manifest_timesyncconfig],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
     # Network documents
@@ -47,6 +49,8 @@ data "talos_machine_configuration" "worker" {
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
+    # TimeSyncConfig document - NTP configuration
+    [local.talos_manifest_timesyncconfig],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
     # Network documents
@@ -77,6 +81,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
+    # TimeSyncConfig document - NTP configuration
+    [local.talos_manifest_timesyncconfig],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
     # Network documents
