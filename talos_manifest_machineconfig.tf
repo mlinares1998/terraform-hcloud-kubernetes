@@ -21,9 +21,9 @@ locals {
     local.cert_manager_manifest != null ? [local.cert_manager_manifest] : [],
     local.ingress_nginx_manifest != null ? [local.ingress_nginx_manifest] : [],
     local.cluster_autoscaler_manifest != null ? [local.cluster_autoscaler_manifest] : [],
-    var.talos_extra_inline_manifests != null ? var.talos_extra_inline_manifests : [],
-    local.rbac_manifest != null ? [local.rbac_manifest] : [],
-    local.oidc_manifest != null ? [local.oidc_manifest] : []
+    local.kube_rbac_manifest != null ? [local.kube_rbac_manifest] : [],
+    local.kube_oidc_manifest != null ? [local.kube_oidc_manifest] : [],
+    var.talos_extra_inline_manifests != null ? var.talos_extra_inline_manifests : []
   )
 
   # Kubernetes remote manifests for Talos
