@@ -1,4 +1,13 @@
 locals {
+  # Kubernetes OIDC configuration
+  talos_kube_oidc_configuration = var.oidc_enabled ? {
+    "oidc-issuer-url"     = var.oidc_issuer_url
+    "oidc-client-id"      = var.oidc_client_id
+    "oidc-username-claim" = var.oidc_username_claim
+    "oidc-groups-claim"   = var.oidc_groups_claim
+    "oidc-groups-prefix"  = var.oidc_groups_prefix
+  } : {}
+
   # Collect all unique k8s cluster roles used across OIDC group mappings
   kube_cluster_roles = var.oidc_enabled ? toset(flatten([
     for group_mapping in var.oidc_group_mappings : group_mapping.cluster_roles

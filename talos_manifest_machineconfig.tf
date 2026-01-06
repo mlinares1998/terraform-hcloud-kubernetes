@@ -1,14 +1,6 @@
 locals {
   talos_allow_scheduling_on_control_planes = coalesce(var.cluster_allow_scheduling_on_control_planes, (local.worker_sum + local.cluster_autoscaler_max_sum) == 0)
 
-  talos_kube_oidc_configuration = var.oidc_enabled ? {
-    "oidc-issuer-url"     = var.oidc_issuer_url
-    "oidc-client-id"      = var.oidc_client_id
-    "oidc-username-claim" = var.oidc_username_claim
-    "oidc-groups-claim"   = var.oidc_groups_claim
-    "oidc-groups-prefix"  = var.oidc_groups_prefix
-  } : {}
-
   # Kubernetes inline manifests for Talos
   talos_inline_manifests = concat(
     [local.hcloud_secret_manifest],
@@ -72,22 +64,6 @@ locals {
     forwardKubeDNSToHost = false
     resolveMemberNames   = true
   }
-
-  talos_nameservers = [
-    for ns in var.talos_nameservers : ns
-    if var.talos_ipv6_enabled || !strcontains(ns, ":")
-  ]
-
-  # Extra Host Entries
-  talos_extra_host_entries = concat(
-    var.kube_api_hostname != null ? [
-      {
-        ip      = local.kube_api_private_ipv4
-        aliases = [var.kube_api_hostname]
-      }
-    ] : [],
-    var.talos_extra_host_entries
-  )
 
   # Kubelet extra mounts
   talos_kubelet_extra_mounts = concat(

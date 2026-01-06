@@ -1,6 +1,16 @@
 locals {
+  # User defined extra host entries
+  talos_extra_host_entries = concat(
+    var.kube_api_hostname != null ? [
+      {
+        ip      = local.kube_api_private_ipv4
+        aliases = [var.kube_api_hostname]
+      }
+    ] : [],
+    var.talos_extra_host_entries
+  )
+
   # StaticHostConfig documents - /etc/hosts entries
-  # Creates one StaticHostConfig per IP address with its hostnames
   talos_manifest_statichostconfigs = length(local.talos_extra_host_entries) > 0 ? trimspace(join(
     "\n---\n",
     [
