@@ -1005,6 +1005,44 @@ talos_siderolabs_discovery_service_enabled = true
 For more details, refer to the [official Talos discovery guide](https://www.talos.dev/latest/talos-guides/discovery/).
 </details>
 
+<!-- Talos OOM Handler -->
+<details>
+<summary><b>Talos OOM Handler Configuration</b></summary>
+
+Talos 1.12+ includes a userspace Out-of-Memory (OOM) handler that is always enabled by default with built-in configuration. This handler provides early detection of memory pressure and helps prevent machine lock-up due to out-of-memory conditions, which is especially important for single-node clusters or when scheduling pods on control plane nodes.
+
+While the Linux kernel's OOM killer only activates when completely out of memory (at which point the system may be unresponsive), the Talos userspace OOM handler proactively monitors memory pressure and can take action earlier to maintain system stability.
+
+#### Default Behavior
+
+The OOM handler uses [Pressure Stall Information (PSI)](https://docs.kernel.org/accounting/psi.html) metrics to detect memory pressure and Common Expression Language (CEL) expressions to determine when and what to kill:
+
+- **Trigger**: Activates when full memory pressure (10s average) exceeds 12% AND is increasing AND at least 500ms have passed since the last OOM event
+- **Ranking**: Prioritizes killing pods without memory limits first, specifically BestEffort pods (highest priority), then Burstable pods, while protecting Guaranteed pods and system services
+
+#### Customization
+
+This module allows you to customize the OOM handler behavior if the defaults don't suit your workload requirements:
+
+```hcl
+# Custom OOM configuration enabled
+talos_custom_oom_enabled                    = true
+
+# Custom trigger - this expression defines when to trigger OOM action.
+talos_custom_oom_trigger_expression         = "memory_full_avg10 > 12.0 && d_memory_full_avg10 > 0.0 && time_since_trigger > duration(\"500ms\")"
+
+# Custom ranking - this expression defines how to rank cgroups for OOM handler.
+talos_custom_oom_cgroup_ranking_expression  = "memory_max.hasValue() ? 0.0 : {Besteffort: 1.0, Burstable: 0.5, Guaranteed: 0.0, Podruntime: 0.0, System: 0.0}[class] * double(memory_current.orValue(0u))"
+
+# Custom sample interval - how often should the trigger expression be evaluated.
+talos_custom_oom_sample_interval            = "100ms"
+```
+
+You can override any combination of these settings. The module validates that at least one custom field is provided when `talos_custom_oom_enabled = true`.
+
+For more details, refer to the [Talos OOM Handler documentation](https://docs.siderolabs.com/talos/v1.12/configure-your-talos-cluster/system-configuration/oom) and [OOMConfig reference](https://docs.siderolabs.com/talos/v1.12/reference/configuration/runtime/oomconfig).
+</details>
+
 <!-- Kubernetes RBAC -->
 <details>
 <summary><b>Kubernetes RBAC</b></summary>

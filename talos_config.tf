@@ -13,6 +13,8 @@ data "talos_machine_configuration" "control_plane" {
   config_patches = concat(
     # Main v1alpha1 machine configuration
     [yamlencode(local.control_plane_talos_config_patch[each.key])],
+    # User-provided configuration patches
+    [for patch in var.control_plane_config_patches : yamlencode(patch)],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
@@ -25,8 +27,8 @@ data "talos_machine_configuration" "control_plane" {
     [local.control_plane_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
-    # User-provided configuration patches
-    [for patch in var.control_plane_config_patches : yamlencode(patch)]
+    # OOMConfig document - Out of Memory handler configuration
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
   )
 }
 
@@ -45,6 +47,8 @@ data "talos_machine_configuration" "worker" {
   config_patches = concat(
     # Main v1alpha1 machine configuration
     [yamlencode(local.worker_talos_config_patch[each.key])],
+    # User-provided configuration patches
+    [for patch in var.worker_config_patches : yamlencode(patch)],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
@@ -57,8 +61,8 @@ data "talos_machine_configuration" "worker" {
     [local.worker_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
-    # User-provided configuration patches
-    [for patch in var.worker_config_patches : yamlencode(patch)]
+    # OOMConfig document - Out of Memory handler configuration
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
   )
 }
 
@@ -77,6 +81,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
   config_patches = concat(
     # Main v1alpha1 machine configuration
     [yamlencode(local.autoscaler_talos_config_patch[each.key])],
+    # User-provided configuration patches
+    [for patch in var.cluster_autoscaler_config_patches : yamlencode(patch)],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
     # ResolverConfig document - DNS nameservers
@@ -89,7 +95,7 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     [local.worker_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
-    # User-provided configuration patches
-    [for patch in var.cluster_autoscaler_config_patches : yamlencode(patch)]
+    # OOMConfig document - Out of Memory handler configuration
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
   )
 }

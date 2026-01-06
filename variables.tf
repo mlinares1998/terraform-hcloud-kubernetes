@@ -800,6 +800,39 @@ variable "talos_logging_destinations" {
   default = []
 }
 
+variable "talos_custom_oom_enabled" {
+  type        = bool
+  default     = false
+  description = "Enables customization of the Out of Memory (OOM) handler configuration. The OOM handler is always enabled by default in Talos 1.12+ with built-in defaults. Set this to true to override the default trigger expression, ranking formula, or sample interval."
+
+  validation {
+    condition = !var.talos_custom_oom_enabled || (
+      var.talos_custom_oom_trigger_expression != "" ||
+      var.talos_custom_oom_cgroup_ranking_expression != "" ||
+      var.talos_custom_oom_sample_interval != ""
+    )
+    error_message = "When talos_custom_oom_enabled is true, at least one of talos_custom_oom_trigger_expression, talos_custom_oom_cgroup_ranking_expression, or talos_custom_oom_sample_interval must be provided."
+  }
+}
+
+variable "talos_custom_oom_trigger_expression" {
+  type        = string
+  default     = ""
+  description = "CEL expression that defines when to trigger OOM action. Must evaluate to boolean. If empty, uses Talos default."
+}
+
+variable "talos_custom_oom_cgroup_ranking_expression" {
+  type        = string
+  default     = ""
+  description = "CEL expression that ranks cgroups for OOM eviction. Highest score gets killed first. Must evaluate to double. If empty, uses Talos default."
+}
+
+variable "talos_custom_oom_sample_interval" {
+  type        = string
+  default     = ""
+  description = "How often to evaluate the OOM trigger expression. If empty, uses Talos default. Adjusting this tunes OOM handler reactivity."
+}
+
 variable "talos_extra_inline_manifests" {
   type = list(object({
     name     = string
