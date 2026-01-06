@@ -15,6 +15,8 @@ data "talos_machine_configuration" "control_plane" {
     [yamlencode(local.control_plane_talos_config_patch[each.key])],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
+    # ResolverConfig document - DNS nameservers
+    local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches
@@ -39,6 +41,8 @@ data "talos_machine_configuration" "worker" {
     [yamlencode(local.worker_talos_config_patch[each.key])],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
+    # ResolverConfig document - DNS nameservers
+    local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches
@@ -63,6 +67,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     [yamlencode(local.autoscaler_talos_config_patch[each.key])],
     # HostnameConfig document
     [local.talos_manifest_hostnameconfig],
+    # ResolverConfig document - DNS nameservers
+    local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches

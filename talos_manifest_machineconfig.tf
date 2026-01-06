@@ -176,7 +176,6 @@ locals {
               } : null
             }]
           )
-          nameservers      = local.talos_nameservers
           extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
@@ -324,7 +323,6 @@ locals {
               routes    = local.talos_extra_routes
             }]
           )
-          nameservers      = local.talos_nameservers
           extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
@@ -423,7 +421,6 @@ locals {
               routes    = local.talos_extra_routes
             }]
           )
-          nameservers      = local.talos_nameservers
           extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
