@@ -727,8 +727,11 @@ variable "talos_extra_routes" {
   description = "Specifies CIDR blocks to be added as extra routes for the internal network interface, using the Hetzner router (first usable IP in the network) as the gateway."
 
   validation {
-    condition     = alltrue([for cidr in var.talos_extra_routes : can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", cidr))])
-    error_message = "All entries in extra_routes must be valid CIDR notations."
+    condition = (
+      alltrue([for cidr in var.talos_extra_routes : can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", cidr))]) &&
+      (contains(var.talos_extra_routes, "0.0.0.0/0") ? length(var.talos_extra_routes) == 1 : true)
+    )
+    error_message = "All entries must be valid CIDR notations. If '0.0.0.0/0' is present, it must be the only entry in the list."
   }
 }
 

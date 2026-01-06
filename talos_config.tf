@@ -19,6 +19,8 @@ data "talos_machine_configuration" "control_plane" {
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
+    # Network documents
+    [local.control_plane_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches
@@ -47,6 +49,8 @@ data "talos_machine_configuration" "worker" {
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
+    # Network documents
+    [local.worker_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches
@@ -75,6 +79,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     local.talos_manifest_resolverconfig != null ? [local.talos_manifest_resolverconfig] : [],
     # StaticHostConfig documents - /etc/hosts entries
     local.talos_manifest_statichostconfigs != "" ? [local.talos_manifest_statichostconfigs] : [],
+    # Network documents
+    [local.worker_network_documents],
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # User-provided configuration patches
