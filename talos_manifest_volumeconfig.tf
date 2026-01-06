@@ -1,6 +1,6 @@
 locals {
   # VolumeConfig documents
-  talos_manifest_volumeconfigs = join(
+  talos_manifest_volumeconfigs = trimspace(join(
     "\n---\n",
     compact([
       # STATE partition (/system/state) - persistent system data
@@ -26,5 +26,5 @@ locals {
         }
       }) : null,
     ])
-  )
+  ))
 }

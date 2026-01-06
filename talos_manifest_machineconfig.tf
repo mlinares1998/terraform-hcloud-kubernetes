@@ -176,7 +176,6 @@ locals {
               } : null
             }]
           )
-          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
@@ -323,7 +322,6 @@ locals {
               routes    = local.talos_extra_routes
             }]
           )
-          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
@@ -421,7 +419,6 @@ locals {
               routes    = local.talos_extra_routes
             }]
           )
-          extraHostEntries = local.talos_extra_host_entries
         }
         kubelet = {
           extraArgs = merge(
