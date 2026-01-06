@@ -149,7 +149,6 @@ locals {
         }
         certSANs = local.talos_certificate_san
         network = {
-          hostname = node.name
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
               interface = "eth0"
@@ -310,7 +309,6 @@ locals {
         nodeAnnotations = local.worker_nodepools_map[node.labels.nodepool].annotations
         certSANs        = local.talos_certificate_san
         network = {
-          hostname = node.name
           interfaces = concat(
             local.talos_public_interface_enabled ? [{
               interface = "eth0"
