@@ -364,6 +364,24 @@ variable "control_plane_config_patches" {
   description = "List of configuration patches applied to the Control Plane nodes."
 }
 
+variable "control_plane_directory_volumes" {
+  type        = list(string)
+  default     = []
+  description = "List of directory volumes to create on Control Plane nodes. Each volume is mounted at /var/mnt/<name> on the EPHEMERAL partition."
+
+  validation {
+    condition = alltrue([
+      for name in var.control_plane_directory_volumes : can(regex("^[a-zA-Z0-9-]{1,34}$", name))
+    ])
+    error_message = "Directory volume names must be 1-34 characters long and contain only alphanumeric characters and hyphens."
+  }
+
+  validation {
+    condition     = length(var.control_plane_directory_volumes) == length(distinct(var.control_plane_directory_volumes))
+    error_message = "Directory volume names must be unique within Control Plane nodes."
+  }
+}
+
 
 # Worker
 variable "worker_nodepools" {
@@ -440,6 +458,24 @@ variable "worker_config_patches" {
   type        = any
   default     = []
   description = "List of configuration patches applied to the Worker nodes."
+}
+
+variable "worker_directory_volumes" {
+  type        = list(string)
+  default     = []
+  description = "List of directory volumes to create on Worker nodes. Each volume is mounted at /var/mnt/<name> on the EPHEMERAL partition."
+
+  validation {
+    condition = alltrue([
+      for name in var.worker_directory_volumes : can(regex("^[a-zA-Z0-9-]{1,34}$", name))
+    ])
+    error_message = "Directory volume names must be 1-34 characters long and contain only alphanumeric characters and hyphens."
+  }
+
+  validation {
+    condition     = length(var.worker_directory_volumes) == length(distinct(var.worker_directory_volumes))
+    error_message = "Directory volume names must be unique within Worker nodes."
+  }
 }
 
 
@@ -530,6 +566,24 @@ variable "cluster_autoscaler_config_patches" {
   type        = any
   default     = []
   description = "List of configuration patches applied to the Cluster Autoscaler nodes."
+}
+
+variable "cluster_autoscaler_directory_volumes" {
+  type        = list(string)
+  default     = []
+  description = "List of directory volumes to create on Cluster Autoscaler nodes. Each volume is mounted at /var/mnt/<name> on the EPHEMERAL partition."
+
+  validation {
+    condition = alltrue([
+      for name in var.cluster_autoscaler_directory_volumes : can(regex("^[a-zA-Z0-9-]{1,34}$", name))
+    ])
+    error_message = "Directory volume names must be 1-34 characters long and contain only alphanumeric characters and hyphens."
+  }
+
+  validation {
+    condition     = length(var.cluster_autoscaler_directory_volumes) == length(distinct(var.cluster_autoscaler_directory_volumes))
+    error_message = "Directory volume names must be unique within Cluster Autoscaler nodes."
+  }
 }
 
 variable "cluster_autoscaler_discovery_enabled" {

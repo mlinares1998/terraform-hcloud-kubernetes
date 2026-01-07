@@ -1043,6 +1043,68 @@ You can override any combination of these settings. The module validates that at
 For more details, refer to the [Talos OOM Handler documentation](https://docs.siderolabs.com/talos/v1.12/configure-your-talos-cluster/system-configuration/oom) and [OOMConfig reference](https://docs.siderolabs.com/talos/v1.12/reference/configuration/runtime/oomconfig).
 </details>
 
+<!-- Talos Directory Volumes -->
+<details>
+<summary><b>Talos Directory Volumes</b></summary>
+
+Talos 1.12+ supports creating using directories on the EPHEMERAL partition as storage volumes. These volumes are automatically mounted at `/var/mnt/<name>` and provide persistent storage across pod restarts without requiring additional block devices or partitions.
+
+This feature is particularly useful for workloads that need host directories, such as:
+
+- **Local Path Provisioner**: Kubernetes dynamic volume provisioner using local storage
+- **Shared cache directories**: Persistent cache storage for applications
+- **Build artifacts**: CI/CD pipelines requiring shared build output
+- **Logging/metrics collection**: Centralized log or metric storage from workloads
+
+#### Configuration
+
+Directory volumes can be configured separately for each node type (control plane, workers, autoscaler):
+
+```hcl
+# Control plane directory volumes
+control_plane_directory_volumes = ["local-storage", "cache-data"]
+
+# Worker directory volumes
+worker_directory_volumes = ["local-storage", "build-cache"]
+
+# Cluster autoscaler directory volumes (optional)
+cluster_autoscaler_directory_volumes = ["temp-storage"]
+```
+
+#### Example: Local Path Provisioner
+
+Deploy the Kubernetes Local Path Provisioner to use directory volumes for dynamic PV provisioning:
+
+```hcl
+# Define directory volumes for worker nodes
+worker_directory_volumes = ["local-storage"]
+```
+
+The directory `/var/mnt/local-storage` will be created on all worker nodes and can be used by the Local Path Provisioner for dynamic volume provisioning.
+
+#### Important Considerations
+
+**Encryption:**
+
+- Directory volumes inherit encryption from the EPHEMERAL partition
+- By default, EPHEMERAL partition is encrypted with LUKS2 (if `talos_ephemeral_partition_encryption_enabled = true`, which is the default)
+- Data is encrypted at rest automatically when node encryption is enabled
+
+**Data Persistence:**
+
+- ⚠️ **Data loss on node failure**: If a node fails or is replaced, all data in directory volumes on that node is permanently lost
+- ⚠️ **Ephemeral partition wipe**: Recreating or resetting a node wipes the EPHEMERAL partition, destroying all directory volume data
+- For critical data requiring high availability, use Hetzner Cloud Volumes (via Hcloud CSI) or Longhorn distributed storage instead
+
+**Storage Limitations:**
+
+- **Shared capacity**: All directory volumes share the EPHEMERAL partition's total capacity
+- **No quotas**: Cannot enforce per-directory storage limits
+- **No filesystem isolation**: Directory-type volumes don't provide filesystem-level isolation
+
+For more details, refer to the [Talos UserVolumeConfig documentation](https://docs.siderolabs.com/talos/v1.12/reference/configuration/runtime/uservolumeconfig).
+</details>
+
 <!-- Kubernetes RBAC -->
 <details>
 <summary><b>Kubernetes RBAC</b></summary>

@@ -28,7 +28,9 @@ data "talos_machine_configuration" "control_plane" {
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # OOMConfig document - Out of Memory handler configuration
-    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
+    # UserVolumeConfig documents - user volumes
+    local.control_plane_uservolumeconfigs != "" ? [local.control_plane_uservolumeconfigs] : []
   )
 }
 
@@ -62,7 +64,9 @@ data "talos_machine_configuration" "worker" {
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # OOMConfig document - Out of Memory handler configuration
-    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
+    # UserVolumeConfig documents - user volumes
+    local.worker_uservolumeconfigs != "" ? [local.worker_uservolumeconfigs] : []
   )
 }
 
@@ -96,6 +100,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     # VolumeConfig documents - system disk encryption
     length(local.talos_manifest_volumeconfigs) > 0 ? [local.talos_manifest_volumeconfigs] : [],
     # OOMConfig document - Out of Memory handler configuration
-    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : []
+    local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
+    # UserVolumeConfig documents - user volumes
+    local.cluster_autoscaler_uservolumeconfigs != "" ? [local.cluster_autoscaler_uservolumeconfigs] : []
   )
 }

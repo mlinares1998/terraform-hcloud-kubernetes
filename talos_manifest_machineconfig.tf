@@ -177,12 +177,12 @@ locals {
             var.kubernetes_kubelet_extra_config
           )
           extraMounts = local.talos_kubelet_extra_mounts
-          nodeIP = local.talos_config_kubelet_nodeip
+          nodeIP      = local.talos_config_kubelet_nodeip
         }
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls = local.talos_config_sysctls
+        sysctls    = local.talos_config_sysctls
         registries = var.talos_registries
         features = {
           kubernetesTalosAPIAccess = {
@@ -276,12 +276,12 @@ locals {
             var.kubernetes_kubelet_extra_config
           )
           extraMounts = local.talos_kubelet_extra_mounts
-          nodeIP = local.talos_config_kubelet_nodeip
+          nodeIP      = local.talos_config_kubelet_nodeip
         }
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls = local.talos_config_sysctls
+        sysctls    = local.talos_config_sysctls
         registries = var.talos_registries
         features = {
           hostDNS = local.talos_host_dns
@@ -298,7 +298,7 @@ locals {
   autoscaler_talos_config_patch = {
     for nodepool in local.cluster_autoscaler_nodepools : nodepool.name => {
       machine = {
-        install = local.talos_config_install
+        install         = local.talos_config_install
         nodeLabels      = nodepool.labels
         nodeAnnotations = nodepool.annotations
         certSANs        = local.talos_certificate_san
@@ -322,12 +322,12 @@ locals {
             var.kubernetes_kubelet_extra_config
           )
           extraMounts = local.talos_kubelet_extra_mounts
-          nodeIP = local.talos_config_kubelet_nodeip
+          nodeIP      = local.talos_config_kubelet_nodeip
         }
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls = local.talos_config_sysctls
+        sysctls    = local.talos_config_sysctls
         registries = var.talos_registries
         features = {
           hostDNS = local.talos_host_dns
