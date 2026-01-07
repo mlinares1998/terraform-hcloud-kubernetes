@@ -824,24 +824,89 @@ variable "talos_time_servers" {
 }
 
 variable "talos_registries" {
-  type        = any
+  type = map(object({
+    # RegistryMirrorConfig
+    endpoints = optional(list(object({
+      url          = string
+      overridePath = optional(bool, false)
+    })))
+    skipFallback = optional(bool, false)
+
+    # RegistryAuthConfig
+    username      = optional(string)
+    password      = optional(string)
+    auth          = optional(string)
+    identityToken = optional(string)
+
+    # RegistryTLSConfig
+    ca = optional(string)
+    clientIdentity = optional(object({
+      cert = string
+      key  = string
+    }))
+    insecureSkipVerify = optional(bool, false)
+  }))
   default     = null
   description = <<-EOF
-    Specifies a list of registry mirrors to be used for container image retrieval. This configuration helps in specifying alternate sources or local mirrors for image registries, enhancing reliability and speed of image downloads.
-    Example configuration:
+    Registry configuration for mirrors, authentication, and TLS. Map keys are registry names (e.g., 'docker.io', 'my-registry.local:5000').
+
+    Each registry can have:
+    - Mirror configuration (endpoints, skipFallback)
+    - Authentication (username/password, auth token, or identity token)
+    - TLS settings (CA certificate, client certificate, or skip verification)
+
+    Example:
     ```
-    registries = {
-      mirrors = {
-        "docker.io" = {
-          endpoints = [
-            "http://localhost:5000",
-            "https://docker.io"
-          ]
-        }
+    talos_registries = {
+      "docker.io" = {
+        endpoints = [
+          { url = "https://my-mirror.local:5000" },
+          { url = "https://docker.io" }
+        ]
+      }
+
+      "my-private-registry.local:5000" = {
+        username = "myuser"
+        password = "mypass"
+        ca       = file("ca.crt")
+      }
+
+      "insecure-registry.local:5000" = {
+        insecureSkipVerify = true
       }
     }
     ```
   EOF
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry in keys(var.talos_registries) :
+      can(regex("^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(:[0-9]+)?$", registry))
+    ])
+    error_message = "Registry names must be valid hostnames (optionally with port), e.g., 'docker.io' or 'my-registry.local:5000'."
+  }
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry, config in var.talos_registries :
+      # Username requires password and vice versa
+      (config.username != null) == (config.password != null)
+    ])
+    error_message = "When using username/password authentication, both username and password must be provided."
+  }
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry, config in var.talos_registries :
+      # Don't mix auth methods - only one should be used
+      length(compact([
+        config.username != null ? "basic" : null,
+        config.auth != null ? "auth" : null,
+        config.identityToken != null ? "token" : null
+      ])) <= 1
+    ])
+    error_message = "Only one authentication method (username/password, auth, or identityToken) should be used per registry."
+  }
 }
 
 variable "talos_logging_destinations" {

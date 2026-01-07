@@ -30,7 +30,9 @@ data "talos_machine_configuration" "control_plane" {
     # OOMConfig document - Out of Memory handler configuration
     local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
     # UserVolumeConfig documents - user volumes
-    local.control_plane_uservolumeconfigs != "" ? [local.control_plane_uservolumeconfigs] : []
+    local.control_plane_uservolumeconfigs != "" ? [local.control_plane_uservolumeconfigs] : [],
+    # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
   )
 }
 
@@ -66,7 +68,9 @@ data "talos_machine_configuration" "worker" {
     # OOMConfig document - Out of Memory handler configuration
     local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
     # UserVolumeConfig documents - user volumes
-    local.worker_uservolumeconfigs != "" ? [local.worker_uservolumeconfigs] : []
+    local.worker_uservolumeconfigs != "" ? [local.worker_uservolumeconfigs] : [],
+    # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
   )
 }
 
@@ -102,6 +106,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     # OOMConfig document - Out of Memory handler configuration
     local.talos_manifest_oomconfig != null ? [local.talos_manifest_oomconfig] : [],
     # UserVolumeConfig documents - user volumes
-    local.cluster_autoscaler_uservolumeconfigs != "" ? [local.cluster_autoscaler_uservolumeconfigs] : []
+    local.cluster_autoscaler_uservolumeconfigs != "" ? [local.cluster_autoscaler_uservolumeconfigs] : [],
+    # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
   )
 }

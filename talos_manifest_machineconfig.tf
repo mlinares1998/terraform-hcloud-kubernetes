@@ -182,8 +182,7 @@ locals {
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls    = local.talos_config_sysctls
-        registries = var.talos_registries
+        sysctls = local.talos_config_sysctls
         features = {
           kubernetesTalosAPIAccess = {
             enabled = true,
@@ -281,8 +280,7 @@ locals {
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls    = local.talos_config_sysctls
-        registries = var.talos_registries
+        sysctls = local.talos_config_sysctls
         features = {
           hostDNS = local.talos_host_dns
         }
@@ -327,8 +325,7 @@ locals {
         kernel = {
           modules = var.talos_kernel_modules
         }
-        sysctls    = local.talos_config_sysctls
-        registries = var.talos_registries
+        sysctls = local.talos_config_sysctls
         features = {
           hostDNS = local.talos_host_dns
         }
