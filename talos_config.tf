@@ -32,7 +32,9 @@ data "talos_machine_configuration" "control_plane" {
     # UserVolumeConfig documents - user volumes
     local.control_plane_uservolumeconfigs != "" ? [local.control_plane_uservolumeconfigs] : [],
     # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
-    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : [],
+    # TrustedRootsConfig documents - additional trusted CA certificates
+    local.talos_manifest_trustedroots_documents != "" ? [local.talos_manifest_trustedroots_documents] : []
   )
 }
 
@@ -70,7 +72,9 @@ data "talos_machine_configuration" "worker" {
     # UserVolumeConfig documents - user volumes
     local.worker_uservolumeconfigs != "" ? [local.worker_uservolumeconfigs] : [],
     # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
-    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : [],
+    # TrustedRootsConfig documents - additional trusted CA certificates
+    local.talos_manifest_trustedroots_documents != "" ? [local.talos_manifest_trustedroots_documents] : []
   )
 }
 
@@ -108,6 +112,8 @@ data "talos_machine_configuration" "cluster_autoscaler" {
     # UserVolumeConfig documents - user volumes
     local.cluster_autoscaler_uservolumeconfigs != "" ? [local.cluster_autoscaler_uservolumeconfigs] : [],
     # Registry documents - RegistryMirrorConfig, RegistryAuthConfig, RegistryTLSConfig
-    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : []
+    local.talos_manifest_registry_documents != "" ? [local.talos_manifest_registry_documents] : [],
+    # TrustedRootsConfig documents - additional trusted CA certificates
+    local.talos_manifest_trustedroots_documents != "" ? [local.talos_manifest_trustedroots_documents] : []
   )
 }

@@ -909,6 +909,55 @@ variable "talos_registries" {
   }
 }
 
+variable "talos_trusted_roots" {
+  type        = map(string)
+  default     = null
+  description = <<-EOF
+    Additional trusted CA certificates. Map keys are config names, values are PEM-encoded certificates.
+
+    Multiple certificates can be combined in a single value, separated by newlines.
+
+    Example:
+    ```
+    talos_trusted_roots = {
+      "my-enterprise-ca" = file("enterprise-ca.crt")
+      "internal-ca"      = <<-EOT
+        -----BEGIN CERTIFICATE-----
+        MIIDXTCCAkWgAwIBAgIJAKZ...
+        -----END CERTIFICATE-----
+        -----BEGIN CERTIFICATE-----
+        MIIDYTCCAkmgAwIBAgIJALN...
+        -----END CERTIFICATE-----
+      EOT
+    }
+    ```
+  EOF
+
+  validation {
+    condition = var.talos_trusted_roots == null ? true : alltrue([
+      for name in keys(var.talos_trusted_roots) :
+      can(regex("^[a-zA-Z0-9-]+$", name))
+    ])
+    error_message = "Trusted root config names must contain only alphanumeric characters and hyphens."
+  }
+
+  validation {
+    condition = var.talos_trusted_roots == null ? true : alltrue([
+      for name, certs in var.talos_trusted_roots :
+      length(trimspace(certs)) > 0
+    ])
+    error_message = "Trusted root certificates cannot be empty."
+  }
+
+  validation {
+    condition = var.talos_trusted_roots == null ? true : alltrue([
+      for name, certs in var.talos_trusted_roots :
+      can(regex("BEGIN CERTIFICATE", certs)) && can(regex("END CERTIFICATE", certs))
+    ])
+    error_message = "Trusted root certificates must be PEM-encoded (contain 'BEGIN CERTIFICATE' and 'END CERTIFICATE')."
+  }
+}
+
 variable "talos_logging_destinations" {
   description = "List of objects defining remote destinations for Talos service logs."
   type = list(object({
