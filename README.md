@@ -1084,17 +1084,12 @@ The directory `/var/mnt/local-storage` will be created on all worker nodes and c
 
 #### Important Considerations
 
-**Encryption:**
-
-- Directory volumes inherit encryption from the EPHEMERAL partition
-- By default, EPHEMERAL partition is encrypted with LUKS2 (if `talos_ephemeral_partition_encryption_enabled = true`, which is the default)
-- Data is encrypted at rest automatically when node encryption is enabled
-
 **Data Persistence:**
 
 - ⚠️ **Data loss on node failure**: If a node fails or is replaced, all data in directory volumes on that node is permanently lost
 - ⚠️ **Ephemeral partition wipe**: Recreating or resetting a node wipes the EPHEMERAL partition, destroying all directory volume data
 - For critical data requiring high availability, use Hetzner Cloud Volumes (via Hcloud CSI) or Longhorn distributed storage instead
+- Directory volumes inherit encryption from the EPHEMERAL partition
 
 **Storage Limitations:**
 
