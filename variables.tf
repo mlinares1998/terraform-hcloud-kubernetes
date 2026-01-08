@@ -907,6 +907,44 @@ variable "talos_registries" {
     ])
     error_message = "Only one authentication method (username/password, auth, or identityToken) should be used per registry."
   }
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry, config in var.talos_registries :
+      # If CA is provided, it must have valid PEM certificate(s) with matching BEGIN/END pairs
+      config.ca == null ? true : (
+        can(regex("(?s)-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", config.ca)) &&
+        length(regexall("-----BEGIN CERTIFICATE-----", config.ca)) > 0 &&
+        length(regexall("-----BEGIN CERTIFICATE-----", config.ca)) == length(regexall("-----END CERTIFICATE-----", config.ca))
+      )
+    ])
+    error_message = "Registry CA certificates must be valid PEM-encoded certificates with properly ordered '-----BEGIN CERTIFICATE-----' and '-----END CERTIFICATE-----' markers."
+  }
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry, config in var.talos_registries :
+      # If CA is provided, it cannot be empty/whitespace-only
+      config.ca == null ? true : length(trimspace(config.ca)) > 0
+    ])
+    error_message = "Registry CA certificates cannot be empty or whitespace-only."
+  }
+
+  validation {
+    condition = var.talos_registries == null ? true : alltrue([
+      for registry, config in var.talos_registries :
+      # If clientIdentity is provided, cert and key must have valid PEM with matching BEGIN/END pairs
+      config.clientIdentity == null ? true : (
+        can(regex("(?s)-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", config.clientIdentity.cert)) &&
+        length(regexall("-----BEGIN CERTIFICATE-----", config.clientIdentity.cert)) > 0 &&
+        length(regexall("-----BEGIN CERTIFICATE-----", config.clientIdentity.cert)) == length(regexall("-----END CERTIFICATE-----", config.clientIdentity.cert)) &&
+        can(regex("(?s)-----BEGIN.*PRIVATE KEY-----.*?-----END.*PRIVATE KEY-----", config.clientIdentity.key)) &&
+        length(regexall("-----BEGIN.*PRIVATE KEY-----", config.clientIdentity.key)) > 0 &&
+        length(regexall("-----BEGIN.*PRIVATE KEY-----", config.clientIdentity.key)) == length(regexall("-----END.*PRIVATE KEY-----", config.clientIdentity.key))
+      )
+    ])
+    error_message = "Registry client identity certificates must be valid PEM-encoded with properly ordered BEGIN/END markers. Certificate must have matching '-----BEGIN CERTIFICATE-----' and '-----END CERTIFICATE-----' pairs. Private key must have matching '-----BEGIN [type] PRIVATE KEY-----' and '-----END [type] PRIVATE KEY-----' pairs."
+  }
 }
 
 variable "talos_trusted_roots" {
@@ -952,9 +990,11 @@ variable "talos_trusted_roots" {
   validation {
     condition = var.talos_trusted_roots == null ? true : alltrue([
       for name, certs in var.talos_trusted_roots :
-      can(regex("BEGIN CERTIFICATE", certs)) && can(regex("END CERTIFICATE", certs))
+      can(regex("(?s)-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", certs)) &&
+      length(regexall("-----BEGIN CERTIFICATE-----", certs)) > 0 &&
+      length(regexall("-----BEGIN CERTIFICATE-----", certs)) == length(regexall("-----END CERTIFICATE-----", certs))
     ])
-    error_message = "Trusted root certificates must be PEM-encoded (contain 'BEGIN CERTIFICATE' and 'END CERTIFICATE')."
+    error_message = "Trusted root certificates must be valid PEM-encoded certificates with properly ordered '-----BEGIN CERTIFICATE-----' and '-----END CERTIFICATE-----' markers."
   }
 }
 

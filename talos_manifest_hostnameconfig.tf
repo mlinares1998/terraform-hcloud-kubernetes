@@ -1,7 +1,7 @@
 locals {
   # HostnameConfig document
-  # Talos will prioritze DHCP to provide hostname from Hetzner Cloud
-  # Otherwize will generate the hostname based on machine identity
+  # Talos will prioritize DHCP to provide hostname from Hetzner Cloud
+  # Otherwise will generate the hostname based on machine identity
   talos_manifest_hostnameconfig = yamlencode({
     apiVersion = "v1alpha1"
     kind       = "HostnameConfig"
