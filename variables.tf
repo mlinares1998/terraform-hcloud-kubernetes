@@ -1444,14 +1444,14 @@ variable "cilium_socket_lb_host_namespace_only_enabled" {
   description = "Limit Cilium's socket-level load-balancing to the host namespace only."
 }
 
-variable "cilium_loadbalancer_acceleration" {
+variable "cilium_load_balancer_acceleration" {
   type        = string
-  description = "Cilium XDP Acceleration mode."
   default     = "native"
+  description = "Cilium XDP Acceleration mode."
 
   validation {
-    condition     = contains(["disabled", "native", "best-effort"], var.cilium_loadbalancer_acceleration)
-    error_message = "cilium_loadbalancer_acceleration must be one of: disabled, native or best-effort"
+    condition     = contains(["disabled", "native", "best-effort"], var.cilium_load_balancer_acceleration)
+    error_message = "cilium_load_balancer_acceleration must be one of: disabled, native or best-effort"
   }
 }
 
