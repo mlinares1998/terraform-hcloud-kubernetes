@@ -138,6 +138,19 @@ data "helm_template" "hcloud_csi" {
               }
             }
             matchLabelKeys = ["pod-template-hash"]
+          },
+          {
+            topologyKey       = "topology.kubernetes.io/zone"
+            maxSkew           = 1
+            whenUnsatisfiable = "ScheduleAnyway"
+            labelSelector = {
+              matchLabels = {
+                "app.kubernetes.io/name"      = "hcloud-csi"
+                "app.kubernetes.io/instance"  = "hcloud-csi"
+                "app.kubernetes.io/component" = "controller"
+              }
+            }
+            matchLabelKeys = ["pod-template-hash"]
           }
         ]
         nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }

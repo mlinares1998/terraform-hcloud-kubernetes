@@ -143,6 +143,17 @@ data "helm_template" "cilium" {
               }
             }
             matchLabelKeys = ["pod-template-hash"]
+          },
+          {
+            topologyKey       = "topology.kubernetes.io/zone"
+            maxSkew           = 1
+            whenUnsatisfiable = "ScheduleAnyway"
+            labelSelector = {
+              matchLabels = {
+                "app.kubernetes.io/name" = "cilium-operator"
+              }
+            }
+            matchLabelKeys = ["pod-template-hash"]
           }
         ]
         prometheus = {
