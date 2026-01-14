@@ -65,6 +65,18 @@ data "helm_template" "cluster_autoscaler" {
             }
           }
           matchLabelKeys = ["pod-template-hash"]
+        },
+        {
+          topologyKey       = "topology.kubernetes.io/zone"
+          maxSkew           = 1
+          whenUnsatisfiable = "ScheduleAnyway"
+          labelSelector = {
+            matchLabels = {
+              "app.kubernetes.io/instance" = local.cluster_autoscaler_release_name
+              "app.kubernetes.io/name"     = "${local.cluster_autoscaler_cloud_provider}-${var.cluster_autoscaler_helm_chart}"
+            }
+          }
+          matchLabelKeys = ["pod-template-hash"]
         }
       ]
       nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
