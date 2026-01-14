@@ -114,14 +114,14 @@ variable "talosctl_version_check_enabled" {
   description = "Controls whether a preflight check verifies the local talosctl client version before provisioning."
 }
 
-variable "talosctl_retry_count" {
+variable "talosctl_retries" {
   type        = number
-  default     = 5
+  default     = 10
   description = "Specifies how many times talosctl operations should retry before failing. This setting helps improve resilience against transient network issues or temporary API unavailability."
 
   validation {
-    condition     = var.talosctl_retry_count >= 0
-    error_message = "The talosctl retry count must be at least 0."
+    condition     = var.talosctl_retries >= 0
+    error_message = "The talosctl retries value must be at least 0."
   }
 }
 
