@@ -72,7 +72,7 @@ talos_apply_config() {
 talos_upgrade_k8s() {
   awk -v talosconfig="$talosconfig" '
     function indent(s) { return match(s, /[^[:space:]]/) ? RSTART - 1 : 0 }
-    function out(s)    { print s; fflush() }
+    function out(s)    { print s; system("") }
     function redact(s) { sub(/:[[:space:]]*.*/, ": <REDACTED>", s); return s }
 
     BEGIN {
@@ -97,13 +97,14 @@ talos_upgrade_k8s() {
       while ((run | getline line) > 0) {
         # Exit code passthrough
         if (index(line, us "RC=") == 1) {
+          close(run)
           exit substr(line, 5) + 0
         }
 
         # If we redacted a block scalar header, skip its indented body
         if (drop_block) {
           t = line
-          sub(/^[+- ]/, "", t)
+          sub(/^[-+ ]/, "", t)
           if (indent(t) > block_indent) continue
           drop_block = 0
         }
@@ -132,7 +133,7 @@ talos_upgrade_k8s() {
 
         # Inside Secret => parse YAML-ish "key: value"
         yaml_line = line
-        sub(/^[+- ]/, "", yaml_line)
+        sub(/^[-+ ]/, "", yaml_line)
         parse_line = yaml_line
         sub(/^[[:space:]]*-[[:space:]]+/, "", parse_line)
         colon_pos = index(parse_line, ":")
@@ -172,6 +173,7 @@ talos_upgrade_k8s() {
         }
       }
 
+      close(run)
       exit 1
     }
   '
