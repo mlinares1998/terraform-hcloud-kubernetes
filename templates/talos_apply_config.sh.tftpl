@@ -1,0 +1,21 @@
+set -- ${join(" ", target_nodes)}
+for host in "$@"; do
+  (
+    set -eu
+
+    machine_config=$(mktemp)
+    cleanup() { rm -f "$machine_config"; }
+    trap 'cleanup' EXIT
+    trap 'cleanup; exit 1' HUP INT TERM QUIT PIPE
+
+    printf '%s\n' "Applying machine configuration to node: $host"
+    envname="TALOS_MC_$(printf '%s' "$host" | tr . _)"
+    eval "machine_config_value=\$$envname"
+    printf '%s' "$machine_config_value" > "$machine_config"
+
+    retry=1
+    until talos_apply_config --nodes "$host" --file "$machine_config"; do
+      talos_retry_or_exit retry
+    done
+  )
+done

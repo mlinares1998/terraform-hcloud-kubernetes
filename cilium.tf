@@ -96,7 +96,7 @@ data "helm_template" "cilium" {
         enabled = var.cilium_egress_gateway_enabled
       }
       loadBalancer = {
-        acceleration = "native"
+        acceleration = var.cilium_load_balancer_acceleration
       }
       gatewayAPI = {
         enabled               = var.cilium_gateway_api_enabled
@@ -137,6 +137,17 @@ data "helm_template" "cilium" {
             topologyKey       = "kubernetes.io/hostname"
             maxSkew           = 1
             whenUnsatisfiable = "DoNotSchedule"
+            labelSelector = {
+              matchLabels = {
+                "app.kubernetes.io/name" = "cilium-operator"
+              }
+            }
+            matchLabelKeys = ["pod-template-hash"]
+          },
+          {
+            topologyKey       = "topology.kubernetes.io/zone"
+            maxSkew           = 1
+            whenUnsatisfiable = "ScheduleAnyway"
             labelSelector = {
               matchLabels = {
                 "app.kubernetes.io/name" = "cilium-operator"
