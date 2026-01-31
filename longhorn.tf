@@ -28,14 +28,6 @@ data "helm_template" "longhorn" {
 
   values = [
     yamlencode({
-      # Temporary Hotfix: https://github.com/longhorn/longhorn/issues/12259
-      image = {
-        longhorn = {
-          manager = {
-            tag = "v1.10.1-hotfix-1"
-          }
-        }
-      }
       preUpgradeChecker = {
         upgradeVersionCheck = false
       }
