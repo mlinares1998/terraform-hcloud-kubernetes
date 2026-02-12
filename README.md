@@ -1353,7 +1353,7 @@ If you'd like to support this project, please consider leaving a ⭐ on GitHub!<
 > If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
 
 ### 💖 Special Thanks to All Sponsors! 💖
-<!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="80px" alt="User avatar: jonakoudijs" /></a>&nbsp;&nbsp;<a href="https://github.com/dharsanb"><img src="https:&#x2F;&#x2F;github.com&#x2F;dharsanb.png" width="80px" alt="User avatar: dharsanb" /></a>&nbsp;&nbsp;<!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="80px" alt="User avatar: jonakoudijs" /></a>&nbsp;&nbsp;<a href="https://github.com/dharsanb"><img src="https:&#x2F;&#x2F;github.com&#x2F;dharsanb.png" width="80px" alt="User avatar: dharsanb" /></a>&nbsp;&nbsp;<a href="https://github.com/antonengelhardt"><img src="https:&#x2F;&#x2F;github.com&#x2F;antonengelhardt.png" width="80px" alt="User avatar: antonengelhardt" /></a>&nbsp;&nbsp;<!-- sponsors -->
 
 Your sponsorship supports the ongoing development, improvement, and maintenance of this project 🙏
 <br>
