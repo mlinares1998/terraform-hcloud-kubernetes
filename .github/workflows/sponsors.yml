@@ -48,7 +48,7 @@ jobs:
 
               next if $username eq "";
               if ($avatar eq "") {
-                $avatar = "https://github.com/identicons/$username.png";
+                $avatar = "https://liberapay.com/assets/liberapay/icon-v2_black.200.png";
               }
 
               print qq{<a href="https://liberapay.com/$username"><img src="$avatar" width="80" alt="$username" /></a>&nbsp;&nbsp;};
