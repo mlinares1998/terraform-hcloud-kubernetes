@@ -41,12 +41,15 @@ jobs:
 
               my $username_idx = $col{"patron_username"};
               my $avatar_idx   = $col{"patron_avatar_url"};
-              next unless defined $username_idx && defined $avatar_idx;
+              next unless defined $username_idx;
 
               my $username = $fields[$username_idx] // "";
-              my $avatar   = $fields[$avatar_idx] // "";
+              my $avatar   = defined $avatar_idx ? ($fields[$avatar_idx] // "") : "";
 
-              next if $username eq "" || $avatar eq "";
+              next if $username eq "";
+              if ($avatar eq "") {
+                $avatar = "https://github.com/identicons/$username.png";
+              }
 
               print qq{<a href="https://liberapay.com/$username"><img src="$avatar" width="80" alt="$username" /></a>&nbsp;&nbsp;};
             '
