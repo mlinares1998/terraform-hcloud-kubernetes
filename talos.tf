@@ -246,6 +246,42 @@ resource "talos_machine_configuration_apply" "control_plane" {
   ]
 }
 
+resource "terraform_data" "talos_machine_configuration_reboot_control_plane" {
+  triggers_replace = [
+    nonsensitive(sha1(jsonencode({
+      for k, r in data.talos_machine_configuration.control_plane :
+      k => r.machine_configuration
+    })))
+  ]
+
+  provisioner "local-exec" {
+    when  = create
+    quiet = true
+    command = join("\n", [
+      "set -eu",
+      local.talosctl_commands,
+      "printf '%s\\n' \"Checking for Control Plane nodes requiring reboot...\"",
+      templatefile("${path.module}/templates/talos_reboot_nodes.sh.tftpl", {
+        talos_machine_configuration_automatic_reboot_enabled = var.talos_machine_configuration_automatic_reboot_enabled
+      })
+    ])
+
+    environment = {
+      TALOSCONFIG = nonsensitive(data.talos_client_configuration.this.talos_config)
+      NODES_APPLY_MODE = join(" ", [
+        for k, v in talos_machine_configuration_apply.control_plane :
+        "${tolist(hcloud_server.control_plane[k].network)[0].ip}:${v.resolved_apply_mode}"
+      ])
+    }
+  }
+
+  depends_on = [
+    data.external.talosctl_version_check,
+    talos_machine_configuration_apply.control_plane,
+    talos_machine_bootstrap.this
+  ]
+}
+
 resource "talos_machine_configuration_apply" "worker" {
   for_each = { for worker in hcloud_server.worker : worker.name => worker }
 
@@ -262,8 +298,44 @@ resource "talos_machine_configuration_apply" "worker" {
   }
 
   depends_on = [
-    terraform_data.upgrade_kubernetes,
-    talos_machine_configuration_apply.control_plane
+    terraform_data.upgrade_kubernetes
+  ]
+}
+
+resource "terraform_data" "talos_machine_configuration_reboot_worker" {
+  triggers_replace = [
+    nonsensitive(sha1(jsonencode({
+      for k, r in data.talos_machine_configuration.worker :
+      k => r.machine_configuration
+    })))
+  ]
+
+  provisioner "local-exec" {
+    when  = create
+    quiet = true
+    command = join("\n", [
+      "set -eu",
+      local.talosctl_commands,
+      "printf '%s\\n' \"Checking for Worker nodes requiring reboot...\"",
+      templatefile("${path.module}/templates/talos_reboot_nodes.sh.tftpl", {
+        talos_machine_configuration_automatic_reboot_enabled = var.talos_machine_configuration_automatic_reboot_enabled
+      })
+    ])
+
+    environment = {
+      TALOSCONFIG = nonsensitive(data.talos_client_configuration.this.talos_config)
+      NODES_APPLY_MODE = join(" ", [
+        for k, v in talos_machine_configuration_apply.worker :
+        "${tolist(hcloud_server.worker[k].network)[0].ip}:${v.resolved_apply_mode}"
+      ])
+    }
+  }
+
+  depends_on = [
+    data.external.talosctl_version_check,
+    talos_machine_configuration_apply.worker,
+    talos_machine_bootstrap.this,
+    terraform_data.talos_machine_configuration_reboot_control_plane
   ]
 }
 
@@ -284,7 +356,9 @@ resource "terraform_data" "talos_machine_configuration_apply_cluster_autoscaler"
       "set -eu",
       local.talosctl_commands,
       templatefile("${path.module}/templates/talos_apply_config.sh.tftpl", {
-        target_nodes = local.cluster_autoscaler_private_ipv4_list
+        target_nodes                                         = local.cluster_autoscaler_private_ipv4_list
+        talos_machine_configuration_automatic_reboot_enabled = var.talos_machine_configuration_automatic_reboot_enabled
+        talos_machine_configuration_apply_mode               = var.talos_machine_configuration_apply_mode
       })
     ])
 
@@ -301,8 +375,8 @@ resource "terraform_data" "talos_machine_configuration_apply_cluster_autoscaler"
   depends_on = [
     data.external.talosctl_version_check,
     terraform_data.upgrade_kubernetes,
-    talos_machine_configuration_apply.control_plane,
-    talos_machine_configuration_apply.worker
+    terraform_data.talos_machine_configuration_reboot_control_plane,
+    terraform_data.talos_machine_configuration_reboot_worker
   ]
 }
 
@@ -313,8 +387,7 @@ resource "talos_machine_bootstrap" "this" {
 
   depends_on = [
     talos_machine_configuration_apply.control_plane,
-    talos_machine_configuration_apply.worker,
-    terraform_data.talos_machine_configuration_apply_cluster_autoscaler
+    talos_machine_configuration_apply.worker
   ]
 }
 
@@ -349,8 +422,8 @@ resource "terraform_data" "synchronize_manifests" {
   depends_on = [
     data.external.talosctl_version_check,
     talos_machine_bootstrap.this,
-    talos_machine_configuration_apply.control_plane,
-    talos_machine_configuration_apply.worker,
+    terraform_data.talos_machine_configuration_reboot_control_plane,
+    terraform_data.talos_machine_configuration_reboot_worker,
     terraform_data.talos_machine_configuration_apply_cluster_autoscaler
   ]
 }
