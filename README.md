@@ -1293,7 +1293,8 @@ The table below lists the minimum required versions of each component to support
 
 | Hcloud K8s | Kubernetes | Hcloud CCM | Hcloud CSI | Longhorn | Cilium | Ingress NGINX | Cert Manager |
 | :--------: | :--------: | :--------: | :--------: | :------: | :----: | :-----------: | :----------: |
-|  **(5)**   |    1.34    |    1.27    |    2.18    |    ?     | (1.19) |     4.14      |     1.19     |
+|  **(6)**   |    1.35    |     ?      |     ?      |   1.11   |   ?    |       -       |     1.19     |
+|  **(5)**   |    1.34    |    1.27    |    2.18    |   1.11   | (1.19) |     4.14      |     1.19     |
 |  **(4)**   |    1.33    |    1.26    |    2.14    |  1.8.2   |  1.18  |     4.13      |     1.18     |
 <!--
 |   **3**    |    1.33    |    1.26    |    2.14    |   1.8.2  |  1.18  |     4.13      |     1.18     |
@@ -1352,7 +1353,7 @@ If you'd like to support this project, please consider leaving a ⭐ on GitHub!<
 > If you don’t have a Hetzner account yet, you can use this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=GMylKeDmqtsD) to claim a €20 credit and support this project at the same time.
 
 ### 💖 Special Thanks to All Sponsors! 💖
-<!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="80px" alt="User avatar: jonakoudijs" /></a>&nbsp;&nbsp;<!-- sponsors -->
+<!-- patrons --><a href="https://liberapay.com/devXY"><img src="https://seccdn.libravatar.org/avatar/b6dddcd2f3a8097b0f1e148d14ebd1c4?s=160&d=404&=1" width="80" alt="devXY" /></a>&nbsp;&nbsp;<!-- patrons --><!-- sponsors --><a href="https://github.com/jonakoudijs"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonakoudijs.png" width="80px" alt="User avatar: jonakoudijs" /></a>&nbsp;&nbsp;<a href="https://github.com/dharsanb"><img src="https:&#x2F;&#x2F;github.com&#x2F;dharsanb.png" width="80px" alt="User avatar: dharsanb" /></a>&nbsp;&nbsp;<a href="https://github.com/antonengelhardt"><img src="https:&#x2F;&#x2F;github.com&#x2F;antonengelhardt.png" width="80px" alt="User avatar: antonengelhardt" /></a>&nbsp;&nbsp;<!-- sponsors -->
 
 Your sponsorship supports the ongoing development, improvement, and maintenance of this project 🙏
 <br>
