@@ -256,6 +256,17 @@ tofu destroy
 <!-- Advanced Configuration -->
 ## ⚙️ Advanced Configuration
 
+### 🔄 Node Reboots on Configuration Changes
+Most configuration changes to Talos can be applied seamlessly without disruption. However, certain low-level modifications strictly require a reboot.
+
+By default, the module automatically calculates whether a configuration change requires a reboot and safely reboots the affected nodes one by one to ensure a zero-downtime application of your machine config.
+
+If you prefer to manage the rebooting of the nodes manually after configuration updates (for example, scheduling them in a specific maintenance window), you can disable automatic reboots with the following variable:
+
+```hcl
+talos_machine_configuration_automatic_reboot_enabled = false
+```
+
 <!-- Cluster Access -->
 <details>
 <summary><b>Cluster Access</b></summary>
