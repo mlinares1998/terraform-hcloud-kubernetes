@@ -1324,8 +1324,16 @@ Your sponsorship supports the ongoing development, improvement, and maintenance 
 <br>
 
 **Become a Sponsor:**
-- [![GitHub Sponsors](https://img.shields.io/github/sponsors/hcloud-k8s?label=GitHub%20Sponsors&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/hcloud-k8s)
-- [![Liberapay](https://img.shields.io/liberapay/patrons/hcloud-k8s.svg?label=Liberapay%20Patrons&logo=liberapay)](https://liberapay.com/hcloud-k8s)
+- <summary>
+    <a href="https://github.com/sponsors/hcloud-k8s">
+      <img align="center" alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/hcloud-k8s?label=GitHub%20Sponsors&logo=GitHub&color=%23fe8e86">
+    </a>
+  </summary>
+- <summary>
+    <a href="https://liberapay.com/hcloud-k8s">
+      <img align="center" alt="Liberapay Patrons" src="https://img.shields.io/liberapay/patrons/hcloud-k8s.svg?label=Liberapay%20Patrons&logo=liberapay">
+    </a>
+  </summary>
 
 <!-- Community -->
 ## 👋 Community
