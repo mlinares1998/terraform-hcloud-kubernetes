@@ -1230,17 +1230,17 @@ This module manages the versions of Talos, Kubernetes, and all bundled [componen
 ### 📌 Hcloud Kubernetes Versions
 The table below lists the Talos and Kubernetes versions used by each Hcloud K8s version.
 
-| Hcloud K8s | Talos  | Kubernetes |
-| :--------: | :----: | :--------: |
-|  **(7)**   | (1.15) |    1.36    |
-|  **(6)**   | (1.14) |    1.35    |
-|  **(5)**   |  1.13  |    1.34    |
-|   **4**    |  1.12  |    1.33    |
+| Hcloud K8s | Talos Linux | Kubernetes |
+| :--------: | :---------: | :--------: |
+|  **(7)**   |   (1.15)    |    1.36    |
+|  **(6)**   |   (1.14)    |    1.35    |
+|  **(5)**   |    1.13     |    1.34    |
+|   **4**    |    1.12     |    1.33    |
 <!--
-|   **3**    | 1.11  |    1.33    |
-|   **2**    | 1.9   |    1.32    |
-|   **1**    | 1.8   |    1.31    |
-|   **0**    | 1.7   |    1.30    |
+|   **3**    |    1.11     |    1.33    |
+|   **2**    |     1.9     |    1.32    |
+|   **1**    |     1.8     |    1.31    |
+|   **0**    |     1.7     |    1.30    |
 -->
 
 Parenthesized versions are planned targets.
