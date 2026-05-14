@@ -1225,30 +1225,44 @@ talos_certificates = {
 
 <!-- Lifecycle -->
 ## ♻️ Lifecycle
-All [component](#-components) versions are managed by this module and validated for compatibility with the supported Kubernetes version.
+This module manages the versions of Talos, Kubernetes, and all bundled [Components](#-components) together. Each Hcloud K8s major version targets a defined Talos and Kubernetes minor version, while component versions are selected for compatibility with that Kubernetes release.
 
+### 📌 Hcloud Kubernetes Versions
+The table below lists the Talos and Kubernetes versions used by each Hcloud K8s version.
+
+| Hcloud K8s | Talos  | Kubernetes |
+| :--------: | :----: | :--------: |
+|  **(7)**   | (1.15) |    1.36    |
+|  **(6)**   | (1.14) |    1.35    |
+|  **(5)**   |  1.13  |    1.34    |
+|   **4**    |  1.12  |    1.33    |
+<!--
+|   **3**    | 1.11  |    1.33    |
+|   **2**    | 1.9   |    1.32    |
+|   **1**    | 1.8   |    1.31    |
+|   **0**    | 1.7   |    1.30    |
+-->
+
+### ☑️ Kubernetes Compatibility Matrix
+The table below lists the **minimum required versions** of each component to support the specified Kubernetes release.
+
+| Kubernetes | Hcloud CCM | Hcloud CSI | Longhorn |  Cilium  | Ingress NGINX | Cert Manager |
+| :--------: | :--------: | :--------: | :------: | :------: | :-----------: | :----------: |
+|  **1.36**  |     ?      |     ?      |    ?     |    ?     |       -       |   (≥ 1.21)   |
+|  **1.35**  |   ≥ 1.30   |   ≥ 2.19   |  ≥ 1.11  | ≥ 1.19.2 |    ≥ 4.15     |    ≥ 1.19    |
+|  **1.34**  |   ≥ 1.27   |   ≥ 2.18   |  ≥ 1.11  |  ≥ 1.19  |    ≥ 4.14     |    ≥ 1.19    |
+|  **1.33**  |   ≥ 1.26   |   ≥ 2.14   | ≥ 1.8.2  |  ≥ 1.18  |    ≥ 4.13     |    ≥ 1.18    |
+<!--
+|  **1.32**  |   ≥ 1.23   |   ≥ 2.12   | ≥ 1.8.1  |  ≥ 1.17  |    ≥ 4.12     |    ≥ 1.17    |
+|  **1.31**  |   ≥ 1.21   |   ≥ 2.10   |  ≥ 1.8   |  ≥ 1.17  |    ≥ 4.12     |    ≥ 1.15    |
+|  **1.30**  |   ≥ 1.20   |   ≥ 2.9    | ≥ 1.7.1  |  ≥ 1.16  |   ≥ 4.10.1    |    ≥ 1.14    |
+-->
+
+### ⬆️ Upgrade Policy
 Any minor or major upgrade to **Talos** or **Kubernetes** results in a major version change for this module. Downgrades are generally neither supported nor tested.
 
 > [!IMPORTANT]
-> Before upgrading to the next major version of this module, ensure you are on the latest release of the current major version. Do not skip any major release upgrades.
-
-### ☑️ Version Compatibility Matrix
-The table below lists the minimum required versions of each component to support the specified Kubernetes release.
-
-| Hcloud K8s | Kubernetes | Hcloud CCM | Hcloud CSI | Longhorn | Cilium | Ingress NGINX | Cert Manager |
-| :--------: | :--------: | :--------: | :--------: | :------: | :----: | :-----------: | :----------: |
-|  **(7)**   |    1.36    |     ?      |     ?      |    ?     |   ?    |       -       |    (1.21)    |
-|  **(6)**   |    1.35    |    1.30    |    2.19    |   1.11   | 1.19.2 |     4.15      |     1.19     |
-|  **(5)**   |    1.34    |    1.27    |    2.18    |   1.11   |  1.19  |     4.14      |     1.19     |
-|   **4**    |    1.33    |    1.26    |    2.14    |  1.8.2   |  1.18  |     4.13      |     1.18     |
-<!--
-|   **3**    |    1.33    |    1.26    |    2.14    |   1.8.2  |  1.18  |     4.13      |     1.18     |
-|   **2**    |    1.32    |    1.23    |    2.12    |   1.8.1  |  1.17  |     4.12      |     1.17     |
-|   **1**    |    1.31    |    1.21    |    2.10    |    1.8   |  1.17  |     4.12      |     1.15     |
-|   **0**    |    1.30    |    1.20    |    2.9     |   1.7.1  |  1.16  |    4.10.1     |     1.14     |
--->
-
-In this module, upgrades are conducted with care. You will consistently receive the most tested and compatible releases of all components.
+> Do not combine major or minor version upgrades with infrastructure changes. Before moving to a new major version, upgrade to the latest release of your current major version first. After the version upgrade, verify the cluster is healthy before adding or removing nodes.
 
 > [!WARNING]
 > It is not recommended to change any software versions in this project on your own. Each component is specifically configured for compatibility with new Kubernetes releases. The specified versions are supported and have been tested to work together.
