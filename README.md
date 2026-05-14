@@ -1225,7 +1225,7 @@ talos_certificates = {
 
 <!-- Lifecycle -->
 ## ♻️ Lifecycle
-This module manages the versions of Talos, Kubernetes, and all bundled [Components](#-components) together. Each Hcloud K8s major version targets a defined Talos and Kubernetes minor version, while component versions are selected for compatibility with that Kubernetes release.
+This module manages the versions of Talos, Kubernetes, and all bundled [components](#-components) together. Each Hcloud K8s major version targets a defined Talos and Kubernetes minor version, while component versions are selected for compatibility with that Kubernetes release.
 
 ### 📌 Hcloud Kubernetes Versions
 The table below lists the Talos and Kubernetes versions used by each Hcloud K8s version.
@@ -1242,6 +1242,8 @@ The table below lists the Talos and Kubernetes versions used by each Hcloud K8s 
 |   **1**    | 1.8   |    1.31    |
 |   **0**    | 1.7   |    1.30    |
 -->
+
+Parenthesized versions are planned targets.
 
 ### ☑️ Kubernetes Compatibility Matrix
 The table below lists the **minimum required versions** of each component to support the specified Kubernetes release.
@@ -1261,10 +1263,12 @@ The table below lists the **minimum required versions** of each component to sup
 ### ⬆️ Upgrade Policy
 Any minor or major upgrade to **Talos** or **Kubernetes** results in a major version change for this module. Downgrades are generally neither supported nor tested.
 
-Do not combine major or minor version upgrades with infrastructure changes. Before moving to a new major version, upgrade to the latest release of your current major version first. After the version upgrade, verify the cluster is healthy before adding or removing nodes.
+Changing software versions manually is not recommended. Component versions are selected and tested for compatibility with the Kubernetes release shown above.
 
-> [!WARNING]
-> It is not recommended to change any software versions in this project on your own. Each component is specifically configured for compatibility with new Kubernetes releases. The specified versions are supported and have been tested to work together.
+> [!IMPORTANT]
+> - Do not combine major or minor module upgrades with infrastructure changes.
+> - Upgrade to the latest minor release before upgrading to the next major version.
+> - Verify that the cluster is healthy before and after upgrades.
 
 <!--
 - Talos/K8s: https://github.com/siderolabs/talos/blob/release-1.6/pkg/machinery/constants/constants.go
