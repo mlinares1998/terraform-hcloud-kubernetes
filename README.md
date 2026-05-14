@@ -1261,8 +1261,7 @@ The table below lists the **minimum required versions** of each component to sup
 ### ⬆️ Upgrade Policy
 Any minor or major upgrade to **Talos** or **Kubernetes** results in a major version change for this module. Downgrades are generally neither supported nor tested.
 
-> [!IMPORTANT]
-> Do not combine major or minor version upgrades with infrastructure changes. Before moving to a new major version, upgrade to the latest release of your current major version first. After the version upgrade, verify the cluster is healthy before adding or removing nodes.
+Do not combine major or minor version upgrades with infrastructure changes. Before moving to a new major version, upgrade to the latest release of your current major version first. After the version upgrade, verify the cluster is healthy before adding or removing nodes.
 
 > [!WARNING]
 > It is not recommended to change any software versions in this project on your own. Each component is specifically configured for compatibility with new Kubernetes releases. The specified versions are supported and have been tested to work together.
