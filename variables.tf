@@ -523,6 +523,12 @@ variable "cluster_autoscaler_discovery_enabled" {
   description = "Enable rolling upgrades of Cluster Autoscaler nodes during Talos OS upgrades and Talos configuration changes."
 }
 
+variable "cluster_autoscaler_cleanup_enabled" {
+  type        = bool
+  default     = false
+  description = "Enables cleanup of Hetzner Cloud servers created by Cluster Autoscaler during Terraform destroy. When enabled, matching autoscaler nodes are deleted before managed cluster resources are removed. Warning: disable this option before changing hcloud_token; otherwise Terraform may delete all Cluster Autoscaler nodes."
+}
+
 
 # Packer
 variable "packer_amd64_builder" {

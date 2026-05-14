@@ -52,6 +52,7 @@ resource "hcloud_server" "control_plane" {
   }
 
   depends_on = [
+    terraform_data.hcloud_server_cluster_autoscaler,
     hcloud_network_subnet.control_plane,
     hcloud_placement_group.control_plane
   ]
@@ -117,6 +118,7 @@ resource "hcloud_server" "worker" {
   }
 
   depends_on = [
+    terraform_data.hcloud_server_cluster_autoscaler,
     hcloud_network_subnet.worker,
     hcloud_placement_group.worker
   ]
@@ -127,6 +129,74 @@ resource "hcloud_server" "worker" {
       user_data,
       ssh_keys
     ]
+  }
+}
+
+resource "terraform_data" "hcloud_server_cluster_autoscaler" {
+  triggers_replace = {
+    hcloud_api_token = var.hcloud_token
+  }
+
+  input = {
+    hcloud_api_url      = "https://api.hetzner.cloud/v1"
+    cleanup_enabled     = var.cluster_autoscaler_cleanup_enabled
+    node_label_selector = local.cluster_autoscaler_node_label_selector
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    quiet   = true
+    command = <<-EOT
+      set -eu
+
+      if [ "${self.input.cleanup_enabled}" != "true" ] || [ -z "${self.input.node_label_selector}" ]; then
+        exit 0
+      fi
+
+      tab=$(printf '\011')
+
+      hcloud_api() {
+        curl -sSf \
+          -H "Authorization: Bearer $HCLOUD_TOKEN" \
+          --connect-timeout 10 \
+          --retry 5 \
+          --retry-all-errors \
+          --retry-delay 10 \
+          "$@"
+      }
+
+      nodes=$(
+        page=1
+        while :; do
+          response=$(
+            hcloud_api \
+              --get "${self.output.hcloud_api_url}/servers" \
+              --data-urlencode "per_page=50" \
+              --data-urlencode "page=$page" \
+              --data-urlencode "label_selector=${self.output.node_label_selector}"
+          )
+          printf '%s\n' "$response" | jq -c '.servers[] | {id,name}'
+
+          next_page=$(printf '%s\n' "$response" | jq -r '.meta.pagination.next_page')
+          if [ "$next_page" = "null" ]; then
+            break
+          fi
+
+          page=$next_page
+        done | jq -rs 'unique_by(.id)[] | "\(.id)\t\(.name)"'
+      )
+
+      if [ -n "$nodes" ]; then
+        printf '%s\n' "$nodes" | while IFS="$tab" read -r id name; do
+          printf 'Deleting %s (%s)\n' "$name" "$id"
+          hcloud_api -X DELETE "${self.output.hcloud_api_url}/servers/$id" >/dev/null
+        done
+      fi
+    EOT
+
+    environment = {
+      HCLOUD_TOKEN = nonsensitive(self.triggers_replace.hcloud_api_token)
+    }
   }
 }
 
