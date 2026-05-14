@@ -38,9 +38,9 @@ data "helm_template" "hcloud_ccm" {
       }
       env = {
         HCLOUD_LOAD_BALANCERS_ALGORITHM_TYPE          = { value = var.hcloud_ccm_load_balancers_algorithm_type }
+        HCLOUD_LOAD_BALANCERS_DISABLE_IPV6            = { value = tostring(var.hcloud_ccm_load_balancers_disable_ipv6) }
         HCLOUD_LOAD_BALANCERS_DISABLE_PRIVATE_INGRESS = { value = tostring(var.hcloud_ccm_load_balancers_disable_private_ingress) }
         HCLOUD_LOAD_BALANCERS_DISABLE_PUBLIC_NETWORK  = { value = tostring(var.hcloud_ccm_load_balancers_disable_public_network) }
-        HCLOUD_LOAD_BALANCERS_DISABLE_IPV6            = { value = tostring(var.hcloud_ccm_load_balancers_disable_ipv6) }
         HCLOUD_LOAD_BALANCERS_ENABLED                 = { value = tostring(var.hcloud_ccm_load_balancers_enabled) }
         HCLOUD_LOAD_BALANCERS_HEALTH_CHECK_INTERVAL   = { value = "${var.hcloud_ccm_load_balancers_health_check_interval}s" }
         HCLOUD_LOAD_BALANCERS_HEALTH_CHECK_RETRIES    = { value = tostring(var.hcloud_ccm_load_balancers_health_check_retries) }
@@ -51,6 +51,8 @@ data "helm_template" "hcloud_ccm" {
         HCLOUD_LOAD_BALANCERS_USE_PRIVATE_IP          = { value = tostring(var.hcloud_ccm_load_balancers_use_private_ip) }
         HCLOUD_LOAD_BALANCERS_USES_PROXYPROTOCOL      = { value = tostring(var.hcloud_ccm_load_balancers_uses_proxyprotocol) }
         HCLOUD_NETWORK_ROUTES_ENABLED                 = { value = tostring(var.hcloud_ccm_network_routes_enabled) }
+        KUBERNETES_SERVICE_HOST                       = { value = local.kube_prism_host }
+        KUBERNETES_SERVICE_PORT                       = { value = tostring(local.kube_prism_port) }
       }
     }),
     yamlencode(var.hcloud_ccm_helm_values)
