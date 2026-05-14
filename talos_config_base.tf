@@ -206,6 +206,15 @@ locals {
     }
   ] : []
 
+  # Boot-time machine configuration
+  talos_user_data_config_patches = concat(
+    [for p in concat(local.talos_private_link_config_patches, local.talos_private_dhcp_config_patches) : p if var.cluster_access == "private"],
+  )
+
+  talos_user_data = length(local.talos_user_data_config_patches) > 0 ? join("\n---\n", [
+    for patch in local.talos_user_data_config_patches : yamlencode(patch)
+  ]) : null
+
   # Talos Base Config
   talos_base_config_patches = concat(
     [{

@@ -26,6 +26,7 @@ resource "hcloud_server" "control_plane" {
   keep_disk                = each.value.keep_disk
   ssh_keys                 = [hcloud_ssh_key.this.id]
   shutdown_before_deletion = true
+  user_data                = local.talos_user_data
   delete_protection        = var.cluster_delete_protection
   rebuild_protection       = var.cluster_delete_protection
 
@@ -90,6 +91,7 @@ resource "hcloud_server" "worker" {
   keep_disk                = each.value.keep_disk
   ssh_keys                 = [hcloud_ssh_key.this.id]
   shutdown_before_deletion = true
+  user_data                = local.talos_user_data
   delete_protection        = var.cluster_delete_protection
   rebuild_protection       = var.cluster_delete_protection
 
