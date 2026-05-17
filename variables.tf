@@ -1767,6 +1767,81 @@ variable "cert_manager_enabled" {
   description = "Enables the deployment of cert-manager for managing TLS certificates."
 }
 
+variable "cert_manager_webhook_hetzner_helm_repository" {
+  type        = string
+  default     = "https://charts.hetzner.cloud"
+  description = "URL of the Helm repository where the Cert Manager Hetzner webhook chart is located."
+}
+
+variable "cert_manager_webhook_hetzner_helm_chart" {
+  type        = string
+  default     = "cert-manager-webhook-hetzner"
+  description = "Name of the Helm chart used for deploying the Cert Manager Hetzner webhook."
+}
+
+variable "cert_manager_webhook_hetzner_helm_version" {
+  type        = string
+  default     = "0.7.0"
+  description = "Version of the Cert Manager Hetzner webhook Helm chart to deploy."
+}
+
+variable "cert_manager_webhook_hetzner_helm_values" {
+  type        = any
+  default     = {}
+  description = "Custom Helm values for the Cert Manager Hetzner webhook chart deployment. These values will merge with and will override the default values provided by the Cert Manager Hetzner webhook Helm chart."
+}
+
+variable "cert_manager_webhook_hetzner_enabled" {
+  type        = bool
+  default     = false
+  description = "Enables the deployment of the Cert Manager Hetzner webhook for ACME DNS-01 challenges using Hetzner DNS."
+
+  validation {
+    condition     = var.cert_manager_webhook_hetzner_enabled ? var.cert_manager_enabled : true
+    error_message = "The Cert Manager Hetzner webhook can only be enabled if cert-manager is also enabled."
+  }
+}
+
+variable "cert_manager_webhook_hetzner_group_name" {
+  type        = string
+  default     = "acme.hetzner.com"
+  description = "API group name used by the Cert Manager Hetzner webhook. Issuer webhook solver configurations must use the same groupName."
+
+  validation {
+    condition     = can(regex("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)*(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)$", var.cert_manager_webhook_hetzner_group_name))
+    error_message = "The Cert Manager Hetzner webhook group name must be a valid DNS subdomain."
+  }
+}
+
+variable "cert_manager_webhook_hetzner_secret_name" {
+  type        = string
+  default     = "hetzner"
+  description = "Name of the Kubernetes Secret created in the cert-manager namespace for the Hetzner DNS API token."
+
+  validation {
+    condition     = can(regex("^[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?$", var.cert_manager_webhook_hetzner_secret_name))
+    error_message = "The Cert Manager Hetzner webhook secret name must be a valid Kubernetes resource name."
+  }
+}
+
+variable "cert_manager_webhook_hetzner_secret_key" {
+  type        = string
+  default     = "token"
+  description = "Key in the Kubernetes Secret created for the Hetzner DNS API token."
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9._-]+$", var.cert_manager_webhook_hetzner_secret_key))
+    error_message = "The Cert Manager Hetzner webhook secret key must contain only letters, numbers, dots, underscores, or hyphens."
+  }
+}
+
+variable "cert_manager_webhook_hetzner_token" {
+  type        = string
+  default     = null
+  description = "Optional Hetzner API token for the Cert Manager Hetzner webhook. Defaults to hcloud_token when unset."
+  sensitive   = true
+}
+
 
 # Ingress NGINX
 variable "ingress_nginx_helm_repository" {
