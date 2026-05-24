@@ -1601,6 +1601,12 @@ variable "cilium_load_balancer_acceleration" {
   }
 }
 
+variable "cilium_legacy_routing" {
+  type        = bool
+  description = "Enable legacy routing for cilium. Needed for e.g. KubeSpan"
+  default     = false
+}
+
 variable "cilium_routing_mode" {
   type        = string
   description = "Cilium routing mode (e.g., 'native', 'tunnel', etc.)"

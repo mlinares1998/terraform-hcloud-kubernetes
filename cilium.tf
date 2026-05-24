@@ -1,6 +1,6 @@
 locals {
   # Cilium IPSec Configuration
-  cilium_ipsec_enabled = var.cilium_encryption_enabled && var.cilium_encryption_type == "ipsec"
+  cilium_ipsec_enabled = (var.cilium_encryption_enabled && var.cilium_encryption_type == "ipsec") || var.cilium_legacy_routing
 
   # Key configuration when IPSec is enabled
   cilium_ipsec_key_config = local.cilium_ipsec_enabled ? {
