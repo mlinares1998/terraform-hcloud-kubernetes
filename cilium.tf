@@ -1,6 +1,6 @@
 locals {
   # Cilium IPSec Configuration
-  cilium_ipsec_enabled = (var.cilium_encryption_enabled && var.cilium_encryption_type == "ipsec") || var.cilium_legacy_routing
+  cilium_ipsec_enabled = var.cilium_encryption_enabled && var.cilium_encryption_type == "ipsec"
 
   # Key configuration when IPSec is enabled
   cilium_ipsec_key_config = local.cilium_ipsec_enabled ? {
@@ -62,7 +62,7 @@ data "helm_template" "cilium" {
       bpf = {
         masquerade        = var.cilium_kube_proxy_replacement_enabled
         datapathMode      = var.cilium_bpf_datapath_mode
-        hostLegacyRouting = local.cilium_ipsec_enabled
+        hostLegacyRouting = coalesce(var.cilium_bpf_host_legacy_routing, local.cilium_ipsec_enabled)
       }
       encryption = {
         enabled = var.cilium_encryption_enabled
