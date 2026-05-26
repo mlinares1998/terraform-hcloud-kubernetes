@@ -585,9 +585,17 @@ cert_manager_enabled                 = true
 cert_manager_webhook_hetzner_enabled = true
 ```
 
-The module creates a `hetzner` Secret in the `cert-manager` namespace using `hcloud_token` by default. To use a separate DNS token, set `cert_manager_webhook_hetzner_token`.
+Your DNS zone must be managed by Hetzner DNS. Create a Secret containing a Hetzner API token with permission to create and remove DNS records. For `ClusterIssuer` resources, place the Secret in the cert-manager cluster resource namespace, which defaults to `cert-manager`.
 
-Your DNS zone must be managed by Hetzner DNS, and the token must have permission to create and remove DNS records.
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hetzner
+  namespace: cert-manager
+stringData:
+  token: <hetzner-dns-token>
+```
 
 ```yaml
 apiVersion: cert-manager.io/v1

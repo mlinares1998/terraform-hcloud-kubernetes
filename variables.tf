@@ -1813,35 +1813,6 @@ variable "cert_manager_webhook_hetzner_group_name" {
   }
 }
 
-variable "cert_manager_webhook_hetzner_secret_name" {
-  type        = string
-  default     = "hetzner"
-  description = "Name of the Kubernetes Secret created in the cert-manager namespace for the Hetzner DNS API token."
-
-  validation {
-    condition     = can(regex("^[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?$", var.cert_manager_webhook_hetzner_secret_name))
-    error_message = "The Cert Manager Hetzner webhook secret name must be a valid Kubernetes resource name."
-  }
-}
-
-variable "cert_manager_webhook_hetzner_secret_key" {
-  type        = string
-  default     = "token"
-  description = "Key in the Kubernetes Secret created for the Hetzner DNS API token."
-
-  validation {
-    condition     = can(regex("^[A-Za-z0-9._-]+$", var.cert_manager_webhook_hetzner_secret_key))
-    error_message = "The Cert Manager Hetzner webhook secret key must contain only letters, numbers, dots, underscores, or hyphens."
-  }
-}
-
-variable "cert_manager_webhook_hetzner_token" {
-  type        = string
-  default     = null
-  description = "Optional Hetzner API token for the Cert Manager Hetzner webhook. Defaults to hcloud_token when unset."
-  sensitive   = true
-}
-
 
 # Ingress NGINX
 variable "ingress_nginx_helm_repository" {
