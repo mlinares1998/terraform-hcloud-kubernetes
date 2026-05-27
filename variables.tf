@@ -1601,6 +1601,12 @@ variable "cilium_load_balancer_acceleration" {
   }
 }
 
+variable "cilium_bpf_host_legacy_routing" {
+  type        = bool
+  default     = null
+  description = "Explicitly enable or disable Cilium's legacy host routing. When omitted, the value is automatically determined and only set to `true` if necessary, for example when IPSec is enabled."
+}
+
 variable "cilium_routing_mode" {
   type        = string
   description = "Cilium routing mode (e.g., 'native', 'tunnel', etc.)"
