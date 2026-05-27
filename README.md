@@ -242,12 +242,10 @@ Apply this change before proceeding. Once the delete protection is disabled, you
 
 **Terraform:**
 ```sh
-terraform state rm 'module.kubernetes.talos_machine_secrets.this'
 terraform destroy
 ```
 **OpenTofu:**
 ```sh
-tofu state rm 'module.kubernetes.talos_machine_secrets.this'
 tofu destroy
 ```
 
