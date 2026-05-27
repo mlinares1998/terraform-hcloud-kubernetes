@@ -122,6 +122,11 @@ This project bundles essential Kubernetes components, preconfigured for seamless
   </summary>
   Automates the management of certificates in Kubernetes, handling the issuance and renewal of certificates from various sources like Let's Encrypt, and ensures certificates are valid and updated.
 - <summary>
+    <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=hetzner.com&sz=32" width="16">
+    <b><a href="https://github.com/hetzner/cert-manager-webhook-hetzner">Cert Manager Webhook Hetzner</a></b>
+  </summary>
+  Adds Hetzner DNS support for Cert Manager ACME DNS-01 challenges, including wildcard certificates and certificates that do not depend on public HTTP routing.
+- <summary>
     <img align="center" alt="Easy" src="https://www.google.com/s2/favicons?domain=kubernetes.io&sz=32" width="16">
     <b><a href="https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler">Cluster Autoscaler</a></b>
   </summary>
@@ -571,6 +576,51 @@ spec:
                 kind: Gateway
 ```
 
+#### Optional: Create a Cert Manager `ClusterIssuer` (Let's Encrypt DNS-01 via Hetzner DNS)
+
+To request wildcard certificates or certificates that do not depend on public HTTP routing, enable the Hetzner DNS webhook:
+
+```hcl
+cert_manager_enabled                 = true
+cert_manager_webhook_hetzner_enabled = true
+```
+
+Your DNS zone must be managed by Hetzner DNS. Create a Secret containing a Hetzner API token with permission to create and remove DNS records. For `ClusterIssuer` resources, place the Secret in the cert-manager cluster resource namespace, which defaults to `cert-manager`.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hetzner
+  namespace: cert-manager
+stringData:
+  token: <hetzner-dns-token>
+```
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dns01
+spec:
+  acme:
+    email: <user@example.com>
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-dns01-key
+    solvers:
+      - dns01:
+          webhook:
+            groupName: acme.hetzner.com
+            solverName: hetzner
+            config:
+              tokenSecretKeyRef:
+                name: hetzner
+                key: token
+```
+
+When using this `ClusterIssuer` with the Gateway shim, replace `cert-manager.io/issuer: letsencrypt-http01` with `cert-manager.io/cluster-issuer: letsencrypt-dns01`.
+
 #### Create the `Gateway` (Cilium GatewayClass + Hetzner LB + Cert Manager integration)
 
 A `Gateway` defines the external entry point for traffic. With `gatewayClassName: cilium`, the resource is reconciled by the Cilium Gateway controller. The `infrastructure.annotations` are passed through as Hetzner-specific load balancer settings (interpreted by the Hetzner Cloud Controller Manager) to control how the Hetzner Cloud LB is created and configured. See: [Load Balancer Annotations](https://github.com/hetznercloud/hcloud-cloud-controller-manager/blob/main/docs/reference/load_balancer_annotations.md)
@@ -910,9 +960,10 @@ metrics_server_enabled             = true
 prometheus_operator_crds_enabled   = true
 
 # Additional Components (disabled by default)
-cert_manager_enabled               = true
-ingress_nginx_enabled              = true
-longhorn_enabled                   = true
+cert_manager_enabled                 = true
+cert_manager_webhook_hetzner_enabled = true
+ingress_nginx_enabled                = true
+longhorn_enabled                     = true
 
 # Enable etcd backup by defining one of these variables:
 talos_backup_s3_endpoint    = "https://..."
@@ -1278,6 +1329,7 @@ Changing software versions manually is not recommended. Component versions are s
 - Cilium: https://github.com/cilium/cilium/blob/v1.19.2/Documentation/network/kubernetes/compatibility.rst
 - Ingress Nginx: https://github.com/kubernetes/ingress-nginx?tab=readme-ov-file#supported-versions-table 
 - Cert Manager: https://cert-manager.io/docs/releases/
+- Cert Manager Webhook Hetzner: https://github.com/hetzner/cert-manager-webhook-hetzner/releases
 - Autoscaler: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/README.md#releases
 -->
 
