@@ -218,7 +218,7 @@ locals {
   ipv6_non_public_pattern = "^(::$|::1$|fe[89ab][0-9a-f]:|f[cd][0-9a-f]*:|ff[0-9a-f]*:|2001:db8:|::ffff:)"
 
   talos_discovery_cluster_autoscaler = var.cluster_autoscaler_discovery_enabled ? {
-    for m in jsondecode(try(data.external.talos_member[0].result.cluster_autoscaler), "[]") : m.spec.hostname => {
+    for m in jsondecode(try(data.external.talos_member[0].result.cluster_autoscaler, "[]")) : m.spec.hostname => {
       nodepool = regex(local.cluster_autoscaler_hostname_pattern, m.spec.hostname)[0]
 
       private_ipv4_address = try(

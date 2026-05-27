@@ -1773,6 +1773,8 @@ variable "cert_manager_enabled" {
   description = "Enables the deployment of cert-manager for managing TLS certificates."
 }
 
+
+# Cert Manager Webhook Hetzner
 variable "cert_manager_webhook_hetzner_helm_repository" {
   type        = string
   default     = "https://charts.hetzner.cloud"

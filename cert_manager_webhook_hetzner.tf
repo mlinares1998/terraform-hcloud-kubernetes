@@ -17,6 +17,21 @@ data "helm_template" "cert_manager_webhook_hetzner" {
         enabled        = true
         maxUnavailable = 1
       }
+      affinity = local.control_plane_sum > 1 ? {
+        podAntiAffinity = {
+          requiredDuringSchedulingIgnoredDuringExecution = [
+            {
+              labelSelector = {
+                matchLabels = {
+                  app     = "cert-manager-webhook-hetzner"
+                  release = "cert-manager-webhook-hetzner"
+                }
+              }
+              topologyKey = "kubernetes.io/hostname"
+            }
+          ]
+        }
+      } : {}
       nodeSelector = { "node-role.kubernetes.io/control-plane" : "" }
       tolerations = [
         {
@@ -24,7 +39,7 @@ data "helm_template" "cert_manager_webhook_hetzner" {
           effect   = "NoSchedule"
           operator = "Exists"
         }
-      ]
+      ],
     }),
     yamlencode(var.cert_manager_webhook_hetzner_helm_values)
   ]
