@@ -77,8 +77,7 @@ resource "hcloud_server" "worker" {
         keep_disk          = local.worker_nodepools[np_index].keep_disk,
         labels             = local.worker_nodepools[np_index].labels,
         placement_group_id = local.worker_nodepools[np_index].placement_group ? hcloud_placement_group.worker["${var.cluster_name}-${local.worker_nodepools[np_index].name}-pg-${ceil((wkr_index + 1) / 10.0)}"].id : null,
-        subnet             = hcloud_network_subnet.worker[local.worker_nodepools[np_index].name],
-        ipv4_private       = cidrhost(hcloud_network_subnet.worker[local.worker_nodepools[np_index].name].ip_range, wkr_index + 1)
+        subnet_id          = local.worker_nodepools[np_index].subnet_id != null ? hcloud_network_subnet.worker[local.worker_nodepools[np_index].name].id : hcloud_network_subnet.worker_shared.id
       }
     }
   ]...)
@@ -112,13 +111,14 @@ resource "hcloud_server" "worker" {
   }
 
   network {
-    network_id = each.value.subnet.network_id
-    ip         = each.value.ipv4_private
+    network_id = local.hcloud_network_id
+    subnet_id  = each.value.subnet_id
     alias_ips  = []
   }
 
   depends_on = [
     terraform_data.hcloud_server_cluster_autoscaler,
+    hcloud_network_subnet.worker_shared,
     hcloud_network_subnet.worker,
     hcloud_placement_group.worker
   ]

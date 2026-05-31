@@ -188,7 +188,8 @@ module "kubernetes" {
     { name = "control", type = "cpx22", location = "nbg1", count = 3 }
   ]
   worker_nodepools = [
-    { name = "worker", type = "cpx22", location = "nbg1", count = 3 }
+    { name = "worker", type = "cpx22", location = "nbg1", count = 3 },
+    { name = "segmented-pool", type = "cpx22", location = "fsn1", count = 1, subnet_id = 0 } # Useful for VPC segmentation or migrating existing pools
   ]
 }
 ```
@@ -765,6 +766,8 @@ By default, this module calculates optimal subnets based on the provided network
 - **1st Quarter**: Reserved for other uses such as classic VMs.
 - **2nd Quarter**:
   - **1st Half**: Allocated for Node Subnets (`network_node_ipv4_cidr`)
+    - **1st Half**: Reserved for special purpose and legacy subnets (`network_reserved_ipv4_cidr`)
+    - **2nd Half**: Allocated for shared worker subnets (`network_worker_nodes_ipv4_cidr`)
   - **2nd Half**: Allocated for Service IPs (`network_service_ipv4_cidr`)
 - **3rd and 4th Quarters**:
   - **Full Span**: Allocated for Pod Subnets (`network_pod_ipv4_cidr`)

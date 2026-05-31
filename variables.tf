@@ -375,6 +375,7 @@ variable "worker_nodepools" {
     rdns_ipv4       = optional(string)
     rdns_ipv6       = optional(string)
     placement_group = optional(bool, true)
+    subnet_id       = optional(number)
   }))
   default     = []
   description = "Defines configuration settings for Worker node pools within the cluster."
@@ -382,6 +383,13 @@ variable "worker_nodepools" {
   validation {
     condition     = length(var.worker_nodepools) == length(distinct([for np in var.worker_nodepools : np.name]))
     error_message = "Worker nodepool names must be unique to avoid configuration conflicts."
+  }
+
+  validation {
+    condition = alltrue([
+      for np in var.worker_nodepools : np.subnet_id == null || (np.subnet_id != null && np.subnet_id >= 0 && np.subnet_id <= 29)
+    ])
+    error_message = "The subnet_id must be between 0 and 29 to fit within the reserved special purpose network block."
   }
 
   validation {
