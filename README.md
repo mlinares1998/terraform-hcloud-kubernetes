@@ -71,7 +71,8 @@ Provision a highly available and secure Kubernetes cluster on Hetzner Cloud, def
 
 * **Immutable Infrastructure:** Uses Talos Linux to deliver a fully declarative, immutable Kubernetes cluster.
 * **Multi-Architecture:** Supports deployment on both **AMD64** and **ARM64** instances, with automated image builds.
-* **High Availability:** Provides high availability across control plane and worker components for reliable operation.
+* **Bare Metal Server:** Provides fully managed integration of **Hetzner Bare Metal Servers** into the cluster.
+* **High Availability:** High availability across control plane and worker components for reliable operation.
 * **Autoscaling:** Supports automatic scaling of both **Nodes** and **Pods** to seamlessly handle dynamic workloads.
 * **Quick Start:** Optional **Gateway API**, **Cert Manager**, and **Longhorn** integrations for faster app deployment.
 * **Dual-Stack:** Load balancers provide native **IPv4** and **IPv6** connectivity with **PROXY Protocol** support.
@@ -291,7 +292,7 @@ bare_metal_nodepools = [
 
 #### vSwitch Network
 
-When only `hcloud_robot_user` and `hcloud_robot_password` are configured, the module creates the vSwitch and connects it to the Hetzner Cloud Network.
+The module creates the vSwitch and connects it to the Hetzner Cloud Network.
 
 Each server needs a unique `private_ipv4` from the vSwitch subnet. For the default `10.0.0.0/16` network, the bare metal subnet can also be calculated with:
 ```sh
