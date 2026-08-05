@@ -830,6 +830,12 @@ variable "talos_discovery_service_enabled" {
   description = "Enable or disable Sidero Labs public Talos discovery service."
 }
 
+variable "talos_cri_discard_unpacked_layers" {
+  type        = bool
+  default     = true
+  description = "Determines whether containerd discards unpacked image layers on all Talos nodes. Set to false to retain unpacked image layers. Attention: Changing this value forces all Talos nodes to reboot and should be performed with `talos_machine_configuration_apply_mode = \"staged\"`."
+}
+
 variable "talos_kubelet_extra_mounts" {
   type = list(object({
     source      = string
