@@ -750,7 +750,7 @@ variable "packer_arm64_builder" {
 # Talos
 variable "talos_version" {
   type        = string
-  default     = "v1.13.7" # https://github.com/siderolabs/talos
+  default     = "v1.13.8" # https://github.com/siderolabs/talos
   description = "Specifies the version of Talos to be used in generated machine configurations."
 }
 
