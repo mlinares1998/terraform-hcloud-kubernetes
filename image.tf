@@ -38,13 +38,34 @@ locals {
     ) : can(regex(local.cloud_arm64_server_type_pattern, np.server_type))
   ])
 
-  talos_image_label_selector = join(",",
+  cloud_amd64_image_build_required = local.cloud_amd64_image_required && var.talos_cloud_amd64_image_build_enabled
+  cloud_arm64_image_build_required = local.cloud_arm64_image_required && var.talos_cloud_arm64_image_build_enabled
+  talos_cloud_image_build_required = local.cloud_amd64_image_build_required || local.cloud_arm64_image_build_required
+
+  talos_image_label_selector_exact = join(",",
     [
       "os=talos",
       "cluster=${var.cluster_name}",
       "talos_version=${var.talos_version}",
       "talos_schematic_id=${substr(local.talos_cloud_schematic_id, 0, 32)}"
     ]
+  )
+  talos_image_label_selector_latest = join(",",
+    [
+      "os=talos",
+      "cluster=${var.cluster_name}"
+    ]
+  )
+
+  talos_cloud_amd64_image_label_selector = (
+    var.talos_cloud_amd64_image_selector == "latest" ?
+    local.talos_image_label_selector_latest :
+    local.talos_image_label_selector_exact
+  )
+  talos_cloud_arm64_image_label_selector = (
+    var.talos_cloud_arm64_image_selector == "latest" ?
+    local.talos_image_label_selector_latest :
+    local.talos_image_label_selector_exact
   )
 
   talos_image_extensions_longhorn = [
@@ -175,17 +196,17 @@ data "talos_image_factory_urls" "metal" {
 }
 
 data "hcloud_images" "amd64" {
-  count = local.cloud_amd64_image_required ? 1 : 0
+  count = local.cloud_amd64_image_build_required ? 1 : 0
 
-  with_selector     = local.talos_image_label_selector
+  with_selector     = local.talos_image_label_selector_exact
   with_architecture = ["x86"]
   most_recent       = true
 }
 
 data "hcloud_images" "arm64" {
-  count = local.cloud_arm64_image_required ? 1 : 0
+  count = local.cloud_arm64_image_build_required ? 1 : 0
 
-  with_selector     = local.talos_image_label_selector
+  with_selector     = local.talos_image_label_selector_exact
   with_architecture = ["arm"]
   most_recent       = true
 }
@@ -197,21 +218,22 @@ resource "terraform_data" "packer_init" {
     var.talos_version,
     local.talos_cloud_schematic_id,
     local.cloud_amd64_image_required,
-    local.cloud_arm64_image_required
+    local.cloud_arm64_image_required,
+    local.talos_cloud_image_build_required
   ]
 
   provisioner "local-exec" {
     when        = create
     quiet       = true
     working_dir = "${path.module}/packer/"
-    command     = "packer init -upgrade requirements.pkr.hcl"
+    command     = local.talos_cloud_image_build_required ? "packer init -upgrade requirements.pkr.hcl" : "true"
   }
 
   depends_on = [data.external.client_prerequisites_check]
 }
 
 resource "terraform_data" "amd64_image" {
-  count = local.cloud_amd64_image_required ? 1 : 0
+  count = local.cloud_amd64_image_build_required ? 1 : 0
 
   triggers_replace = [
     var.cluster_name,
@@ -248,7 +270,7 @@ resource "terraform_data" "amd64_image" {
 }
 
 resource "terraform_data" "arm64_image" {
-  count = local.cloud_arm64_image_required ? 1 : 0
+  count = local.cloud_arm64_image_build_required ? 1 : 0
 
   triggers_replace = [
     var.cluster_name,
@@ -287,7 +309,7 @@ resource "terraform_data" "arm64_image" {
 data "hcloud_image" "amd64" {
   count = local.cloud_amd64_image_required ? 1 : 0
 
-  with_selector     = local.talos_image_label_selector
+  with_selector     = local.talos_cloud_amd64_image_label_selector
   with_architecture = "x86"
   most_recent       = true
 
@@ -297,7 +319,7 @@ data "hcloud_image" "amd64" {
 data "hcloud_image" "arm64" {
   count = local.cloud_arm64_image_required ? 1 : 0
 
-  with_selector     = local.talos_image_label_selector
+  with_selector     = local.talos_cloud_arm64_image_label_selector
   with_architecture = "arm"
   most_recent       = true
 

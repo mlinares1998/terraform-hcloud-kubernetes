@@ -18,8 +18,8 @@ locals {
       cluster-config = base64encode(jsonencode(
         {
           imagesForArch = {
-            arm64 = local.talos_image_label_selector,
-            amd64 = local.talos_image_label_selector
+            arm64 = local.talos_cloud_arm64_image_label_selector,
+            amd64 = local.talos_cloud_amd64_image_label_selector
           },
           defaultSubnetIPRange = hcloud_network_subnet.cluster_autoscaler_shared.ip_range,
           nodeConfigs = {

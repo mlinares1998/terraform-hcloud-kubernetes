@@ -157,7 +157,7 @@ Talos Linux is a secure, minimal, and immutable OS for Kubernetes, removing SSH 
 ### ✅ Prerequisites
 
 - [terraform](https://developer.hashicorp.com/terraform/install) or [tofu](https://opentofu.org/docs/intro/install/) to deploy the Cluster
-- [packer](https://developer.hashicorp.com/packer/install) to upload Talos Images
+- [packer](https://developer.hashicorp.com/packer/install) to upload Talos Images when cloud image building is enabled
 - [curl](https://curl.se) and [jq](https://jqlang.org/download/) for API Communication
 - [talosctl](https://www.talos.dev/latest/talos-guides/install/talosctl) to control the Talos Cluster
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) to control Kubernetes (optional)
@@ -1067,6 +1067,45 @@ talos_backup_schedule = "0 * * * *"
 ```
 
 To recover from a snapshot, please refer to the Talos Disaster Recovery section in the [Documentation](https://www.talos.dev/latest/advanced/disaster-recovery/#recovery).
+</details>
+
+<!-- Talos Cloud Images -->
+<details>
+<summary><b>Talos Cloud Images</b></summary>
+
+By default, the module builds missing AMD64 and ARM64 Talos snapshots with Packer and selects images whose labels exactly match the cluster name, Talos version, and schematic ID. Image building and selection can be configured independently for each architecture:
+
+```hcl
+talos_cloud_amd64_image_build_enabled = true
+talos_cloud_amd64_image_selector      = "exact"
+
+talos_cloud_arm64_image_build_enabled = true
+talos_cloud_arm64_image_selector      = "exact"
+```
+
+The supported selector values are:
+
+- `exact`: Selects an image matching the cluster name, Talos version, and schematic ID.
+- `latest`: Selects the newest image matching only the cluster name and architecture.
+
+Disabling an image builder is useful when matching snapshots are created outside this module. For example:
+
+```hcl
+talos_cloud_arm64_image_build_enabled = false
+talos_cloud_arm64_image_selector      = "exact"
+```
+
+If no exactly matching snapshot exists, the lookup fails instead of silently selecting an older image.
+
+To disable the ARM64 builder and explicitly select the newest existing cluster snapshot:
+
+```hcl
+talos_cloud_arm64_image_build_enabled = false
+talos_cloud_arm64_image_selector      = "latest"
+```
+
+> ⚠️ **Warning:** The `latest` selector is strongly discouraged and unsupported. It ignores the configured Talos version and schematic ID, so new nodes may boot with incompatible Talos versions, system extensions, or kernel arguments. This can cause bootstrap failures, unavailable nodes, or cluster disruption. It is not an officially supported recovery or emergency mechanism. Use it entirely at your own risk.
+
 </details>
 
 

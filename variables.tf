@@ -746,6 +746,40 @@ variable "packer_arm64_builder" {
   }
 }
 
+variable "talos_cloud_amd64_image_build_enabled" {
+  type        = bool
+  default     = true
+  description = "Controls whether the module builds a missing Talos AMD64 cloud image with Packer. Disable this only when a suitable snapshot already exists in the Hetzner Cloud project."
+}
+
+variable "talos_cloud_amd64_image_selector" {
+  type        = string
+  default     = "exact"
+  description = "Selects the Talos AMD64 cloud image. 'exact' requires labels matching the cluster, Talos version, and schematic ID. WARNING: 'latest' selects the newest image for the cluster and architecture without matching the Talos version or schematic ID. It is strongly discouraged, entirely unsupported, and not an officially supported mechanism."
+
+  validation {
+    condition     = contains(["exact", "latest"], var.talos_cloud_amd64_image_selector)
+    error_message = "The talos_cloud_amd64_image_selector value must be one of: 'exact' or 'latest'."
+  }
+}
+
+variable "talos_cloud_arm64_image_build_enabled" {
+  type        = bool
+  default     = true
+  description = "Controls whether the module builds a missing Talos ARM64 cloud image with Packer. Disable this only when a suitable snapshot already exists in the Hetzner Cloud project."
+}
+
+variable "talos_cloud_arm64_image_selector" {
+  type        = string
+  default     = "exact"
+  description = "Selects the Talos ARM64 cloud image. 'exact' requires labels matching the cluster, Talos version, and schematic ID. WARNING: 'latest' selects the newest image for the cluster and architecture without matching the Talos version or schematic ID. It is strongly discouraged, entirely unsupported, and not an officially supported mechanism."
+
+  validation {
+    condition     = contains(["exact", "latest"], var.talos_cloud_arm64_image_selector)
+    error_message = "The talos_cloud_arm64_image_selector value must be one of: 'exact' or 'latest'."
+  }
+}
+
 
 # Talos
 variable "talos_version" {

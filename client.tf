@@ -136,7 +136,7 @@ data "external" "client_prerequisites_check" {
 
       missing=0
 
-      if ! command -v packer >/dev/null 2>&1; then
+      if [ "${local.talos_cloud_image_build_required}" = "true" ] && ! command -v packer >/dev/null 2>&1; then
           printf '\n%s' ' - packer is not installed or not in PATH. Install it at https://developer.hashicorp.com/packer/install' >&2
           missing=1
       fi
