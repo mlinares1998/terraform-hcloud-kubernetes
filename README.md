@@ -1385,12 +1385,12 @@ Parenthesized versions are planned targets.
 ### ☑️ Kubernetes Compatibility Matrix
 The table below lists the **minimum required versions** of each component to support the specified Kubernetes release.
 
-| Kubernetes | Hcloud CCM  | Hcloud CSI  |   Longhorn   |    Cilium     | Ingress NGINX | Cert Manager  |
-| :--------: | :---------: | :---------: | :----------: | :-----------: | :-----------: | :-----------: |
-|  **1.36**  | ≥&nbsp;1.31 | ≥&nbsp;2.21 | ≥&nbsp;1.12  | (≥&nbsp;1.20) |       -       | (≥&nbsp;1.21) |
-|  **1.35**  | ≥&nbsp;1.30 | ≥&nbsp;2.19 | ≥&nbsp;1.11  | ≥&nbsp;1.19.2 |  ≥&nbsp;4.15  |  ≥&nbsp;1.19  |
-|  **1.34**  | ≥&nbsp;1.27 | ≥&nbsp;2.18 | ≥&nbsp;1.11  |  ≥&nbsp;1.19  |  ≥&nbsp;4.14  |  ≥&nbsp;1.19  |
-|  **1.33**  | ≥&nbsp;1.26 | ≥&nbsp;2.14 | ≥&nbsp;1.8.2 |  ≥&nbsp;1.18  |  ≥&nbsp;4.13  |  ≥&nbsp;1.18  |
+| Kubernetes | Hcloud CCM  | Hcloud CSI  |   Longhorn   |    Cilium     | Ingress NGINX | Cert Manager |
+| :--------: | :---------: | :---------: | :----------: | :-----------: | :-----------: | :----------: |
+|  **1.36**  | ≥&nbsp;1.31 | ≥&nbsp;2.21 | ≥&nbsp;1.12  |  ≥&nbsp;1.20  |       -       | ≥&nbsp;1.21  |
+|  **1.35**  | ≥&nbsp;1.30 | ≥&nbsp;2.19 | ≥&nbsp;1.11  | ≥&nbsp;1.19.2 |  ≥&nbsp;4.15  | ≥&nbsp;1.19  |
+|  **1.34**  | ≥&nbsp;1.27 | ≥&nbsp;2.18 | ≥&nbsp;1.11  |  ≥&nbsp;1.19  |  ≥&nbsp;4.14  | ≥&nbsp;1.19  |
+|  **1.33**  | ≥&nbsp;1.26 | ≥&nbsp;2.14 | ≥&nbsp;1.8.2 |  ≥&nbsp;1.18  |  ≥&nbsp;4.13  | ≥&nbsp;1.18  |
 <!--
 |  **1.32**  |   ≥&nbsp;1.23   |   ≥&nbsp;2.12   | ≥&nbsp;1.8.1  |  ≥&nbsp;1.17  |    ≥&nbsp;4.12     |    ≥&nbsp;1.17    |
 |  **1.31**  |   ≥&nbsp;1.21   |   ≥&nbsp;2.10   |  ≥&nbsp;1.8   |  ≥&nbsp;1.17  |    ≥&nbsp;4.12     |    ≥&nbsp;1.15    |
